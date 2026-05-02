@@ -82,7 +82,7 @@ export default function RecordsScreen() {
             flexDirection: "row",
             alignItems: "center",
             gap: S.md,
-            backgroundColor: C.background,
+            backgroundColor: C.surface,
             borderRadius: R.xl,
             paddingVertical: 18,
             paddingHorizontal: S.lg,
@@ -114,11 +114,9 @@ export default function RecordsScreen() {
                 activeOpacity={0.8}
                 style={{
                   width: cardWidth,
-                  backgroundColor: C.background,
+                  backgroundColor: C.surface,
                   borderRadius: R.xl,
                   padding: S.lg,
-                  borderWidth: 1,
-                  borderColor: C.border,
                 }}
               >
                 <View style={{ marginBottom: S.sm + 2 }}>
