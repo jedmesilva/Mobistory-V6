@@ -38,6 +38,8 @@ export default function RecordsScreen() {
   const handleSelect = (id: string) => {
     if (id === "bonds") {
       router.push("/all-bonds");
+    } else if (id === "fuel") {
+      router.push("/all-fuel");
     } else {
       router.push("/activities");
     }

@@ -33,6 +33,15 @@ export const BOND_TIMELINE = [
   { id: 3, label: "Solicitação enviada", desc: "Você solicitou o vínculo como Proprietário", date: "10 jan. 2023 · 17:05", type: "clock" },
 ];
 
+export const ALL_FUEL = [
+  { id: 1, date: "01 mai. 2026", time: "09:14", volume: "45L", type: "Gasolina comum", value: "R$ 312,30", pricePerL: "R$ 6,94", km: "45.230 km", station: "Shell Centro" },
+  { id: 2, date: "30 abr. 2026", time: "18:45", volume: "40L", type: "Etanol", value: "R$ 198,00", pricePerL: "R$ 4,95", km: "44.910 km", station: "Ipiranga Marginal" },
+  { id: 3, date: "25 abr. 2026", time: "07:55", volume: "50L", type: "Gasolina aditivada", value: "R$ 368,50", pricePerL: "R$ 7,37", km: "44.610 km", station: "BR Mania" },
+  { id: 4, date: "10 jan. 2023", time: "20:30", volume: "38L", type: "Etanol", value: "R$ 174,80", pricePerL: "R$ 4,60", km: "28.320 km", station: "Ale Combustíveis" },
+  { id: 5, date: "02 jan. 2023", time: "11:20", volume: "42L", type: "Gasolina comum", value: "R$ 281,40", pricePerL: "R$ 6,70", km: "27.890 km", station: "Posto Petrobras" },
+  { id: 6, date: "18 dez. 2022", time: "15:00", volume: "35L", type: "Etanol", value: "R$ 157,50", pricePerL: "R$ 4,50", km: "27.120 km", station: "Auto Posto Central" },
+];
+
 export const ALL_BONDS = [
   { id: 1, user: "Lucas Mendes", type: "Proprietário", since: "jan. 2023", until: null as string | null, active: true },
   { id: 2, user: "Carla Souza", type: "Condutor", since: "mar. 2023", until: null as string | null, active: true },
