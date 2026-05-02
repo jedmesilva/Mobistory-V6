@@ -6,7 +6,7 @@ import {
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { ACTIVITIES, ACTIVITY_TYPES, ActivityItem } from "@/constants/data";
@@ -57,9 +57,10 @@ const renderBackdrop = (props: BottomSheetBackdropProps) => (
 
 export default function ActivitiesScreen() {
   const router = useRouter();
+  const { filter } = useLocalSearchParams<{ filter?: string }>();
   const insets = useSafeAreaInsets();
   const filterSheetRef = useRef<BottomSheetModal>(null);
-  const [activeType, setActiveType] = useState("todos");
+  const [activeType, setActiveType] = useState(filter && ACTIVITY_TYPES.some(t => t.id === filter) ? filter : "todos");
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
 

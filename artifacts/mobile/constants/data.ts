@@ -98,6 +98,7 @@ export const ACTIVITY_TYPES = [
   { id: "pneus", label: "Pneus" },
   { id: "vinculo", label: "Vínculos" },
   { id: "documento", label: "Documentos" },
+  { id: "identidade", label: "Identidade" },
 ];
 
 export const ACTIVITIES = [
@@ -108,8 +109,12 @@ export const ACTIVITIES = [
   { id: 5, type: "documento", iconType: "file", title: "Documento adicionado", desc: "CRLV 2024 anexado ao veículo", time: "11:05", date: "28 abr. 2026", subcount: 0 },
   { id: 6, type: "abastecimento", iconType: "fuel", title: "Abastecimento registrado", desc: "50L · Gasolina aditivada · R$ 368,50", time: "07:55", date: "25 abr. 2026", subcount: 0 },
   { id: 7, type: "pneus", iconType: "gauge", title: "Calibragem registrada", desc: "34 PSI · 4 pneus calibrados", time: "16:10", date: "22 abr. 2026", subcount: 0 },
+  { id: 10, type: "identidade", iconType: "shield", title: "Aprovação de alteração", desc: "Cor alterada para Azul Metálico · v3", time: "14:00", date: "12 abr. 2026", subcount: 0 },
   { id: 8, type: "vinculo", iconType: "user", title: "Vínculo verificado", desc: "Lucas Mendes · Proprietário", time: "09:00", date: "15 jan. 2023", subcount: 3 },
   { id: 9, type: "abastecimento", iconType: "fuel", title: "Abastecimento registrado", desc: "38L · Etanol · R$ 174,80", time: "20:30", date: "10 jan. 2023", subcount: 0 },
+  { id: 11, type: "identidade", iconType: "shield", title: "Aprovação de alteração", desc: "Acessório adicionado: Engate reboque · v2", time: "10:30", date: "03 ago. 2024", subcount: 0 },
+  { id: 12, type: "identidade", iconType: "shield", title: "Vistoria de rotina", desc: "Checagem anual — nenhuma alteração · v1", time: "09:00", date: "10 out. 2023", subcount: 0 },
+  { id: 13, type: "identidade", iconType: "shield", title: "Identidade emitida", desc: "Identidade do veículo emitida · v1", time: "15:00", date: "15 jan. 2023", subcount: 0 },
 ];
 
 export type ActivityItem = (typeof ACTIVITIES)[number];

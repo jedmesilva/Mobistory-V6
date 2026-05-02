@@ -320,6 +320,14 @@ export default function IdentityScreen() {
               </View>
             </View>
           ))}
+          <TouchableOpacity
+            onPress={() => router.push("/activities?filter=identidade")}
+            activeOpacity={0.7}
+            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.xs, paddingVertical: S.md, borderTopWidth: 1, borderTopColor: C.border }}
+          >
+            <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Ver todas</Text>
+            <Feather name="chevron-right" size={I.sm} color={C.textTertiary} />
+          </TouchableOpacity>
         </Card>
       </ScrollView>
 
