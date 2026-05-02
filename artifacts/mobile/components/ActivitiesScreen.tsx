@@ -100,7 +100,7 @@ export default function ActivitiesScreen() {
         <TouchableOpacity
           onPress={() => setSearchOpen(true)}
           activeOpacity={0.7}
-          style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: S.sm, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: 12, paddingHorizontal: S.lg }}
+          style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md, paddingHorizontal: S.lg }}
         >
           <Feather name="search" size={I.lg} color={C.textTertiary} />
           <Text style={{ fontSize: F.base, color: C.textTertiary }}>{query || "Buscar atividades..."}</Text>
@@ -108,7 +108,7 @@ export default function ActivitiesScreen() {
         <TouchableOpacity
           onPress={() => filterSheetRef.current?.present()}
           activeOpacity={0.7}
-          style={{ width: 44, height: 44, backgroundColor: C.surface, borderRadius: R.xl, alignItems: "center", justifyContent: "center" }}
+          style={{ aspectRatio: 1, backgroundColor: C.surface, borderRadius: R.xl, alignItems: "center", justifyContent: "center", alignSelf: "stretch" }}
         >
           <Feather name="sliders" size={I.lg} color={activeFilters > 0 ? C.primary : C.iconColor} />
           {activeFilters > 0 && (
