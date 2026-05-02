@@ -130,7 +130,7 @@ export default function VehicleHome() {
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
           {RECORDS.map(({ id, label, lastDate, lastValue }) => (
             <TouchableOpacity key={id} activeOpacity={0.8}
-              style={{ flex: 1, minWidth: "45%", backgroundColor: C.surface, borderRadius: R.xl, padding: S.xl }}>
+              style={{ width: "47.5%", flexGrow: 0, backgroundColor: C.surface, borderRadius: R.xl, padding: S.xl }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
                 <IconBox iconType={RECORD_ICONS[id] ?? "activity"} size={I.xl} boxSize={40} radius={R.md} />
                 <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{lastDate}</Text>
