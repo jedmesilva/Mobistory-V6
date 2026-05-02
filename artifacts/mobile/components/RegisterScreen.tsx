@@ -82,8 +82,6 @@ export default function RegisterScreen() {
                   width: cardWidth,
                   backgroundColor: C.surface,
                   borderRadius: R.xl,
-                  borderWidth: 2,
-                  borderColor: active ? C.textPrimary : C.border,
                   padding: S.md,
                   alignItems: "center",
                 }}
