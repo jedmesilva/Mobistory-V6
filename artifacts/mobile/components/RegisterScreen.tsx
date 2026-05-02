@@ -6,28 +6,24 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
+import { REGISTER_MODULES } from "@/constants/data";
 import { R, S, F, I, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
 
-const ACTIVITY_TYPES: { id: string; icon: FeatherName; label: string }[] = [
-  { id: "fuel",        icon: "droplet",     label: "Abastecimento" },
-  { id: "tire",        icon: "disc",        label: "Calibragem"    },
-  { id: "oil",         icon: "thermometer", label: "Troca de óleo" },
-  { id: "maintenance", icon: "tool",        label: "Manutenção"    },
-  { id: "inspection",  icon: "shield",      label: "Inspeção"      },
-  { id: "parts",       icon: "settings",    label: "Peças"         },
-  { id: "document",    icon: "file-text",   label: "Documentação"  },
-  { id: "wash",        icon: "wind",        label: "Lavagem"       },
-];
+const MODULE_ICONS: Record<string, FeatherName> = {
+  fuel: "droplet",
+  tire: "disc",
+  bonds: "user",
+};
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const screenWidth = Dimensions.get("window").width;
   const gap = S.md;
@@ -73,14 +69,14 @@ export default function RegisterScreen() {
           <View style={{ flex: 1, height: 1, backgroundColor: C.border }} />
         </View>
 
-        {/* GRID 3 COLUNAS */}
+        {/* GRID DE OPÇÕES — 3 colunas, estilo do código de referência */}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
-          {ACTIVITY_TYPES.map(({ id, icon, label }) => {
-            const active = selectedActivity === id;
+          {REGISTER_MODULES.map(({ id, label }) => {
+            const active = selectedId === id;
             return (
               <TouchableOpacity
                 key={id}
-                onPress={() => setSelectedActivity(id)}
+                onPress={() => setSelectedId(id)}
                 activeOpacity={0.75}
                 style={{
                   width: cardWidth,
@@ -93,7 +89,7 @@ export default function RegisterScreen() {
                 }}
               >
                 <View style={{ backgroundColor: C.surface, borderRadius: R.lg, padding: S.md, marginBottom: S.xs }}>
-                  <Feather name={icon} size={I.xl} color={C.textSecondary} />
+                  <Feather name={MODULE_ICONS[id] ?? "activity"} size={I.xl} color={C.textSecondary} />
                 </View>
                 <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary, textAlign: "center" as const }}>
                   {label}
