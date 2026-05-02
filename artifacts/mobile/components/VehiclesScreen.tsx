@@ -3,7 +3,7 @@ import {
   View, Text, TouchableOpacity, ScrollView, Platform,
   Modal, Animated, Dimensions,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
@@ -17,7 +17,7 @@ type FeatherName = React.ComponentProps<typeof Feather>["name"];
 
 const MENU_ITEMS: { icon: FeatherName; label: string; route?: string }[] = [
   { icon: "home",       label: "Início" },
-  { icon: "truck",        label: "Veículos" },
+  { icon: "truck" as FeatherName,        label: "Veículos" },
   { icon: "activity",   label: "Atividades" },
   { icon: "file-text",  label: "Registros" },
 ];
@@ -159,7 +159,7 @@ export default function VehiclesScreen() {
             <TouchableOpacity key={v.id} onPress={() => router.back()} activeOpacity={0.8}
               style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.lg, marginBottom: S.sm }}>
               <View style={{ width: 72, height: 72, borderRadius: R.xl, backgroundColor: "#EEF0F4", alignItems: "center", justifyContent: "center" }}>
-                <Feather name="truck" size={I.xxxl} color={C.textTertiary} />
+                <FontAwesome5 name="car" size={I.xxxl} color={C.textTertiary} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
@@ -174,7 +174,7 @@ export default function VehiclesScreen() {
           ))
         ) : (
           <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
-            <Feather name="truck" size={48} color={C.textTertiary} />
+            <FontAwesome5 name="car" size={48} color={C.textTertiary} />
             <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textSecondary, textAlign: "center" }}>
               {query ? `Nenhum veículo encontrado para "${query}"` : "Você ainda não tem veículos"}
             </Text>
