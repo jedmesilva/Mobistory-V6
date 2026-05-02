@@ -59,11 +59,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingHorizontal: S.xxxl,
     backgroundColor: C.surface,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -2 },
-    elevation: 8,
+    elevation: 0,
   },
   navTab: {
     flex: 1,
