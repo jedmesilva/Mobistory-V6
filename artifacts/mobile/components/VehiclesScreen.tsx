@@ -43,7 +43,7 @@ export default function VehiclesScreen() {
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Veículos</Text>
 
         {/* SEARCH */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: 14, paddingHorizontal: S.lg, marginBottom: S.lg }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md, paddingHorizontal: S.lg, marginBottom: S.lg }}>
           <Feather name="search" size={I.lg} color={C.textTertiary} />
           <TextInput
             value={query}

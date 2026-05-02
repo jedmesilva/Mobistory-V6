@@ -78,7 +78,7 @@ export default function RecordsScreen() {
             gap: S.md,
             backgroundColor: C.surface,
             borderRadius: R.xl,
-            paddingVertical: 18,
+            paddingVertical: S.md,
             paddingHorizontal: S.lg,
             marginBottom: S.xxl,
           }}

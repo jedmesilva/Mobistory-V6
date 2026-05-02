@@ -191,7 +191,7 @@ export default function ActivitiesScreen() {
       {searchOpen && (
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: C.background, zIndex: 10 }}>
           <View style={{ paddingTop: topPad + 8, paddingHorizontal: S.xl, paddingBottom: S.md }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: 14, paddingHorizontal: S.lg }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md, paddingHorizontal: S.lg }}>
               <Feather name="search" size={I.lg} color={C.textTertiary} />
               <TextInput
                 autoFocus
