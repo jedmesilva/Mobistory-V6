@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Platform,
+  Modal, Animated, Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -10,11 +11,113 @@ import { MY_VEHICLES } from "@/constants/data";
 import { R, S, F, I, VerifiedBadge, SearchBar } from "@/components/shared";
 
 const C = colors.light;
+const DRAWER_WIDTH = Dimensions.get("window").width * 0.72;
+
+type FeatherName = React.ComponentProps<typeof Feather>["name"];
+
+const MENU_ITEMS: { icon: FeatherName; label: string; route?: string }[] = [
+  { icon: "home",       label: "Início" },
+  { icon: "truck",        label: "Veículos" },
+  { icon: "activity",   label: "Atividades" },
+  { icon: "file-text",  label: "Registros" },
+];
+
+const MENU_BOTTOM: { icon: FeatherName; label: string }[] = [
+  { icon: "settings",   label: "Configurações" },
+  { icon: "log-out",    label: "Sair" },
+];
+
+function SideDrawer({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.spring(translateX, { toValue: 0, useNativeDriver: true, damping: 20, stiffness: 180 }),
+        Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(translateX, { toValue: -DRAWER_WIDTH, duration: 200, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [visible]);
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        {/* Backdrop */}
+        <Animated.View
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.4)", opacity }}
+        >
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+        </Animated.View>
+
+        {/* Drawer */}
+        <Animated.View style={{
+          width: DRAWER_WIDTH,
+          height: "100%",
+          backgroundColor: C.background,
+          transform: [{ translateX }],
+          paddingTop: (Platform.OS === "web" ? 67 : insets.top) + S.xl,
+          paddingBottom: (Platform.OS === "web" ? 34 : insets.bottom) + S.xl,
+          paddingHorizontal: S.xl,
+        }}>
+          {/* Profile area */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, marginBottom: S.xxl }}>
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: C.surface, alignItems: "center", justifyContent: "center" }}>
+              <Feather name="user" size={I.xl} color={C.textSecondary} />
+            </View>
+            <View>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>Lucas Mendes</Text>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary }}>Proprietário</Text>
+            </View>
+          </View>
+
+          {/* Nav items */}
+          <View style={{ flex: 1, gap: S.xs }}>
+            {MENU_ITEMS.map(({ icon, label }) => (
+              <TouchableOpacity
+                key={label}
+                onPress={onClose}
+                activeOpacity={0.7}
+                style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.md, paddingHorizontal: S.md, borderRadius: R.xl }}
+              >
+                <Feather name={icon} size={I.lg} color={C.textSecondary} />
+                <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: C.textPrimary }}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Bottom items */}
+          <View style={{ gap: S.xs }}>
+            <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.xs }} />
+            {MENU_BOTTOM.map(({ icon, label }) => (
+              <TouchableOpacity
+                key={label}
+                onPress={onClose}
+                activeOpacity={0.7}
+                style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.md, paddingHorizontal: S.md, borderRadius: R.xl }}
+              >
+                <Feather name={icon} size={I.lg} color={label === "Sair" ? C.destructive : C.textSecondary} />
+                <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: label === "Sair" ? C.destructive : C.textPrimary }}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
 
 export default function VehiclesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -32,7 +135,7 @@ export default function VehiclesScreen() {
       >
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ padding: S.xs }}>
+          <TouchableOpacity onPress={() => setDrawerOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="menu" size={I.xxl} color={C.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -56,7 +159,7 @@ export default function VehiclesScreen() {
             <TouchableOpacity key={v.id} onPress={() => router.back()} activeOpacity={0.8}
               style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.lg, marginBottom: S.sm }}>
               <View style={{ width: 72, height: 72, borderRadius: R.xl, backgroundColor: "#EEF0F4", alignItems: "center", justifyContent: "center" }}>
-                <Feather name="car" size={I.xxxl} color={C.textTertiary} />
+                <Feather name="truck" size={I.xxxl} color={C.textTertiary} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
@@ -71,7 +174,7 @@ export default function VehiclesScreen() {
           ))
         ) : (
           <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
-            <Feather name="car" size={48} color={C.textTertiary} />
+            <Feather name="truck" size={48} color={C.textTertiary} />
             <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textSecondary, textAlign: "center" }}>
               {query ? `Nenhum veículo encontrado para "${query}"` : "Você ainda não tem veículos"}
             </Text>
@@ -88,6 +191,8 @@ export default function VehiclesScreen() {
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.primaryForeground }}>Adicionar veículo</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <SideDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </View>
   );
 }

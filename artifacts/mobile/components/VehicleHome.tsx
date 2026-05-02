@@ -71,7 +71,7 @@ export default function VehicleHome() {
 
       {/* VEHICLE VIEWER */}
       <Animated.View style={{ height: viewerHeight, marginHorizontal: S.lg, borderRadius: S.xl, backgroundColor: "#EEF0F4", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-        <Feather name="car" size={I.hero} color="#B0B7C3" />
+        <Feather name="truck" size={I.hero} color="#B0B7C3" />
         <Text style={{ fontSize: F.xxs, color: "#B0B7C3", fontWeight: "600" as const, letterSpacing: 1.5, marginTop: S.sm, textTransform: "uppercase" as const }}>Visualização 3D em breve</Text>
         <View {...panResponder.panHandlers} style={{ position: "absolute", bottom: 0, left: 0, right: 0, paddingVertical: S.md, alignItems: "center" }}>
           <View style={{ width: 40, height: 4, backgroundColor: C.separator, borderRadius: R.pill }} />
@@ -98,7 +98,7 @@ export default function VehicleHome() {
         {/* META CHIPS */}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.xs, marginTop: S.md }}>
           {[
-            { icon: "car" as const, value: VEHICLE.plate },
+            { icon: "truck" as const, value: VEHICLE.plate },
             { icon: "calendar" as const, value: String(VEHICLE.year) },
             { icon: "droplet" as const, value: VEHICLE.fuel },
           ].map(({ icon, value }) => (
@@ -114,7 +114,7 @@ export default function VehicleHome() {
           <TouchableOpacity activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-              <IconBox iconType="car" size={I.lg} boxSize={36} radius={R.md} />
+              <IconBox iconType="truck" size={I.lg} boxSize={36} radius={R.md} />
               <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary }}>Identidade</Text>
             </View>
             <Feather name="chevron-right" size={I.md} color={C.textTertiary} />
