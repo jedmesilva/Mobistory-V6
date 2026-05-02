@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform, ActionSheetIOS, Alert,
 } from "react-native";
-import * as DropdownMenu from "zeego/dropdown-menu";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,25 +34,31 @@ export default function EventDetailScreen({ event }: Props) {
           <Text style={{ flex: 1, fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary, marginLeft: S.md }} numberOfLines={1}>
             {event.title}
           </Text>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-              </TouchableOpacity>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item key="edit" onSelect={() => {}}>
-                <DropdownMenu.ItemTitle>Editar evento</DropdownMenu.ItemTitle>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item key="share" onSelect={() => {}}>
-                <DropdownMenu.ItemTitle>Compartilhar</DropdownMenu.ItemTitle>
-              </DropdownMenu.Item>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item key="delete" onSelect={() => {}} destructive>
-                <DropdownMenu.ItemTitle>Excluir evento</DropdownMenu.ItemTitle>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{ padding: S.xs }}
+            onPress={() => {
+              if (Platform.OS === "ios") {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: ["Editar evento", "Compartilhar", "Excluir evento", "Cancelar"],
+                    destructiveButtonIndex: 2,
+                    cancelButtonIndex: 3,
+                  },
+                  () => {}
+                );
+              } else {
+                Alert.alert("Opções", undefined, [
+                  { text: "Editar evento", onPress: () => {} },
+                  { text: "Compartilhar", onPress: () => {} },
+                  { text: "Excluir evento", style: "destructive", onPress: () => {} },
+                  { text: "Cancelar", style: "cancel" },
+                ]);
+              }
+            }}
+          >
+            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* HERO */}

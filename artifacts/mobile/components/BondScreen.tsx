@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform, ActionSheetIOS, Alert,
 } from "react-native";
-import * as DropdownMenu from "zeego/dropdown-menu";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,18 +26,25 @@ export default function BondScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
           <BackButton onPress={() => router.back()} />
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-              </TouchableOpacity>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.Item key="all-bonds" onSelect={() => router.push("/all-bonds")}>
-                <DropdownMenu.ItemTitle>Todos os vínculos</DropdownMenu.ItemTitle>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{ padding: S.xs }}
+            onPress={() => {
+              if (Platform.OS === "ios") {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  { options: ["Todos os vínculos", "Cancelar"], cancelButtonIndex: 1 },
+                  (i) => { if (i === 0) router.push("/all-bonds"); }
+                );
+              } else {
+                Alert.alert("Opções", undefined, [
+                  { text: "Todos os vínculos", onPress: () => router.push("/all-bonds") },
+                  { text: "Cancelar", style: "cancel" },
+                ]);
+              }
+            }}
+          >
+            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Meu vínculo</Text>
