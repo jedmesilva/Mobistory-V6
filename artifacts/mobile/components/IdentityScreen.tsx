@@ -300,6 +300,27 @@ export default function IdentityScreen() {
           </View>
           <Feather name="chevron-right" size={I.md} color={C.textTertiary} />
         </TouchableOpacity>
+
+        {/* HISTÓRICO */}
+        <SectionLabel title="Histórico" />
+        <Card>
+          {IDENTITY.historico.map((item, i) => (
+            <View key={item.id} style={{
+              paddingVertical: S.md, paddingHorizontal: S.xl,
+              borderBottomWidth: i < IDENTITY.historico.length - 1 ? 1 : 0,
+              borderBottomColor: C.border,
+            }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary }}>{item.typeLabel}</Text>
+                <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{item.date}</Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary, flex: 1, marginRight: S.sm }}>{item.desc}</Text>
+                <Text style={{ fontSize: F.xs, color: C.textTertiary, fontFamily: "monospace" }}>v{item.version}</Text>
+              </View>
+            </View>
+          ))}
+        </Card>
       </ScrollView>
 
       <IdentityShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} />
