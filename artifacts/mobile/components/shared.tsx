@@ -258,7 +258,7 @@ export function SearchBar({ value, onChangeText, placeholder = "Buscar...", auto
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={C.textTertiary}
-        style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
+        style={{ flex: 1, fontSize: F.base, color: C.textPrimary, padding: 0, margin: 0 }}
       />
       {value.length > 0 && !rightElement && (
         <TouchableOpacity onPress={() => onChangeText("")} activeOpacity={0.7}>
