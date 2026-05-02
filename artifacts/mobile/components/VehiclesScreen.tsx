@@ -56,7 +56,7 @@ export default function VehiclesScreen() {
             <TouchableOpacity key={v.id} onPress={() => router.back()} activeOpacity={0.8}
               style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.lg, marginBottom: S.sm }}>
               <View style={{ width: 72, height: 72, borderRadius: R.xl, backgroundColor: "#EEF0F4", alignItems: "center", justifyContent: "center" }}>
-                <Feather name="truck" size={I.xxxl} color={C.textTertiary} />
+                <Feather name="car" size={I.xxxl} color={C.textTertiary} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
@@ -71,7 +71,7 @@ export default function VehiclesScreen() {
           ))
         ) : (
           <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
-            <Feather name="truck" size={48} color={C.textTertiary} />
+            <Feather name="car" size={48} color={C.textTertiary} />
             <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textSecondary, textAlign: "center" }}>
               {query ? `Nenhum veículo encontrado para "${query}"` : "Você ainda não tem veículos"}
             </Text>
