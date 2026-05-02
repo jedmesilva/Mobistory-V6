@@ -276,7 +276,7 @@ export default function IdentityScreen() {
           {IDENTITY.historico.map((item, i) => {
             const isLast = i === IDENTITY.historico.length - 1;
             const badge =
-              item.type === "criacao"   ? { bg: "#F3F4F6", color: "#374151" } :
+              item.type === "emissao"   ? { bg: "#F3F4F6", color: "#374151" } :
               item.type === "rotina"    ? { bg: "#FEF3C7", color: "#D97706" } :
                                          { bg: "#DBEAFE", color: "#1D4ED8" };
             return (
