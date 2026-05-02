@@ -43,21 +43,12 @@ export default function VehiclesScreen() {
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Veículos</Text>
 
         {/* SEARCH */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md, paddingHorizontal: S.lg, marginBottom: S.lg }}>
-          <Feather name="search" size={I.lg} color={C.textTertiary} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Buscar veículo..."
-            placeholderTextColor={C.textTertiary}
-            style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
-              <Feather name="x" size={I.sm} color={C.textTertiary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Buscar veículo..."
+          style={{ marginBottom: S.lg }}
+        />
 
         {/* VEHICLE CARDS */}
         {filtered.length > 0 ? (

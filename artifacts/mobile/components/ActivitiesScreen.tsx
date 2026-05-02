@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
-  View, Text, TouchableOpacity, TextInput, Animated,
+  View, Text, TouchableOpacity, Animated,
   FlatList, Platform,
 } from "react-native";
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { ACTIVITIES, ACTIVITY_TYPES, ActivityItem } from "@/constants/data";
-import { R, S, F, I, getActivityIcon } from "@/components/shared";
+import { R, S, F, I, getActivityIcon, SearchBar, SearchButton } from "@/components/shared";
 
 const C = colors.light;
 

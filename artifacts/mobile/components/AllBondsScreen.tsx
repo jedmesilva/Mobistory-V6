@@ -92,21 +92,12 @@ export default function AllBondsScreen() {
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>Histórico de vínculos</Text>
 
         {/* SEARCH */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md, paddingHorizontal: S.lg, marginTop: S.md, marginBottom: S.sm }}>
-          <Feather name="search" size={I.lg} color={C.textTertiary} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Buscar por nome ou tipo..."
-            placeholderTextColor={C.textTertiary}
-            style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
-              <Feather name="x" size={I.sm} color={C.textTertiary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Buscar por nome ou tipo..."
+          style={{ marginTop: S.md, marginBottom: S.sm }}
+        />
       </View>
 
       {/* FILTER CHIPS */}

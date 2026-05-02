@@ -71,32 +71,12 @@ export default function RecordsScreen() {
         </Text>
 
         {/* SEARCH BAR */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: S.md,
-            backgroundColor: C.surface,
-            borderRadius: R.xl,
-            paddingVertical: S.md,
-            paddingHorizontal: S.lg,
-            marginBottom: S.xxl,
-          }}
-        >
-          <Feather name="search" size={I.lg} color={C.textTertiary} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Buscar registros..."
-            placeholderTextColor={C.textTertiary}
-            style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
-              <Feather name="x" size={I.sm} color={C.textTertiary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Buscar registros..."
+          style={{ marginBottom: S.xxl }}
+        />
 
         {/* 2-COLUMN GRID */}
         {filtered.length > 0 ? (
