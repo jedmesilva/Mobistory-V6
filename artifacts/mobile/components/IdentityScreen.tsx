@@ -8,7 +8,13 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, IDENTITY, ALL_BONDS } from "@/constants/data";
-import { R, S, F, I, BackButton, VerifiedBadge } from "@/components/shared";
+import { R, S, F, I, BackButton, VerifiedBadge, TimelineItem } from "@/components/shared";
+
+const HISTORICO_ICON: Record<string, React.ComponentProps<typeof Feather>["name"]> = {
+  aprovacao: "check-circle",
+  rotina:    "shield",
+  emissao:   "file-text",
+};
 
 const C = colors.light;
 
@@ -303,32 +309,26 @@ export default function IdentityScreen() {
 
         {/* HISTÓRICO */}
         <SectionLabel title="Histórico" />
-        <Card>
-          {IDENTITY.historico.map((item, i) => (
-            <View key={item.id} style={{
-              paddingVertical: S.md, paddingHorizontal: S.xl,
-              borderBottomWidth: i < IDENTITY.historico.length - 1 ? 1 : 0,
-              borderBottomColor: C.border,
-            }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary }}>{item.typeLabel}</Text>
-                <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{item.date}</Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary, flex: 1, marginRight: S.sm }}>{item.desc}</Text>
-                <Text style={{ fontSize: F.xs, color: C.textTertiary, fontFamily: "monospace" }}>v{item.version}</Text>
-              </View>
-            </View>
+        <View style={{ paddingLeft: S.xs }}>
+          {IDENTITY.historico.map((item, idx) => (
+            <TimelineItem
+              key={item.id}
+              iconName={HISTORICO_ICON[item.type] ?? "activity"}
+              label={item.typeLabel}
+              desc={`${item.desc} · v${item.version}`}
+              date={item.date}
+              isLast={idx === IDENTITY.historico.length - 1}
+            />
           ))}
-          <TouchableOpacity
-            onPress={() => router.push("/activities?filter=identidade")}
-            activeOpacity={0.7}
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.xs, paddingVertical: S.md, borderTopWidth: 1, borderTopColor: C.border }}
-          >
-            <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Ver todas</Text>
-            <Feather name="chevron-right" size={I.sm} color={C.textTertiary} />
-          </TouchableOpacity>
-        </Card>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push("/activities?filter=identidade")}
+          activeOpacity={0.7}
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.xs, marginTop: S.lg, paddingVertical: S.md, backgroundColor: C.surface, borderRadius: R.xl }}
+        >
+          <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Ver todas</Text>
+          <Feather name="chevron-right" size={I.sm} color={C.textTertiary} />
+        </TouchableOpacity>
       </ScrollView>
 
       <IdentityShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} />
