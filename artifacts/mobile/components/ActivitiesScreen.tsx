@@ -125,7 +125,7 @@ export default function ActivitiesScreen() {
             activeOpacity={0.7}
             style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}
           >
-            <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
+            <Feather name="arrow-left" size={I.xl} color={C.textSecondary} />
             <Animated.Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary, opacity: smallTitleOpacity }}>
               Atividades
             </Animated.Text>

@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { ALL_BONDS } from "@/constants/data";
-import { R, S, F, I, ActionButtonSquare, ActiveBadge } from "@/components/shared";
+import { R, S, F, I, ActionButtonSquare, ActiveBadge, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -67,9 +67,7 @@ export default function AllBondsScreen() {
     <View style={{ flex: 1, backgroundColor: C.background }}>
       {/* HEADER SECTION */}
       <View style={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg }}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ marginBottom: S.xl }}>
-          <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.back()} />
         <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: S.xxl }}>
           <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Vínculos</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.successBg, borderRadius: R.pill, paddingVertical: 5, paddingHorizontal: S.md, marginBottom: 4 }}>

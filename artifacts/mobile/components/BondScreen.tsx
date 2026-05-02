@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, BOND_TIMELINE } from "@/constants/data";
-import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge } from "@/components/shared";
+import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -26,9 +26,7 @@ export default function BondScreen() {
       >
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ padding: S.xs }}>
-            <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
-          </TouchableOpacity>
+          <BackButton onPress={() => router.back()} />
           <TouchableOpacity onPress={() => setMenuOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
           </TouchableOpacity>

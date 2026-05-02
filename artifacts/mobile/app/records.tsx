@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { MODULES } from "@/constants/data";
-import { R, S, F, I, IconBox } from "@/components/shared";
+import { R, S, F, I, IconBox, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -55,13 +55,7 @@ export default function RecordsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* BACK */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-          style={{ marginBottom: S.xl, alignSelf: "flex-start" }}
-        >
-          <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.back()} />
 
         {/* TITLE */}
         <Text

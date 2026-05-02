@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  GestureResponderEvent,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { C, R, S, F, I } from "@/constants/theme";
@@ -13,6 +14,18 @@ import { C, R, S, F, I } from "@/constants/theme";
 export { C, R, S, F, I };
 
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
+
+interface BackButtonProps {
+  onPress: (e: GestureResponderEvent) => void;
+}
+
+export function BackButton({ onPress }: BackButtonProps) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ padding: S.xs, alignSelf: "flex-start" }}>
+      <Feather name="arrow-left" size={I.xl} color={C.textSecondary} />
+    </TouchableOpacity>
+  );
+}
 
 export function getActivityIcon(iconType: string): FeatherName {
   switch (iconType) {

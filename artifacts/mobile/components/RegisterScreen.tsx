@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { REGISTER_MODULES } from "@/constants/data";
-import { R, S, F, I, IconBox } from "@/components/shared";
+import { R, S, F, I, IconBox, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -28,9 +28,7 @@ export default function RegisterScreen() {
         contentContainerStyle={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg, paddingBottom: S.xxxl + 20 }}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ marginBottom: S.xl }}>
-          <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.back()} />
 
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Registrar evento</Text>
 

@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, RECORDS } from "@/constants/data";
-import { R, S, F, I, IconBox, SectionLabel, VerifiedBadge } from "@/components/shared";
+import { R, S, F, I, IconBox, SectionLabel, VerifiedBadge, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -55,9 +55,7 @@ export default function VehicleHome() {
     >
       {/* HEADER */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.md, paddingTop: topPad + 8, paddingBottom: S.md }}>
-        <TouchableOpacity onPress={() => router.push("/vehicles")} activeOpacity={0.7} style={{ padding: S.xs }}>
-          <Feather name="arrow-left" size={I.xxl} color={C.textSecondary} />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.push("/vehicles")} />
         <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
           <Feather name="message-circle" size={I.xxl} color={C.textSecondary} />
         </TouchableOpacity>
