@@ -1,5 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform } from "react-native";
+import React, { useState } from "react";
+import {
+  View, Text, TouchableOpacity, TextInput, ScrollView,
+  Platform, Dimensions,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,8 +21,19 @@ const MODULE_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
 export default function RecordsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+
+  const screenWidth = Dimensions.get("window").width;
+  const cardWidth = (screenWidth - S.xl * 2 - S.md) / 2;
+
+  const filtered = MODULES.filter(
+    m =>
+      m.label.toLowerCase().includes(query.toLowerCase()) ||
+      m.desc.toLowerCase().includes(query.toLowerCase())
+  );
 
   const handleSelect = (id: string) => {
     if (id === "bonds") {
@@ -38,6 +52,7 @@ export default function RecordsScreen() {
           paddingBottom: bottomPad + S.xxxl,
         }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* BACK */}
         <TouchableOpacity
@@ -48,6 +63,7 @@ export default function RecordsScreen() {
           <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
         </TouchableOpacity>
 
+        {/* TITLE */}
         <Text
           style={{
             fontSize: F.hero,
@@ -60,32 +76,62 @@ export default function RecordsScreen() {
           Registros
         </Text>
 
-        {/* MODULE LIST ROWS — mesma estética do RegisterScreen */}
-        <View>
-          {MODULES.map(({ id, label, desc }, idx) => (
-            <TouchableOpacity
-              key={id}
-              onPress={() => handleSelect(id)}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: S.lg,
-                paddingVertical: S.lg,
-                borderBottomWidth: idx < MODULES.length - 1 ? 1 : 0,
-                borderBottomColor: C.border,
-              }}
-            >
-              <IconBox
-                iconType={MODULE_ICONS[id] ?? "activity"}
-                size={I.xl}
-                boxSize={44}
-                radius={R.md}
-              />
-              <View style={{ flex: 1 }}>
+        {/* SEARCH BAR */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: S.md,
+            backgroundColor: C.background,
+            borderRadius: R.xl,
+            paddingVertical: 18,
+            paddingHorizontal: S.lg,
+            marginBottom: S.xxl,
+          }}
+        >
+          <Feather name="search" size={I.lg} color={C.textTertiary} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Buscar registros..."
+            placeholderTextColor={C.textTertiary}
+            style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
+              <Feather name="x" size={I.sm} color={C.textTertiary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* 2-COLUMN GRID */}
+        {filtered.length > 0 ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.md }}>
+            {filtered.map(({ id, label, desc }) => (
+              <TouchableOpacity
+                key={id}
+                onPress={() => handleSelect(id)}
+                activeOpacity={0.8}
+                style={{
+                  width: cardWidth,
+                  backgroundColor: C.background,
+                  borderRadius: R.xl,
+                  padding: S.lg,
+                  borderWidth: 1,
+                  borderColor: C.border,
+                }}
+              >
+                <View style={{ marginBottom: S.sm + 2 }}>
+                  <IconBox
+                    iconType={MODULE_ICONS[id] ?? "activity"}
+                    size={I.xxl}
+                    boxSize={42}
+                    radius={R.md}
+                  />
+                </View>
                 <Text
                   style={{
-                    fontSize: F.xl,
+                    fontSize: F.base,
                     fontWeight: "600",
                     color: C.textPrimary,
                   }}
@@ -94,18 +140,37 @@ export default function RecordsScreen() {
                 </Text>
                 <Text
                   style={{
-                    fontSize: F.sm,
+                    fontSize: F.xs,
                     color: C.textTertiary,
-                    marginTop: 2,
+                    marginTop: S.xs,
                   }}
                 >
                   {desc}
                 </Text>
-              </View>
-              <Feather name="chevron-right" size={I.lg} color={C.separator} />
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <View
+            style={{
+              alignItems: "center",
+              paddingVertical: S.xxxl,
+              gap: S.sm,
+            }}
+          >
+            <Feather name="search" size={I.xxxl} color={C.textTertiary} />
+            <Text
+              style={{
+                fontSize: F.base,
+                color: C.textTertiary,
+                fontWeight: "500",
+                textAlign: "center",
+              }}
+            >
+              Nenhum resultado para "{query}"
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
