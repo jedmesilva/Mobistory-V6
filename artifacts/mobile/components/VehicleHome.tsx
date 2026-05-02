@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Animated, PanResponder,
-  Platform,
+  View, Text, TouchableOpacity, ScrollView, Animated, PanResponder, Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, RECORDS } from "@/constants/data";
@@ -17,21 +17,13 @@ const RECORD_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
   bonds: "user",
 };
 
-interface Props {
-  onOpenVehicles: () => void;
-  onOpenBond: () => void;
-  onOpenAllBonds: () => void;
-  onOpenRegister: () => void;
-  onOpenActivities: () => void;
-  onOpenActions: () => void;
-}
-
-export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds, onOpenRegister, onOpenActivities, onOpenActions }: Props) {
+export default function VehicleHome() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [viewerExpanded, setViewerExpanded] = useState(false);
   const viewerHeight = useRef(new Animated.Value(200)).current;
-  const dragStartY = useRef(0);
   const isExpanded = useRef(false);
+  const dragStartY = useRef(0);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -63,7 +55,7 @@ export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds
     >
       {/* HEADER */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.md, paddingTop: topPad + 8, paddingBottom: S.md }}>
-        <TouchableOpacity onPress={onOpenVehicles} activeOpacity={0.7} style={{ padding: S.xs }}>
+        <TouchableOpacity onPress={() => router.push("/vehicles")} activeOpacity={0.7} style={{ padding: S.xs }}>
           <Feather name="arrow-left" size={I.xxl} color={C.textSecondary} />
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -79,7 +71,8 @@ export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds
           <View style={{ width: 40, height: 4, backgroundColor: C.separator, borderRadius: R.pill }} />
         </View>
         {viewerExpanded && (
-          <TouchableOpacity onPress={() => { setViewerExpanded(false); isExpanded.current = false; Animated.spring(viewerHeight, { toValue: 200, useNativeDriver: false }).start(); }}
+          <TouchableOpacity
+            onPress={() => { setViewerExpanded(false); isExpanded.current = false; Animated.spring(viewerHeight, { toValue: 200, useNativeDriver: false }).start(); }}
             activeOpacity={0.8}
             style={{ position: "absolute", bottom: 28, backgroundColor: "rgba(0,0,0,0.10)", borderRadius: R.pill, paddingVertical: S.xs, paddingHorizontal: S.xl }}>
             <Text style={{ fontSize: F.sm, color: C.textSecondary, fontWeight: "600" as const }}>Recolher</Text>
@@ -110,7 +103,7 @@ export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds
           ))}
         </View>
 
-        {/* ACTION BUTTONS ROW */}
+        {/* QUICK ACTIONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginTop: S.md }}>
           <TouchableOpacity activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
@@ -120,7 +113,7 @@ export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds
             </View>
             <Feather name="chevron-right" size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={onOpenBond} activeOpacity={0.8}
+          <TouchableOpacity onPress={() => router.push("/bond")} activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
               <IconBox iconType="user" size={I.lg} boxSize={36} radius={R.md} />
@@ -133,7 +126,7 @@ export default function VehicleHome({ onOpenVehicles, onOpenBond, onOpenAllBonds
 
       {/* RECORDS */}
       <View style={{ paddingHorizontal: S.xl, paddingTop: S.xxl }}>
-        <SectionLabel title="Registros" actionLabel="Ver tudo" onAction={onOpenActions} />
+        <SectionLabel title="Registros" actionLabel="Ver tudo" onAction={() => router.push("/records")} />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
           {RECORDS.map(({ id, label, lastDate, lastValue }) => (
             <TouchableOpacity key={id} activeOpacity={0.8}

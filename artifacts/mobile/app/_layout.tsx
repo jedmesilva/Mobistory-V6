@@ -21,8 +21,15 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="vehicles" options={{ headerShown: false, animation: "slide_from_left" }} />
+      <Stack.Screen name="bond" options={{ headerShown: false }} />
+      <Stack.Screen name="all-bonds" options={{ headerShown: false }} />
+      <Stack.Screen name="activities" options={{ headerShown: false }} />
+      <Stack.Screen name="activities/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="records" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false, animation: "slide_from_bottom" }} />
     </Stack>
   );
 }
