@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TextInput,
   StyleSheet,
   ViewStyle,
   TextStyle,
@@ -225,6 +226,63 @@ export function MoreOptionsButton({ actions, topOffset = 60, iosTitle }: MoreOpt
         </TouchableOpacity>
       </Modal>
     </>
+  );
+}
+
+const searchBarStyle: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: S.md,
+  backgroundColor: C.surface,
+  borderRadius: R.xl,
+  paddingVertical: S.md,
+  paddingHorizontal: S.lg,
+};
+
+interface SearchBarProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  autoFocus?: boolean;
+  rightElement?: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function SearchBar({ value, onChangeText, placeholder = "Buscar...", autoFocus, rightElement, style }: SearchBarProps) {
+  return (
+    <View style={[searchBarStyle, style]}>
+      <Feather name="search" size={I.lg} color={C.textTertiary} />
+      <TextInput
+        autoFocus={autoFocus}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={C.textTertiary}
+        style={{ flex: 1, fontSize: F.base, color: C.textPrimary }}
+      />
+      {value.length > 0 && !rightElement && (
+        <TouchableOpacity onPress={() => onChangeText("")} activeOpacity={0.7}>
+          <Feather name="x" size={I.sm} color={C.textTertiary} />
+        </TouchableOpacity>
+      )}
+      {rightElement}
+    </View>
+  );
+}
+
+interface SearchButtonProps {
+  onPress: () => void;
+  placeholder?: string;
+  value?: string;
+  style?: ViewStyle;
+}
+
+export function SearchButton({ onPress, placeholder = "Buscar...", value, style }: SearchButtonProps) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={[searchBarStyle, style]}>
+      <Feather name="search" size={I.lg} color={C.textTertiary} />
+      <Text style={{ flex: 1, fontSize: F.base, color: C.textTertiary }}>{value || placeholder}</Text>
+    </TouchableOpacity>
   );
 }
 
