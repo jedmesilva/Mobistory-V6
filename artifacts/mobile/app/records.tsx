@@ -44,7 +44,7 @@ export default function RecordsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.surface }}>
+    <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: S.xl,
