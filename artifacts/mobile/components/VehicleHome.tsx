@@ -17,6 +17,14 @@ const RECORD_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
   bonds: "user",
 };
 
+function handleRecordSelect(router: ReturnType<typeof useRouter>, id: string) {
+  if (id === "bonds") {
+    router.push("/all-bonds");
+  } else {
+    router.push("/activities");
+  }
+}
+
 export default function VehicleHome() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -128,6 +136,7 @@ export default function VehicleHome() {
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
           {RECORDS.map(({ id, label, lastDate, lastValue }) => (
             <TouchableOpacity key={id} activeOpacity={0.8}
+              onPress={() => handleRecordSelect(router, id)}
               style={{ width: "47.5%", flexGrow: 0, backgroundColor: C.surface, borderRadius: R.xl, padding: S.xl }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
                 <IconBox iconType={RECORD_ICONS[id] ?? "activity"} size={I.xl} boxSize={40} radius={R.md} />
