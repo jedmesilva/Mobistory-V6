@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import {
-  View, Text, TouchableOpacity, TextInput, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { ALL_BONDS } from "@/constants/data";
-import { R, S, F, I, ActionButtonSquare, ActiveBadge, BackButton } from "@/components/shared";
+import { R, S, F, I, ActionButtonSquare, ActiveBadge, BackButton, SearchBar } from "@/components/shared";
 
 const C = colors.light;
 

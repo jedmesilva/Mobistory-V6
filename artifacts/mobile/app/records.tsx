@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  View, Text, TouchableOpacity, TextInput, ScrollView,
+  View, Text, TouchableOpacity, ScrollView,
   Platform, Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { MODULES } from "@/constants/data";
-import { R, S, F, I, IconBox, BackButton } from "@/components/shared";
+import { R, S, F, I, IconBox, BackButton, SearchBar } from "@/components/shared";
 
 const C = colors.light;
 
