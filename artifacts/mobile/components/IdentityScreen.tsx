@@ -269,51 +269,6 @@ export default function IdentityScreen() {
           ))}
         </Card>
 
-        {/* HISTÓRICO DE VISTORIAS */}
-        <SectionLabel title="Histórico de vistorias" />
-
-        <Card>
-          {IDENTITY.historico.map((item, i) => {
-            const isLast = i === IDENTITY.historico.length - 1;
-            const badge =
-              item.type === "emissao"   ? { bg: "#F3F4F6", color: "#374151" } :
-              item.type === "rotina"    ? { bg: "#FEF3C7", color: "#D97706" } :
-                                         { bg: "#DBEAFE", color: "#1D4ED8" };
-            return (
-              <View key={item.id} style={{
-                flexDirection: "row", paddingHorizontal: S.xl,
-                paddingTop: S.lg, paddingBottom: isLast ? S.lg : 0,
-              }}>
-                {/* linha de tempo */}
-                <View style={{ width: 32, alignItems: "center", marginRight: S.md }}>
-                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: badge.color, marginTop: 3 }} />
-                  {!isLast && <View style={{ width: 1, flex: 1, backgroundColor: C.border, marginTop: S.xs, marginBottom: 0 }} />}
-                </View>
-
-                {/* conteúdo */}
-                <View style={{ flex: 1, paddingBottom: isLast ? 0 : S.lg }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xs, flexWrap: "wrap" as const }}>
-                    <View style={{ backgroundColor: badge.bg, borderRadius: R.pill, paddingVertical: 2, paddingHorizontal: S.sm }}>
-                      <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: badge.color }}>{item.typeLabel}</Text>
-                    </View>
-                    <Text style={{ fontSize: F.xs, color: C.textTertiary }}>v{item.version}</Text>
-                  </View>
-                  <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary, marginBottom: 2 }}>{item.desc}</Text>
-                  <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{item.date}</Text>
-                </View>
-              </View>
-            );
-          })}
-
-          {/* rodapé — ver histórico completo */}
-          <View style={{ height: 1, backgroundColor: C.border, marginHorizontal: S.xl }} />
-          <TouchableOpacity activeOpacity={0.7}
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.xl }}>
-            <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Ver histórico completo</Text>
-            <Feather name="chevron-right" size={I.sm} color={C.textTertiary} />
-          </TouchableOpacity>
-        </Card>
-
         {/* VÍNCULOS */}
         <SectionLabel title="Vínculos" />
 
