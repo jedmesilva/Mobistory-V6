@@ -45,7 +45,7 @@ export default function VehicleHome() {
   ).current;
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 + 84 : insets.bottom + 70;
+  const bottomPad = Platform.OS === "web" ? 34 + 100 : insets.bottom + 100;
 
   return (
     <ScrollView
