@@ -19,6 +19,7 @@ export default function RecordsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const handleSelect = (id: string) => {
     if (id === "bonds") {
@@ -31,30 +32,77 @@ export default function RecordsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.surface }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg, paddingBottom: S.xxxl + 20 }}
+        contentContainerStyle={{
+          paddingHorizontal: S.xl,
+          paddingTop: topPad + S.lg,
+          paddingBottom: bottomPad + S.xxxl,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ marginBottom: S.xl }}>
+        {/* BACK */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          style={{ marginBottom: S.xl, alignSelf: "flex-start" }}
+        >
           <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Registros</Text>
+        <Text
+          style={{
+            fontSize: F.hero,
+            fontWeight: "700",
+            color: C.textPrimary,
+            letterSpacing: -0.5,
+            marginBottom: S.xxl,
+          }}
+        >
+          Registros
+        </Text>
 
-        {/* MODULE GRID */}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.md }}>
-          {MODULES.map(({ id, label, desc }) => (
+        {/* MODULE LIST ROWS — mesma estética do RegisterScreen */}
+        <View>
+          {MODULES.map(({ id, label, desc }, idx) => (
             <TouchableOpacity
               key={id}
               onPress={() => handleSelect(id)}
-              activeOpacity={0.8}
-              style={{ width: "47%", backgroundColor: C.background, borderRadius: R.xl, padding: S.lg, borderWidth: 1, borderColor: C.border }}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: S.lg,
+                paddingVertical: S.lg,
+                borderBottomWidth: idx < MODULES.length - 1 ? 1 : 0,
+                borderBottomColor: C.border,
+              }}
             >
-              <View style={{ marginBottom: S.sm + 2 }}>
-                <IconBox iconType={MODULE_ICONS[id] ?? "activity"} size={I.xxl} boxSize={42} radius={R.md} />
+              <IconBox
+                iconType={MODULE_ICONS[id] ?? "activity"}
+                size={I.xl}
+                boxSize={44}
+                radius={R.md}
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: F.xl,
+                    fontWeight: "600",
+                    color: C.textPrimary,
+                  }}
+                >
+                  {label}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: F.sm,
+                    color: C.textTertiary,
+                    marginTop: 2,
+                  }}
+                >
+                  {desc}
+                </Text>
               </View>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-              <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: S.xs }}>{desc}</Text>
+              <Feather name="chevron-right" size={I.lg} color={C.separator} />
             </TouchableOpacity>
           ))}
         </View>
