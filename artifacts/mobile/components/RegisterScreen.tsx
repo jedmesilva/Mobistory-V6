@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Platform, Dimensions,
 } from "react-native";
@@ -6,29 +6,38 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
-import { REGISTER_MODULES } from "@/constants/data";
-import { R, S, F, I, IconBox, BackButton } from "@/components/shared";
+import { R, S, F, I, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
-const MODULE_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]> = {
-  fuel: "droplet",
-  tire: "disc",
-  bonds: "user",
-};
+type FeatherName = React.ComponentProps<typeof Feather>["name"];
+
+const ACTIVITY_TYPES: { id: string; icon: FeatherName; label: string }[] = [
+  { id: "fuel",        icon: "droplet",     label: "Abastecimento" },
+  { id: "tire",        icon: "disc",        label: "Calibragem"    },
+  { id: "oil",         icon: "thermometer", label: "Troca de óleo" },
+  { id: "maintenance", icon: "tool",        label: "Manutenção"    },
+  { id: "inspection",  icon: "shield",      label: "Inspeção"      },
+  { id: "parts",       icon: "settings",    label: "Peças"         },
+  { id: "document",    icon: "file-text",   label: "Documentação"  },
+  { id: "wash",        icon: "wind",        label: "Lavagem"       },
+];
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
 
   const screenWidth = Dimensions.get("window").width;
-  const cardWidth = (screenWidth - S.xl * 2 - S.md) / 2;
+  const gap = S.md;
+  const hPad = S.xl;
+  const cardWidth = (screenWidth - hPad * 2 - gap * 2) / 3;
 
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg, paddingBottom: S.xxxl + 20 }}
+        contentContainerStyle={{ paddingHorizontal: hPad, paddingTop: topPad + S.lg, paddingBottom: S.xxxl + 20 }}
         showsVerticalScrollIndicator={false}
       >
         <BackButton onPress={() => router.back()} />
@@ -64,36 +73,34 @@ export default function RegisterScreen() {
           <View style={{ flex: 1, height: 1, backgroundColor: C.border }} />
         </View>
 
-        {/* MODULE GRID */}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.md }}>
-          {REGISTER_MODULES.map(({ id, label, desc }) => (
-            <TouchableOpacity
-              key={id}
-              onPress={() => router.back()}
-              activeOpacity={0.8}
-              style={{
-                width: cardWidth,
-                backgroundColor: C.surface,
-                borderRadius: R.xl,
-                padding: S.lg,
-              }}
-            >
-              <View style={{ marginBottom: S.sm + 2 }}>
-                <IconBox
-                  iconType={MODULE_ICONS[id] ?? "activity"}
-                  size={I.xxl}
-                  boxSize={42}
-                  radius={R.md}
-                />
-              </View>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>
-                {label}
-              </Text>
-              <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: S.xs }}>
-                {desc}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* GRID 3 COLUNAS */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap }}>
+          {ACTIVITY_TYPES.map(({ id, icon, label }) => {
+            const active = selectedActivity === id;
+            return (
+              <TouchableOpacity
+                key={id}
+                onPress={() => setSelectedActivity(id)}
+                activeOpacity={0.75}
+                style={{
+                  width: cardWidth,
+                  backgroundColor: C.background,
+                  borderRadius: R.xl,
+                  borderWidth: 2,
+                  borderColor: active ? C.textPrimary : C.border,
+                  padding: S.md,
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ backgroundColor: C.surface, borderRadius: R.lg, padding: S.md, marginBottom: S.xs }}>
+                  <Feather name={icon} size={I.xl} color={C.textSecondary} />
+                </View>
+                <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary, textAlign: "center" as const }}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
