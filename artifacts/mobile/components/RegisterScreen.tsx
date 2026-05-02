@@ -82,11 +82,12 @@ export default function RegisterScreen() {
                   width: cardWidth,
                   backgroundColor: C.surface,
                   borderRadius: R.xl,
-                  padding: S.md,
+                  paddingVertical: S.lg,
+                  paddingHorizontal: S.md,
                   alignItems: "center",
                 }}
               >
-                <View style={{ backgroundColor: C.background, borderRadius: R.lg, padding: S.md, marginBottom: S.xs }}>
+                <View style={{ width: 44, height: 44, backgroundColor: C.background, borderRadius: R.lg, alignItems: "center", justifyContent: "center", marginBottom: S.xs }}>
                   <Feather name={MODULE_ICONS[id] ?? "activity"} size={I.xl} color={C.textSecondary} />
                 </View>
                 <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary, textAlign: "center" as const }}>
