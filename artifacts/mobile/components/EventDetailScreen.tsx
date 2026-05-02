@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform, ActionSheetIOS, Alert,
+  View, Text, TouchableOpacity, ScrollView, Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { ActivityItem, EVENT_DETAILS } from "@/constants/data";
-import { R, S, F, I, IconBox, getActivityIcon, TimelineItem, BackButton } from "@/components/shared";
+import { R, S, F, I, IconBox, getActivityIcon, TimelineItem, BackButton, MoreOptionsButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -34,31 +34,14 @@ export default function EventDetailScreen({ event }: Props) {
           <Text style={{ flex: 1, fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary, marginLeft: S.md }} numberOfLines={1}>
             {event.title}
           </Text>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={{ padding: S.xs }}
-            onPress={() => {
-              if (Platform.OS === "ios") {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  {
-                    options: ["Editar evento", "Compartilhar", "Excluir evento", "Cancelar"],
-                    destructiveButtonIndex: 2,
-                    cancelButtonIndex: 3,
-                  },
-                  () => {}
-                );
-              } else {
-                Alert.alert("Opções", undefined, [
-                  { text: "Editar evento", onPress: () => {} },
-                  { text: "Compartilhar", onPress: () => {} },
-                  { text: "Excluir evento", style: "destructive", onPress: () => {} },
-                  { text: "Cancelar", style: "cancel" },
-                ]);
-              }
-            }}
-          >
-            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-          </TouchableOpacity>
+          <MoreOptionsButton
+            topOffset={topPad + 52}
+            actions={[
+              { label: "Editar evento", icon: "edit-2" },
+              { label: "Compartilhar", icon: "share-2" },
+              { label: "Excluir evento", icon: "trash-2", destructive: true },
+            ]}
+          />
         </View>
 
         {/* HERO */}

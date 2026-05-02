@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform, ActionSheetIOS, Alert,
+  View, Text, TouchableOpacity, ScrollView, Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, BOND_TIMELINE } from "@/constants/data";
-import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge, BackButton } from "@/components/shared";
+import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge, BackButton, MoreOptionsButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -26,25 +26,12 @@ export default function BondScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
           <BackButton onPress={() => router.back()} />
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={{ padding: S.xs }}
-            onPress={() => {
-              if (Platform.OS === "ios") {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  { options: ["Todos os vínculos", "Cancelar"], cancelButtonIndex: 1 },
-                  (i) => { if (i === 0) router.push("/all-bonds"); }
-                );
-              } else {
-                Alert.alert("Opções", undefined, [
-                  { text: "Todos os vínculos", onPress: () => router.push("/all-bonds") },
-                  { text: "Cancelar", style: "cancel" },
-                ]);
-              }
-            }}
-          >
-            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-          </TouchableOpacity>
+          <MoreOptionsButton
+            topOffset={topPad + 52}
+            actions={[
+              { label: "Todos os vínculos", icon: "users", onPress: () => router.push("/all-bonds") },
+            ]}
+          />
         </View>
 
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Meu vínculo</Text>

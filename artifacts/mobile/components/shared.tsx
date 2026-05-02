@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,9 @@ import {
   ViewStyle,
   TextStyle,
   GestureResponderEvent,
+  Modal,
+  Platform,
+  ActionSheetIOS,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { C, R, S, F, I } from "@/constants/theme";
@@ -124,6 +127,104 @@ export function ActionButtonSquare({ iconName, label, onPress }: ActionButtonSqu
       </View>
       <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textSecondary }}>{label}</Text>
     </TouchableOpacity>
+  );
+}
+
+export interface MenuAction {
+  label: string;
+  icon?: FeatherName;
+  destructive?: boolean;
+  onPress?: () => void;
+}
+
+interface MoreOptionsButtonProps {
+  actions: MenuAction[];
+  topOffset?: number;
+  iosTitle?: string;
+}
+
+export function MoreOptionsButton({ actions, topOffset = 60, iosTitle }: MoreOptionsButtonProps) {
+  const [open, setOpen] = useState(false);
+
+  function handlePress() {
+    if (Platform.OS === "ios") {
+      const options = [...actions.map(a => a.label), "Cancelar"];
+      const destructiveIndex = actions.findIndex(a => a.destructive);
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          title: iosTitle,
+          options,
+          cancelButtonIndex: options.length - 1,
+          ...(destructiveIndex >= 0 ? { destructiveButtonIndex: destructiveIndex } : {}),
+        },
+        (i) => { if (i < actions.length) actions[i].onPress?.(); }
+      );
+    } else {
+      setOpen(true);
+    }
+  }
+
+  return (
+    <>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.7} style={{ padding: S.xs }}>
+        <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
+      </TouchableOpacity>
+
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setOpen(false)}>
+          <View
+            style={{
+              position: "absolute",
+              top: topOffset,
+              right: S.xl,
+              backgroundColor: C.surface,
+              borderRadius: R.xl,
+              shadowColor: "#000",
+              shadowOpacity: 0.14,
+              shadowRadius: 20,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 12,
+              minWidth: 200,
+              overflow: "hidden",
+            }}
+          >
+            {actions.map((action, idx) => (
+              <TouchableOpacity
+                key={action.label}
+                activeOpacity={0.7}
+                onPress={() => { setOpen(false); action.onPress?.(); }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: S.md,
+                  paddingVertical: 14,
+                  paddingHorizontal: S.lg,
+                  borderBottomWidth: idx < actions.length - 1 ? 1 : 0,
+                  borderBottomColor: C.border,
+                }}
+              >
+                {action.icon && (
+                  <Feather
+                    name={action.icon}
+                    size={I.lg}
+                    color={action.destructive ? C.destructive : C.textSecondary}
+                  />
+                )}
+                <Text
+                  style={{
+                    fontSize: F.base,
+                    fontWeight: "500" as const,
+                    color: action.destructive ? C.destructive : C.textPrimary,
+                  }}
+                >
+                  {action.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
