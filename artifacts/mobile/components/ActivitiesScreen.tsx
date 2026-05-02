@@ -55,8 +55,10 @@ export default function ActivitiesScreen() {
     return matchType && matchQuery;
   });
 
-  const THRESHOLD = 60;
+  const THRESHOLD = 80;
+  // useNativeDriver: false is required for layout properties (maxHeight, height, padding)
   const largeTitleOpacity = scrollY.interpolate({ inputRange: [0, THRESHOLD], outputRange: [1, 0], extrapolate: "clamp" });
+  const largeTitleMaxHeight = scrollY.interpolate({ inputRange: [0, THRESHOLD], outputRange: [130, 0], extrapolate: "clamp" });
   const smallTitleOpacity = scrollY.interpolate({ inputRange: [0, THRESHOLD], outputRange: [0, 1], extrapolate: "clamp" });
 
   return (
@@ -84,8 +86,8 @@ export default function ActivitiesScreen() {
           </Animated.View>
         </View>
 
-        {/* LARGE TITLE + SEARCH BAR */}
-        <Animated.View style={{ opacity: largeTitleOpacity }}>
+        {/* LARGE TITLE + SEARCH BAR — collapses height AND opacity on scroll */}
+        <Animated.View style={{ opacity: largeTitleOpacity, maxHeight: largeTitleMaxHeight, overflow: "hidden" }}>
           <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.md }}>Atividades</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.md }}>
             <TouchableOpacity onPress={() => setSearchOpen(true)} activeOpacity={0.7}
@@ -106,7 +108,7 @@ export default function ActivitiesScreen() {
       <Animated.FlatList
         data={filtered}
         keyExtractor={item => String(item.id)}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: bottomPad + 20 }}
         ListEmptyComponent={
