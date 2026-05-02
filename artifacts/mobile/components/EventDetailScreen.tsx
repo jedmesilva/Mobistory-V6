@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Modal, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform,
 } from "react-native";
+import * as DropdownMenu from "zeego/dropdown-menu";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,7 +19,6 @@ interface Props {
 export default function EventDetailScreen({ event }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const details = EVENT_DETAILS[event.id] || { fields: [], location: null, subevents: [] };
@@ -35,9 +35,25 @@ export default function EventDetailScreen({ event }: Props) {
           <Text style={{ flex: 1, fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary, marginLeft: S.md }} numberOfLines={1}>
             {event.title}
           </Text>
-          <TouchableOpacity onPress={() => setMenuOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
-            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-          </TouchableOpacity>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
+              </TouchableOpacity>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item key="edit" onSelect={() => {}}>
+                <DropdownMenu.ItemTitle>Editar evento</DropdownMenu.ItemTitle>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item key="share" onSelect={() => {}}>
+                <DropdownMenu.ItemTitle>Compartilhar</DropdownMenu.ItemTitle>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item key="delete" onSelect={() => {}} destructive>
+                <DropdownMenu.ItemTitle>Excluir evento</DropdownMenu.ItemTitle>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
         </View>
 
         {/* HERO */}
@@ -117,23 +133,6 @@ export default function EventDetailScreen({ event }: Props) {
         </View>
       </ScrollView>
 
-      {/* CONTEXT MENU */}
-      <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => setMenuOpen(false)} activeOpacity={1}>
-          <View style={{ position: "absolute", top: topPad + 60, right: S.xl, backgroundColor: C.surface, borderRadius: R.xl, shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 16, elevation: 8, minWidth: 180, overflow: "hidden" }}>
-            {[
-              { label: "Editar evento", color: C.textPrimary },
-              { label: "Compartilhar", color: C.textPrimary },
-              { label: "Excluir evento", color: C.destructive },
-            ].map(({ label, color }) => (
-              <TouchableOpacity key={label} onPress={() => setMenuOpen(false)} activeOpacity={0.7}
-                style={{ paddingVertical: S.md, paddingHorizontal: S.lg }}>
-                <Text style={{ fontSize: F.base, fontWeight: "500" as const, color }}>{label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 }

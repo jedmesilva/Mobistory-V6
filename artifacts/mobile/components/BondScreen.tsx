@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Modal, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform,
 } from "react-native";
+import * as DropdownMenu from "zeego/dropdown-menu";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,7 +15,6 @@ const C = colors.light;
 export default function BondScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -27,9 +27,18 @@ export default function BondScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
           <BackButton onPress={() => router.back()} />
-          <TouchableOpacity onPress={() => setMenuOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
-            <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
-          </TouchableOpacity>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="more-vertical" size={I.xxl} color={C.textSecondary} />
+              </TouchableOpacity>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content>
+              <DropdownMenu.Item key="all-bonds" onSelect={() => router.push("/all-bonds")}>
+                <DropdownMenu.ItemTitle>Todos os vínculos</DropdownMenu.ItemTitle>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
         </View>
 
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Meu vínculo</Text>
@@ -85,21 +94,6 @@ export default function BondScreen() {
         </View>
       </ScrollView>
 
-      {/* CONTEXT MENU */}
-      <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => setMenuOpen(false)} activeOpacity={1}>
-          <View style={{ position: "absolute", top: topPad + 60, right: S.xl, backgroundColor: C.surface, borderRadius: R.xl, shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 16, elevation: 8, minWidth: 220, overflow: "hidden" }}>
-            <TouchableOpacity
-              onPress={() => { setMenuOpen(false); router.push("/all-bonds"); }}
-              activeOpacity={0.7}
-              style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.md, paddingHorizontal: S.lg }}
-            >
-              <Feather name="users" size={I.lg} color={C.textSecondary} />
-              <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: C.textPrimary }}>Todos os vínculos</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 }

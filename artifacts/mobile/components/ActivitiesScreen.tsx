@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
 import {
-  View, Text, TouchableOpacity, TextInput, Modal, Animated,
+  View, Text, TouchableOpacity, TextInput, Animated,
   FlatList, Platform,
 } from "react-native";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -49,10 +51,14 @@ function ActivityRow({ item, onPress }: { item: ActivityItem; onPress: () => voi
   );
 }
 
+const renderBackdrop = (props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+);
+
 export default function ActivitiesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [filterSheet, setFilterSheet] = useState(false);
+  const filterSheetRef = useRef<BottomSheetModal>(null);
   const [activeType, setActiveType] = useState("todos");
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -100,7 +106,7 @@ export default function ActivitiesScreen() {
           <Text style={{ fontSize: F.base, color: C.textTertiary }}>{query || "Buscar atividades..."}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setFilterSheet(true)}
+          onPress={() => filterSheetRef.current?.present()}
           activeOpacity={0.7}
           style={{ width: 44, height: 44, backgroundColor: C.surface, borderRadius: R.xl, alignItems: "center", justifyContent: "center" }}
         >
@@ -141,7 +147,7 @@ export default function ActivitiesScreen() {
               <Feather name="search" size={I.lg} color={C.iconColor} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setFilterSheet(true)}
+              onPress={() => filterSheetRef.current?.present()}
               activeOpacity={0.7}
               style={{ width: 40, height: 40, backgroundColor: C.surface, borderRadius: R.xl, alignItems: "center", justifyContent: "center" }}
             >
@@ -230,19 +236,15 @@ export default function ActivitiesScreen() {
       )}
 
       {/* ── FILTER BOTTOM SHEET ───────────────────────────────────────────── */}
-      <Modal visible={filterSheet} transparent animationType="slide" onRequestClose={() => setFilterSheet(false)}>
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.35)" }}
-          activeOpacity={1}
-          onPress={() => setFilterSheet(false)}
-        />
-        <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl, paddingBottom: bottomPad + 20 }}>
-          <View style={{ alignItems: "center", paddingTop: S.md, marginBottom: S.md }}>
-            <View style={{ width: 40, height: 4, backgroundColor: C.separator, borderRadius: R.pill }} />
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingBottom: S.md }}>
+      <BottomSheetModal
+        ref={filterSheetRef}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+      >
+        <BottomSheetView style={{ paddingBottom: bottomPad + 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.md }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Filtros</Text>
-            <TouchableOpacity onPress={() => setFilterSheet(false)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => filterSheetRef.current?.dismiss()} activeOpacity={0.7}>
               <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
@@ -253,7 +255,7 @@ export default function ActivitiesScreen() {
             {ACTIVITY_TYPES.map(f => (
               <TouchableOpacity
                 key={f.id}
-                onPress={() => { setActiveType(f.id); setFilterSheet(false); }}
+                onPress={() => { setActiveType(f.id); filterSheetRef.current?.dismiss(); }}
                 activeOpacity={0.7}
                 style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, borderBottomWidth: 1, borderBottomColor: C.border }}
               >
@@ -265,7 +267,7 @@ export default function ActivitiesScreen() {
             ))}
             {activeFilters > 0 && (
               <TouchableOpacity
-                onPress={() => { setActiveType("todos"); setFilterSheet(false); }}
+                onPress={() => { setActiveType("todos"); filterSheetRef.current?.dismiss(); }}
                 activeOpacity={0.7}
                 style={{ marginTop: S.lg, padding: S.md, backgroundColor: "#FEF2F2", borderRadius: R.xl, alignItems: "center" }}
               >
@@ -273,8 +275,8 @@ export default function ActivitiesScreen() {
               </TouchableOpacity>
             )}
           </View>
-        </View>
-      </Modal>
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }
