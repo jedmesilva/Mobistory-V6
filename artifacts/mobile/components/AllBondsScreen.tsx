@@ -43,6 +43,7 @@ export default function AllBondsScreen() {
   const [filter, setFilter] = useState("todos");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
   const activeCount = ALL_BONDS.filter(b => b.active).length;
 
   const filtered = ALL_BONDS.filter(b => {
@@ -64,9 +65,14 @@ export default function AllBondsScreen() {
   }, {});
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.background }}>
-      {/* HEADER SECTION */}
-      <View style={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: C.background }}
+      contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + S.xxxl }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* BACK + TITLE */}
+      <View style={{ paddingHorizontal: S.xl }}>
         <BackButton onPress={() => router.back()} />
         <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: S.xxl }}>
           <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Vínculos</Text>
@@ -86,7 +92,7 @@ export default function AllBondsScreen() {
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>Histórico de vínculos</Text>
 
         {/* SEARCH */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: 14, paddingHorizontal: S.lg, marginTop: S.md }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: 14, paddingHorizontal: S.lg, marginTop: S.md, marginBottom: S.sm }}>
           <Feather name="search" size={I.lg} color={C.textTertiary} />
           <TextInput
             value={query}
@@ -104,7 +110,12 @@ export default function AllBondsScreen() {
       </View>
 
       {/* FILTER CHIPS */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: S.xl, paddingVertical: S.md, gap: S.sm }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{ paddingHorizontal: S.xl, paddingVertical: S.md, gap: S.sm }}
+      >
         {FILTERS.map(f => (
           <TouchableOpacity key={f.id} onPress={() => setFilter(f.id)} activeOpacity={0.7}
             style={{ paddingVertical: 6, paddingHorizontal: S.lg, borderRadius: R.pill, backgroundColor: filter === f.id ? C.primary : C.surface, marginRight: S.sm }}>
@@ -114,7 +125,7 @@ export default function AllBondsScreen() {
       </ScrollView>
 
       {/* LIST */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+      <View style={{ paddingHorizontal: S.xl, paddingTop: S.xs }}>
         {sorted.length === 0 ? (
           <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
             <Feather name="users" size={I.xxxl} color={C.textTertiary} />
@@ -133,7 +144,7 @@ export default function AllBondsScreen() {
         ) : (
           sorted.map(b => <BondItem key={b.id} b={b} />)
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
