@@ -57,6 +57,15 @@ export const IDENTITY = {
     { label: "IPVA 2024", status: "Pago",    ok: true  },
     { label: "Multas",    status: "Nenhuma", ok: true  },
   ],
+  version: 3,
+  lastVerified: "12 abr. 2026",
+  nextVerified: "abr. 2027",
+  historico: [
+    { id: 1, version: 3, type: "aprovacao", typeLabel: "Aprovação de alteração", date: "12 abr. 2026", desc: "Cor alterada para Azul Metálico" },
+    { id: 2, version: 2, type: "aprovacao", typeLabel: "Aprovação de alteração", date: "03 ago. 2024", desc: "Acessório adicionado: Engate reboque" },
+    { id: 3, version: 1, type: "rotina",    typeLabel: "Vistoria de rotina",      date: "10 out. 2023", desc: "Checagem anual — nenhuma alteração" },
+    { id: 4, version: 1, type: "criacao",   typeLabel: "Criação",                 date: "15 jan. 2023", desc: "Identidade do veículo criada" },
+  ],
 };
 
 export const ALL_FUEL = [
