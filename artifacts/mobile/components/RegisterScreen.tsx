@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform, Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { REGISTER_MODULES } from "@/constants/data";
-import { R, S, F, I, BackButton } from "@/components/shared";
+import { R, S, F, I, IconBox, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -17,30 +17,16 @@ const MODULE_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
   bonds: "user",
 };
 
-const MODULE_COLORS: Record<string, string> = {
-  fuel: "#FEF3C7",
-  tire: "#E0E7FF",
-  bonds: "#DCFCE7",
-};
-
-const MODULE_ICON_COLORS: Record<string, string> = {
-  fuel: "#D97706",
-  tire: "#4F46E5",
-  bonds: "#16A34A",
-};
-
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
-  const rows: (typeof REGISTER_MODULES)[] = [];
-  for (let i = 0; i < REGISTER_MODULES.length; i += 2) {
-    rows.push(REGISTER_MODULES.slice(i, i + 2));
-  }
+  const screenWidth = Dimensions.get("window").width;
+  const cardWidth = (screenWidth - S.xl * 2 - S.md) / 2;
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.surface }}>
+    <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: S.xl, paddingTop: topPad + S.lg, paddingBottom: S.xxxl + 20 }}
         showsVerticalScrollIndicator={false}
@@ -78,57 +64,35 @@ export default function RegisterScreen() {
           <View style={{ flex: 1, height: 1, backgroundColor: C.border }} />
         </View>
 
-        {/* MODULE GRID */}
-        <View style={{ gap: S.md }}>
-          {rows.map((row, rowIdx) => (
-            <View key={rowIdx} style={{ flexDirection: "row", gap: S.md }}>
-              {row.map(({ id, label, desc }) => {
-                const icon = MODULE_ICONS[id] ?? "activity";
-                const bgColor = MODULE_COLORS[id] ?? C.background;
-                const iconColor = MODULE_ICON_COLORS[id] ?? C.textPrimary;
-                const isAlone = row.length === 1;
-                return (
-                  <TouchableOpacity
-                    key={id}
-                    onPress={() => router.back()}
-                    activeOpacity={0.75}
-                    style={{
-                      flex: 1,
-                      backgroundColor: C.background,
-                      borderRadius: R.xxl,
-                      padding: S.lg,
-                      borderWidth: 1,
-                      borderColor: C.border,
-                      alignItems: isAlone ? "center" : "flex-start",
-                      flexDirection: isAlone ? "row" : "column",
-                      gap: S.md,
-                    }}
-                  >
-                    <View style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: R.lg,
-                      backgroundColor: bgColor,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <Feather name={icon} size={I.xl} color={iconColor} />
-                    </View>
-                    <View style={{ flex: isAlone ? 1 : undefined }}>
-                      <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary, marginBottom: 2 }}>
-                        {label}
-                      </Text>
-                      <Text style={{ fontSize: F.xs, color: C.textTertiary, lineHeight: 16 }}>
-                        {desc}
-                      </Text>
-                    </View>
-                    {isAlone && (
-                      <Feather name="chevron-right" size={I.lg} color={C.separator} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+        {/* MODULE GRID — mesmo estilo da tela de Registros */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.md }}>
+          {REGISTER_MODULES.map(({ id, label, desc }) => (
+            <TouchableOpacity
+              key={id}
+              onPress={() => router.back()}
+              activeOpacity={0.8}
+              style={{
+                width: cardWidth,
+                backgroundColor: C.surface,
+                borderRadius: R.xl,
+                padding: S.lg,
+              }}
+            >
+              <View style={{ marginBottom: S.sm + 2 }}>
+                <IconBox
+                  iconType={MODULE_ICONS[id] ?? "activity"}
+                  size={I.xxl}
+                  boxSize={42}
+                  radius={R.md}
+                />
+              </View>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>
+                {label}
+              </Text>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: S.xs }}>
+                {desc}
+              </Text>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
