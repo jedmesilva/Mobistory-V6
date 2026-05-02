@@ -33,6 +33,32 @@ export const BOND_TIMELINE = [
   { id: 3, label: "Solicitação enviada", desc: "Você solicitou o vínculo como Proprietário", date: "10 jan. 2023 · 17:05", type: "clock" },
 ];
 
+export const IDENTITY = {
+  id:        "MBS-2021-00847",
+  status:    "Ativa",
+  emittedAt: "15 jan. 2023",
+  emittedBy: "Mobistory",
+  registro: [
+    { label: "Placa",         value: "ABC-1234"          },
+    { label: "RENAVAM",       value: "123.456.789-0"      },
+    { label: "Chassi",        value: "9BWZZZ377VT004251"  },
+    { label: "Ano fab./mod.", value: "2021 / 2021"        },
+  ],
+  caracteristicas: [
+    { label: "Combustível", value: "Flex"       },
+    { label: "Cor",         value: "Prata"      },
+    { label: "Potência",    value: "126 cv"     },
+    { label: "Cilindrada",  value: "1.598 cc"   },
+    { label: "Carroceria",  value: "Sedã"       },
+    { label: "Categoria",   value: "Particular" },
+  ],
+  documentacao: [
+    { label: "CRLV 2024", status: "Regular", ok: true  },
+    { label: "IPVA 2024", status: "Pago",    ok: true  },
+    { label: "Multas",    status: "Nenhuma", ok: true  },
+  ],
+};
+
 export const ALL_FUEL = [
   { id: 1, date: "01 mai. 2026", time: "09:14", volume: "45L", type: "Gasolina comum", value: "R$ 312,30", pricePerL: "R$ 6,94", km: "45.230 km", station: "Shell Centro" },
   { id: 2, date: "30 abr. 2026", time: "18:45", volume: "40L", type: "Etanol", value: "R$ 198,00", pricePerL: "R$ 4,95", km: "44.910 km", station: "Ipiranga Marginal" },

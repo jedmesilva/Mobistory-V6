@@ -111,7 +111,7 @@ export default function VehicleHome() {
 
         {/* QUICK ACTIONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginTop: S.md }}>
-          <TouchableOpacity activeOpacity={0.8}
+          <TouchableOpacity onPress={() => router.push("/identity")} activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
               <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
