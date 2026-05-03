@@ -406,7 +406,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
   const fuelInputMode = getFuelInputMode(draftF.type);
   const fuelUnit = getFuelUnit(draftF.type);
   const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatFuelInput(t, fuelInputMode) }));
-  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatFuelInput(t, "liquid") }));
+  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatFuelInput(t, "electric") }));
   const onFuelTypeChange = (type: string) => {
     setDraftF(d => ({ ...d, type }));
     requestAnimationFrame(() => litersRef.current?.focus?.());
