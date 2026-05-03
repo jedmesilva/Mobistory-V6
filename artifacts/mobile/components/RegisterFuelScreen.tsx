@@ -327,23 +327,25 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
+        handleStyle={{ paddingTop: 8 }}
+        backgroundStyle={{ backgroundColor: C.surface }}
       >
-        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
+        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingTop: S.md, paddingBottom: S.xl }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
-          <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
+          <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.lg, lineHeight: 20 }}>
             Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
           </Text>
           <FieldLabel label="Nome" />
-          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.md }}>
             <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
           </View>
           <FieldLabel label="Endereço" />
-          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.lg }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
             <BottomSheetTextInput
               value={draftAddr}
