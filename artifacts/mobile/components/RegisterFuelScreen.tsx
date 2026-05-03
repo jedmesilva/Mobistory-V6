@@ -562,7 +562,14 @@ function StepOdometer({ draft, setFields, aiFields, processing, aiError, setAiEr
 
   const [odometer, setOdometer] = useState(draft.odometer ?? "");
   useEffect(() => { if (draft.odometer !== undefined && draft.odometer !== odometer) setOdometer(draft.odometer); }, [draft.odometer]);
-  const onOdometerChange = (t: string) => setOdometer(formatDecimalInput(t, 0));
+  const onOdometerChange = (t: string) => {
+    const digits = t.replace(/\D/g, "");
+    if (!digits) {
+      setOdometer("");
+      return;
+    }
+    setOdometer(new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(Number(digits)));
+  };
 
   return (
     <View>
