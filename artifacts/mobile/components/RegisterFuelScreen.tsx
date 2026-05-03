@@ -497,7 +497,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
               </View>
             </View>
             <View style={{ flex: 1 }}>
-              <FieldLabel label="Preço/L" />
+              <FieldLabel label={`Preço/${fuelUnit}`} />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
                 <BottomSheetTextInput value={draftF.pricePerLiter} onChangeText={onPriceChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
