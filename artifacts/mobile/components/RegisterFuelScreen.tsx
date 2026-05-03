@@ -716,110 +716,115 @@ function StepDetails({ draft, setFields, aiFields, processing, aiError, setAiErr
 
 // ─── STEP 7 — CONFIRMAÇÃO ────────────────────────────────────────────────────
 
-function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: () => void; onBack: () => void }) {
+function StepConfirm({ draft, onConfirm, onBack, insets }: { draft: Draft; onConfirm: () => void; onBack: () => void; insets: { bottom: number } }) {
   const calcTotal    = (liters: string, price: string) => parseFloat(liters) * parseFloat(price) || 0;
   const totalGeral   = draft.fuels?.reduce((acc, f) => acc + calcTotal(f.liters, f.pricePerLiter), 0) || 0;
   const totalLitros  = draft.fuels?.reduce((acc, f) => acc + (parseDecimalInput(f.liters) || 0), 0) || 0;
   const payLabel     = PAYMENT_METHODS.find(p => p.id === draft.method)?.label;
+  const footerHeight = Math.max(insets.bottom, S.xl) + S.md + 52;
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <StepHeader title="Confirmação" onBack={onBack} />
 
-      <View style={{ marginBottom: S.xxl }}>
-        <SectionDivider label="Posto" />
-        <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
-          <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-            <Feather name="shopping-bag" size={I.lg} color={C.iconColor} />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }} numberOfLines={1}>{draft.station}</Text>
-            {draft.stationObj?.address ? <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{draft.stationObj.address}</Text> : null}
-          </View>
-          {draft.pump ? (
-            <View style={{ backgroundColor: C.iconBg, borderRadius: R.md, paddingVertical: S.xs, paddingHorizontal: S.sm, flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Feather name="hash" size={I.xs} color={C.textTertiary} />
-              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>{draft.pump}</Text>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: footerHeight }}>
+        <View style={{ marginBottom: S.xxl }}>
+          <SectionDivider label="Posto" />
+          <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
+            <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
+              <Feather name="shopping-bag" size={I.lg} color={C.iconColor} />
             </View>
-          ) : null}
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }} numberOfLines={1}>{draft.station}</Text>
+              {draft.stationObj?.address ? <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{draft.stationObj.address}</Text> : null}
+            </View>
+            {draft.pump ? (
+              <View style={{ backgroundColor: C.iconBg, borderRadius: R.md, paddingVertical: S.xs, paddingHorizontal: S.sm, flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <Feather name="hash" size={I.xs} color={C.textTertiary} />
+                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>{draft.pump}</Text>
+              </View>
+            ) : null}
+          </View>
         </View>
-      </View>
 
-      <View style={{ marginBottom: S.xxl }}>
-        <SectionDivider label="Combustíveis" />
-        {draft.fuels?.map(f => {
-          const label = FUEL_TYPES.find(ft => ft.id === f.type)?.label;
-          const total = calcTotal(f.liters, f.pricePerLiter);
-          return (
-            <View key={f.id} style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md, marginBottom: S.sm }}>
+        <View style={{ marginBottom: S.xxl }}>
+          <SectionDivider label="Combustíveis" />
+          {draft.fuels?.map(f => {
+            const label = FUEL_TYPES.find(ft => ft.id === f.type)?.label;
+            const total = calcTotal(f.liters, f.pricePerLiter);
+            return (
+              <View key={f.id} style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md, marginBottom: S.sm }}>
+                <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
+                  <Feather name="droplet" size={I.md} color={C.iconColor} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
+                  <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatFuelByUnit(f.liters, f.type)} · {formatMoney(f.pricePerLiter)}/{getFuelUnit(f.type)}</Text>
+                </View>
+                <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(total)}</Text>
+              </View>
+            );
+          })}
+          {(draft.fuels?.length ?? 0) > 1 && (
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.sm, paddingTop: S.xs }}>
+              <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{formatFuelByUnit(totalLitros, draft.fuels?.[0]?.type ?? "liquid")} no total</Text>
+              <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(totalGeral)}</Text>
+            </View>
+          )}
+        </View>
+
+        {draft.odometer ? (
+          <View style={{ marginBottom: S.xxl }}>
+            <SectionDivider label="Hodômetro" />
+            <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
               <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-                <Feather name="droplet" size={I.md} color={C.iconColor} />
+                <Feather name="activity" size={I.md} color={C.iconColor} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatFuelByUnit(f.liters, f.type)} · {formatMoney(f.pricePerLiter)}/{getFuelUnit(f.type)}</Text>
+              <Text style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>Quilometragem atual</Text>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatOdometer(draft.odometer)}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {payLabel ? (
+          <View style={{ marginBottom: S.xxl }}>
+            <SectionDivider label="Pagamento" />
+            <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
+              <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
+                <Feather name="credit-card" size={I.md} color={C.iconColor} />
               </View>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(total)}</Text>
+              <Text style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{payLabel}</Text>
             </View>
-          );
-        })}
-        {(draft.fuels?.length ?? 0) > 1 && (
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.sm, paddingTop: S.xs }}>
-            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{formatFuelByUnit(totalLitros, draft.fuels?.[0]?.type ?? "liquid")} no total</Text>
-            <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(totalGeral)}</Text>
           </View>
-        )}
-      </View>
+        ) : null}
 
-      {draft.odometer ? (
         <View style={{ marginBottom: S.xxl }}>
-          <SectionDivider label="Hodômetro" />
-          <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
-            <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name="activity" size={I.md} color={C.iconColor} />
+          <SectionDivider label="Data e hora" />
+          <View style={{ flexDirection: "row", gap: S.sm }}>
+            <View style={{ flex: 1, backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: 4 }}>Data</Text>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{draft.date}</Text>
             </View>
-            <Text style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>Quilometragem atual</Text>
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatOdometer(draft.odometer)}</Text>
-          </View>
-        </View>
-      ) : null}
-
-      {payLabel ? (
-        <View style={{ marginBottom: S.xxl }}>
-          <SectionDivider label="Pagamento" />
-          <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
-            <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name="credit-card" size={I.md} color={C.iconColor} />
+            <View style={{ flex: 1, backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: 4 }}>Hora</Text>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{draft.time}</Text>
             </View>
-            <Text style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{payLabel}</Text>
           </View>
         </View>
-      ) : null}
 
-      <View style={{ marginBottom: S.xxl }}>
-        <SectionDivider label="Data e hora" />
-        <View style={{ flexDirection: "row", gap: S.sm }}>
-          <View style={{ flex: 1, backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
-            <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: 4 }}>Data</Text>
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{draft.date}</Text>
+        {draft.notes ? (
+          <View style={{ marginBottom: S.xxl }}>
+            <SectionDivider label="Observações" />
+            <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: 22 }}>{draft.notes}</Text>
+            </View>
           </View>
-          <View style={{ flex: 1, backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
-            <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: 4 }}>Hora</Text>
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{draft.time}</Text>
-          </View>
-        </View>
-      </View>
+        ) : null}
+      </ScrollView>
 
-      {draft.notes ? (
-        <View style={{ marginBottom: S.xxl }}>
-          <SectionDivider label="Observações" />
-          <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}>
-            <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: 22 }}>{draft.notes}</Text>
-          </View>
-        </View>
-      ) : null}
-
-      <NextButton label="Salvar abastecimento" onPress={onConfirm} disabled={false} />
+      <FixedFooter insets={insets}>
+        <NextButton label="Salvar abastecimento" onPress={onConfirm} disabled={false} />
+      </FixedFooter>
     </View>
   );
 }
@@ -916,9 +921,10 @@ export default function RegisterFuelScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        {step === "station" ? (
+        {(step === "station" || step === "confirm") ? (
           <View style={{ flex: 1, paddingTop: topPad + S.lg, paddingHorizontal: S.xl }}>
-            <StepStation {...stepProps} />
+            {step === "station" && <StepStation {...stepProps} />}
+            {step === "confirm" && <StepConfirm draft={draft} onConfirm={next} onBack={back} insets={stepProps.insets} />}
           </View>
         ) : (
           <ScrollView
@@ -931,7 +937,6 @@ export default function RegisterFuelScreen() {
             {step === "odometer" && <StepOdometer {...stepProps} />}
             {step === "payment"  && <StepPayment  {...stepProps} />}
             {step === "details"  && <StepDetails  {...stepProps} />}
-            {step === "confirm"  && <StepConfirm  draft={draft} onConfirm={next} onBack={back} />}
             {step === "success"  && <StepSuccess  draft={draft} onClose={reset} />}
           </ScrollView>
         )}
