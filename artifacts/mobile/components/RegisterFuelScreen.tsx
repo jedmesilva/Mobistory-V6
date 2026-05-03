@@ -277,7 +277,31 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         )}
       </View>
 
-      <View style={{ marginTop: S.sm }}>
+      {selected && (
+        <View style={{ marginTop: S.sm, marginBottom: S.sm, padding: S.md, backgroundColor: C.iconBg, borderRadius: R.xl }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
+            <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
+              Selecionado
+            </Text>
+            <TouchableOpacity onPress={() => { setSelected(null); }} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="x" size={I.sm} color={C.textTertiary} />
+            </TouchableOpacity>
+          </View>
+          <View style={{ backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
+            <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
+              <Feather name="shopping-bag" size={I.lg} color={C.iconColor} />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{selected.name}</Text>
+              <Text style={{ fontSize: F.sm, color: selected.address ? C.textSecondary : C.textTertiary, marginTop: 2 }}>{selected.address || "A definir"}</Text>
+            </View>
+            {selected.distance && <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{selected.distance}</Text>}
+            {selected.isNew && <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}><Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary }}>Novo</Text></View>}
+          </View>
+        </View>
+      )}
+
+      <View style={{ marginTop: selected ? 0 : S.sm }}>
         {suggestions.map((s, i) => (
           <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
             style={{
@@ -293,7 +317,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               marginBottom: i < suggestions.length - 1 ? S.sm : 0,
             }}>
             <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={C.iconColor} />
+              <Feather name="shopping-bag" size={I.lg} color={C.iconColor} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
@@ -303,33 +327,6 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           </TouchableOpacity>
         ))}
       </View>
-
-      {selected && (
-        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl }}>
-          <View style={{ paddingHorizontal: S.md, paddingTop: S.md }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
-              <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
-                Selecionado
-              </Text>
-          <TouchableOpacity onPress={() => { setSelected(null); }} activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="x" size={I.sm} color={C.textTertiary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={{ backgroundColor: C.surface, borderWidth: 1.5, borderColor: aiFields.stationObj ? AI_ACCENT_BORDER : C.border, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
-            <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name="shopping-bag" size={I.lg} color={aiFields.stationObj ? AI_ACCENT : C.iconColor} />
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{selected.name}</Text>
-              <Text style={{ fontSize: F.sm, color: selected.address ? C.textSecondary : C.textTertiary, marginTop: 2 }}>{selected.address || "A definir"}</Text>
-            </View>
-            {selected.distance && <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{selected.distance}</Text>}
-            {selected.isNew && <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}><Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary }}>Novo</Text></View>}
-            {aiFields.stationObj && <AiBadge />}
-          </View>
-        </View>
-      )}
 
       {showRegister && (
         <TouchableOpacity onPress={openRegisterSheet} activeOpacity={0.7}
