@@ -296,7 +296,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {selected && (
-        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.surface, borderWidth: 1.5, borderColor: aiFields.stationObj ? AI_ACCENT_BORDER : C.border, borderRadius: R.xl, padding: S.lg }}>
+        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl, padding: S.md }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
             <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
               Selecionado
@@ -305,7 +305,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               <Feather name="x" size={I.sm} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
+          <View style={{ backgroundColor: C.surface, borderWidth: 1.5, borderColor: aiFields.stationObj ? AI_ACCENT_BORDER : C.border, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
             <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
               <Feather name="shopping-bag" size={I.lg} color={aiFields.stationObj ? AI_ACCENT : C.iconColor} />
             </View>
