@@ -313,9 +313,12 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
       <BottomSheetModal
         ref={sheetRef}
+        index={0}
+        snapPoints={["55%"]}
         enablePanDownToClose
-        keyboardBehavior="extend"
+        keyboardBehavior="fillParent"
         keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
       >
         <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
