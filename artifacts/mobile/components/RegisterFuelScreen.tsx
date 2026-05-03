@@ -404,8 +404,9 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
   const formatCentsInput = (t: string) => {
     const digits = t.replace(/\D/g, "");
     if (!digits) return "";
-    const value = Number(digits) / 100;
-    return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+    const whole = digits.length > 2 ? digits.slice(0, -2) : "0";
+    const cents = digits.slice(-2).padStart(2, "0");
+    return `${new Intl.NumberFormat("pt-BR").format(Number(whole))},${cents}`;
   };
   const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatCentsInput(t) }));
   const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatCentsInput(t) }));
