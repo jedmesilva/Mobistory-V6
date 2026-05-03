@@ -318,7 +318,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -347,7 +347,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
             style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
           </TouchableOpacity>
-        </BottomSheetScrollView>
+        </BottomSheetView>
       </BottomSheetModal>
     </View>
   );
