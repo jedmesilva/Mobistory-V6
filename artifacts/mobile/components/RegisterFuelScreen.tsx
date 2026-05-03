@@ -229,8 +229,8 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
   const trimmed     = stationText.trim();
   const suggestions = trimmed.length === 0
-    ? SUGGESTED_STATIONS
-    : SUGGESTED_STATIONS.filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
+    ? SUGGESTED_STATIONS.filter(Boolean)
+    : SUGGESTED_STATIONS.filter(Boolean).filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
   const exactMatch   = SUGGESTED_STATIONS.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
   const showRegister = trimmed.length > 0 && !exactMatch && suggestions.length === 0;
 
