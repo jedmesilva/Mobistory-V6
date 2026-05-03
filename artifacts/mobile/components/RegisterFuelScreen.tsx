@@ -7,6 +7,8 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
 
@@ -201,14 +203,18 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
+const renderBackdrop = (props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+);
+
 // ─── STEP 1 — POSTO ──────────────────────────────────────────────────────────
 
 function StepStation({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage }:
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
+  const sheetRef = useRef<BottomSheetModal>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
-  const [sheet, setSheet] = useState(false);
   const [draftAddr, setDraftAddr] = useState("");
 
   useEffect(() => {
@@ -227,7 +233,8 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
   const saveSheet    = () => {
     const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
-    setSelected(ns); setSheet(false);
+    setSelected(ns);
+    sheetRef.current?.dismiss();
   };
 
   return (
@@ -288,7 +295,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {showRegister && (
-        <TouchableOpacity onPress={() => { setDraftAddr(""); setSheet(true); }} activeOpacity={0.7}
+        <TouchableOpacity onPress={() => { setDraftAddr(""); sheetRef.current?.present(); }} activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
           <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="plus" size={I.lg} color={C.textTertiary} />
@@ -307,42 +314,43 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       </View>
 
       {/* SHEET — cadastrar posto */}
-      <Modal visible={sheet} transparent animationType="fade" onRequestClose={() => setSheet(false)}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setSheet(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl, padding: S.xl, paddingBottom: S.xxxl }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
-              <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
-              <TouchableOpacity onPress={() => setSheet(false)} activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="x" size={I.md} color={C.textTertiary} />
-              </TouchableOpacity>
-            </View>
-            <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
-              Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
-            </Text>
-            <FieldLabel label="Nome" />
-            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
-            </View>
-            <FieldLabel label="Endereço" />
-            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
-              <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-              <TextInput
-                autoFocus
-                value={draftAddr}
-                onChangeText={setDraftAddr}
-                placeholder="Ex: Av. Paulista, 1000 · Centro"
-                placeholderTextColor={C.textTertiary}
-                style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
-              />
-            </View>
-            <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
-              style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
+      <BottomSheetModal
+        ref={sheetRef}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+      >
+        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
+            <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
+            <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+          <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
+            Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
+          </Text>
+          <FieldLabel label="Nome" />
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
+          </View>
+          <FieldLabel label="Endereço" />
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
+            <Feather name="map-pin" size={I.md} color={C.textTertiary} />
+            <TextInput
+              autoFocus
+              value={draftAddr}
+              onChangeText={setDraftAddr}
+              placeholder="Ex: Av. Paulista, 1000 · Centro"
+              placeholderTextColor={C.textTertiary}
+              style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
+            />
+          </View>
+          <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
+            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }
@@ -352,20 +360,20 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage }:
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
+  const sheetRef = useRef<BottomSheetModal>(null);
   const [fuels, setFuels] = useState<FuelEntry[]>(draft.fuels?.length ? draft.fuels : []);
-  const [sheet, setSheet] = useState(false);
   const [editing, setEditing] = useState<number | null>(null);
   const [draftF, setDraftF] = useState({ type: "", liters: "", pricePerLiter: "" });
 
   useEffect(() => { if (draft.fuels?.length) setFuels(draft.fuels); }, [draft.fuels]);
 
-  const openAdd  = () => { setDraftF({ type: "", liters: "", pricePerLiter: "" }); setEditing(null); setSheet(true); };
-  const openEdit = (f: FuelEntry) => { setDraftF({ type: f.type, liters: f.liters, pricePerLiter: f.pricePerLiter }); setEditing(f.id); setSheet(true); };
+  const openAdd  = () => { setDraftF({ type: "", liters: "", pricePerLiter: "" }); setEditing(null); sheetRef.current?.present(); };
+  const openEdit = (f: FuelEntry) => { setDraftF({ type: f.type, liters: f.liters, pricePerLiter: f.pricePerLiter }); setEditing(f.id); sheetRef.current?.present(); };
   const saveSheet = () => {
     const next = editing !== null
       ? fuels.map(f => f.id === editing ? { ...f, ...draftF } : f)
       : [...fuels, { id: Date.now(), ...draftF }];
-    setFuels(next); setSheet(false);
+    setFuels(next); sheetRef.current?.dismiss();
   };
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
 
@@ -424,60 +432,61 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
 
       <NextButton onPress={() => { setFields({ fuels }); onNext(); }} disabled={!isValid} />
 
-      <Modal visible={sheet} transparent animationType="fade" onRequestClose={() => setSheet(false)}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setSheet(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
-          <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl, padding: S.xl, paddingBottom: S.xxxl }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
-              <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
-              <TouchableOpacity onPress={() => setSheet(false)} activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="x" size={I.md} color={C.textTertiary} />
-              </TouchableOpacity>
-            </View>
-
-            <FieldLabel label="Tipo" />
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
-              {FUEL_TYPES.map(ft => (
-                <TouchableOpacity key={ft.id} onPress={() => setDraftF(d => ({ ...d, type: ft.id }))} activeOpacity={0.7}
-                  style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
-                  <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.sm }}>
-              <View style={{ flex: 1 }}>
-                <FieldLabel label="Litros" />
-                <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                  <TextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
-                    style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
-                  <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
-                </View>
-              </View>
-              <View style={{ flex: 1 }}>
-                <FieldLabel label="Preço/L" />
-                <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                  <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
-                  <TextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
-                    style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
-                </View>
-              </View>
-            </View>
-
-            {calcTotal(draftF.liters, draftF.pricePerLiter) && (
-              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total</Text>
-                <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>R$ {calcTotal(draftF.liters, draftF.pricePerLiter)}</Text>
-              </View>
-            )}
-
-            <TouchableOpacity onPress={saveSheet} disabled={!isDraftValid} activeOpacity={0.85}
-              style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
+      <BottomSheetModal
+        ref={sheetRef}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+      >
+        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
+            <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
+            <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+
+          <FieldLabel label="Tipo" />
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
+            {FUEL_TYPES.map(ft => (
+              <TouchableOpacity key={ft.id} onPress={() => setDraftF(d => ({ ...d, type: ft.id }))} activeOpacity={0.7}
+                style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
+                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.sm }}>
+            <View style={{ flex: 1 }}>
+              <FieldLabel label="Litros" />
+              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
+                <TextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                  style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
+                <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
+              </View>
+            </View>
+            <View style={{ flex: 1 }}>
+              <FieldLabel label="Preço/L" />
+              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
+                <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
+                <TextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                  style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
+              </View>
+            </View>
+          </View>
+
+          {calcTotal(draftF.liters, draftF.pricePerLiter) && (
+            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total</Text>
+              <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>R$ {calcTotal(draftF.liters, draftF.pricePerLiter)}</Text>
+            </View>
+          )}
+
+          <TouchableOpacity onPress={saveSheet} disabled={!isDraftValid} activeOpacity={0.85}
+            style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }
