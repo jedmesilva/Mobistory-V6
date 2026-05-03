@@ -562,7 +562,8 @@ function StepOdometer({ draft, setFields, aiFields, processing, aiError, setAiEr
 
   const [odometer, setOdometer] = useState(draft.odometer ?? "");
   useEffect(() => { if (draft.odometer !== undefined && draft.odometer !== odometer) setOdometer(draft.odometer); }, [draft.odometer]);
-  const onOdometerChange = (t: string) => setOdometer(formatDecimalInput(t, 0));
+  const onOdometerChange = (t: string) => setOdometer(t.replace(/\D/g, ""));
+  const onOdometerBlur = () => setOdometer(v => formatDecimalInput(v, 0));
 
   return (
     <View>
@@ -574,7 +575,7 @@ function StepOdometer({ draft, setFields, aiFields, processing, aiError, setAiEr
       <FieldLabel label="Quilometragem atual" aiField={aiFields.odometer} />
       <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: aiFields.odometer ? AI_ACCENT_BG : C.surface, borderWidth: aiFields.odometer ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, borderRadius: R.xl, padding: S.lg, gap: S.sm }}>
         <Feather name="activity" size={I.lg} color={aiFields.odometer ? AI_ACCENT : C.textTertiary} />
-        <TextInput autoFocus value={odometer} onChangeText={onOdometerChange} placeholder="Ex: 45.230" keyboardType="number-pad" placeholderTextColor={C.textTertiary}
+        <TextInput autoFocus value={odometer} onChangeText={onOdometerChange} onBlur={onOdometerBlur} placeholder="Ex: 45.230" keyboardType="number-pad" placeholderTextColor={C.textTertiary}
           style={{ flex: 1, fontSize: F.xl, fontWeight: "600" as const, color: C.textPrimary }} />
         <Text style={{ fontSize: F.base, color: C.textTertiary }}>km</Text>
       </View>
