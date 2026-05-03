@@ -231,6 +231,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const suggestions = trimmed.length === 0
     ? SUGGESTED_STATIONS.filter(Boolean)
     : SUGGESTED_STATIONS.filter(Boolean).filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
+  const visibleSuggestions = suggestions.filter((s): s is NonNullable<typeof s> => Boolean(s));
   const exactMatch   = SUGGESTED_STATIONS.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
   const showRegister = trimmed.length > 0 && !exactMatch && suggestions.length === 0;
 
@@ -278,9 +279,9 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
       <View style={{ marginTop: S.sm, backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: suggestions.length > 0 ? 1 : 0, borderColor: C.border, maxHeight: 260 }}>
         <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled showsVerticalScrollIndicator={false}>
-          {suggestions.filter((s): s is NonNullable<typeof s> => Boolean(s)).map((s, i) => (
+          {visibleSuggestions.map((s, i) => (
             <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
-              style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < suggestions.length - 1 ? 1 : 0, borderBottomColor: C.border, opacity: selected?.id === s.id ? 0.85 : 1 }}>
+              style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < visibleSuggestions.length - 1 ? 1 : 0, borderBottomColor: C.border, opacity: selected?.id === s.id ? 0.85 : 1 }}>
               <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
                 <Feather name={selected?.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={selected?.id === s.id ? AI_ACCENT : C.iconColor} />
               </View>
