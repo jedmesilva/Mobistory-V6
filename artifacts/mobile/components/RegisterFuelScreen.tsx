@@ -255,7 +255,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
       <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: showSugg ? R.xl : R.xl, borderBottomLeftRadius: showSugg ? 0 : R.xl, borderBottomRightRadius: showSugg ? 0 : R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
         <Feather name="map-pin" size={I.lg} color={aiFields.station ? AI_ACCENT : C.textTertiary} />
-        <BottomSheetTextInput
+        <TextInput
           value={stationText}
           onChangeText={t => { setStationText(t); setSelected(null); }}
           placeholder="Buscar posto..."
