@@ -317,11 +317,11 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       <BottomSheetModal
         ref={sheetRef}
         enablePanDownToClose
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -338,7 +338,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-          <BottomSheetTextInput
+            <BottomSheetTextInput
               autoFocus
               value={draftAddr}
               onChangeText={setDraftAddr}
@@ -351,7 +351,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
             style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
           </TouchableOpacity>
-      </BottomSheetScrollView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );
@@ -437,11 +437,11 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
       <BottomSheetModal
         ref={sheetRef}
         enablePanDownToClose
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -489,7 +489,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
           </TouchableOpacity>
-      </BottomSheetScrollView>
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );
