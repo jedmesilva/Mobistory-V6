@@ -248,7 +248,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const showRegister = trimmed.length > 0 && !hasMatch;
 
   const handleToggle = (s: (typeof SUGGESTED_STATIONS)[number]) => {
-    setSelected(prev => prev?.id === s.id ? null : s);
+    setSelected(prev => (prev !== null && prev.id === s.id) ? null : s);
     setQuery("");
   };
 
@@ -299,7 +299,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       {/* Station list — loose, separator-divided */}
       <View style={{ paddingBottom: footerHeight }}>
         {suggestions.map((s) => {
-          const isSelected = selected?.id === s.id;
+          const isSelected = selected !== null && selected.id === s.id;
           return (
             <TouchableOpacity
               key={s.id}
@@ -353,7 +353,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       {/* Fixed footer with button */}
       <FixedFooter insets={insets}>
         <NextButton
-          onPress={() => { setFields({ station: selected!.name, stationObj: selected! }); onNext(); }}
+          onPress={() => { if (selected) { setFields({ station: selected.name, stationObj: selected }); onNext(); } }}
           disabled={!selected}
         />
       </FixedFooter>
