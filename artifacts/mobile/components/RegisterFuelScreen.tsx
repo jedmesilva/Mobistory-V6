@@ -213,8 +213,6 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const addrRef = useRef<any>(null);
-  const shouldFocusAddrRef = useRef(false);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
@@ -238,14 +236,6 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
-  const handleSheetAnimate = useCallback((fromIndex: number, toIndex: number) => {
-    if (fromIndex === -1 && toIndex === 0) shouldFocusAddrRef.current = true;
-    if (toIndex === 0 && shouldFocusAddrRef.current) {
-      shouldFocusAddrRef.current = false;
-      setTimeout(() => addrRef.current?.focus?.(), 500);
-    }
-  }, []);
-
   return (
     <View>
       <StepHeader title="Qual posto?" onBack={onBack} onCapture={onProcessImage} processing={processing} />
@@ -324,18 +314,15 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       {/* SHEET — cadastrar posto */}
       <BottomSheetModal
         ref={sheetRef}
-        index={0}
         enablePanDownToClose
-        keyboardBehavior="interactive"
+        keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
-        animateOnMount
         backdropComponent={renderBackdrop}
-        onAnimate={handleSheetAnimate}
       >
         <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
-            <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
@@ -349,8 +336,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-            <BottomSheetTextInput
-              ref={addrRef}
+            <TextInput
               value={draftAddr}
               onChangeText={setDraftAddr}
               placeholder="Ex: Av. Paulista, 1000 · Centro"
