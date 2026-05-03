@@ -277,22 +277,31 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         )}
       </View>
 
-      <View style={{ marginTop: S.sm, backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: suggestions.length > 0 ? 1 : 0, borderColor: C.border, maxHeight: 260 }}>
-        <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled showsVerticalScrollIndicator={false}>
-          {suggestions.map((s, i) => (
-            <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
-              style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < suggestions.length - 1 ? 1 : 0, borderBottomColor: C.border, opacity: selected && selected.id === s.id ? 0.85 : 1 }}>
-              <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-                <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={selected && selected.id === s.id ? AI_ACCENT : C.iconColor} />
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }} numberOfLines={1}>{s.address}</Text>
-              </View>
-              <Text style={{ fontSize: F.xs, fontWeight: "500" as const, color: C.textTertiary }}>{s.distance}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      <View style={{ marginTop: S.sm }}>
+        {suggestions.map((s, i) => (
+          <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: S.md,
+              padding: S.md,
+              paddingHorizontal: S.lg,
+              backgroundColor: selected && selected.id === s.id ? C.iconBg : C.surface,
+              borderWidth: 1,
+              borderColor: selected && selected.id === s.id ? AI_ACCENT_BORDER : C.border,
+              borderRadius: R.xl,
+              marginBottom: i < suggestions.length - 1 ? S.sm : 0,
+            }}>
+            <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
+              <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={selected && selected.id === s.id ? AI_ACCENT : C.iconColor} />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }} numberOfLines={1}>{s.address}</Text>
+            </View>
+            <Text style={{ fontSize: F.xs, fontWeight: "500" as const, color: C.textTertiary }}>{s.distance}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {selected && (
