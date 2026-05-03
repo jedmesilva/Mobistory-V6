@@ -213,6 +213,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
+  const searchRef = useRef<any>(null);
   const addrRef = useRef<any>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
@@ -232,6 +233,12 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const showSugg     = suggestions.length > 0 && !selected;
 
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
+  const openRegisterSheet = () => {
+    searchRef.current?.blur?.();
+    setStationText(stationText);
+    setDraftAddr("");
+    sheetRef.current?.present();
+  };
   const saveSheet    = () => {
     const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
     setSelected(ns);
@@ -251,7 +258,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: showSugg ? R.xl : R.xl, borderBottomLeftRadius: showSugg ? 0 : R.xl, borderBottomRightRadius: showSugg ? 0 : R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
         <Feather name="map-pin" size={I.lg} color={aiFields.station ? AI_ACCENT : C.textTertiary} />
         <TextInput
-          autoFocus
+          ref={searchRef}
           value={stationText}
           onChangeText={t => { setStationText(t); setSelected(null); }}
           placeholder="Buscar posto..."
@@ -299,7 +306,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {showRegister && (
-        <TouchableOpacity onPress={() => { setDraftAddr(""); sheetRef.current?.present(); }} activeOpacity={0.7}
+        <TouchableOpacity onPress={openRegisterSheet} activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
           <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="plus" size={I.lg} color={C.textTertiary} />
