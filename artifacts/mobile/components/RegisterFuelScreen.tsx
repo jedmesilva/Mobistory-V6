@@ -333,7 +333,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         backdropComponent={renderBackdrop}
         onChange={handleSheetChange}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl + insets.bottom + S.lg }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xl + insets.bottom }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -453,7 +453,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl + insets.bottom + S.lg }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xl + insets.bottom }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
