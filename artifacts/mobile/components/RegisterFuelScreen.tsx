@@ -286,14 +286,14 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               gap: S.md,
               padding: S.md,
               paddingHorizontal: S.lg,
-              backgroundColor: selected && selected.id === s.id ? C.iconBg : C.surface,
+              backgroundColor: C.surface,
               borderWidth: 1,
-              borderColor: selected && selected.id === s.id ? AI_ACCENT_BORDER : C.border,
+              borderColor: C.border,
               borderRadius: R.xl,
               marginBottom: i < suggestions.length - 1 ? S.sm : 0,
             }}>
             <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={selected && selected.id === s.id ? AI_ACCENT : C.iconColor} />
+              <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={C.iconColor} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
