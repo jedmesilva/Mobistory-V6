@@ -80,7 +80,7 @@ export function formatDecimalInput(value: string, decimals = 2) {
 export function formatFuelInput(value: string, type: "liquid" | "gaseous" | "electric" = "liquid") {
   const digits = value.replace(/\D/g, "");
   if (!digits) return "";
-  const decimals = type === "electric" ? 3 : 2;
+  const decimals = type === "liquid" ? 3 : type === "gaseous" ? 3 : 2;
   const whole = digits.length > decimals ? digits.slice(0, -decimals) : "0";
   const frac = digits.slice(-decimals).padStart(decimals, "0");
   const separator = decimals > 0 ? "," : "";
