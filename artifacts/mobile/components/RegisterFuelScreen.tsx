@@ -486,7 +486,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
           <FieldLabel label="Tipo" />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
             {FUEL_TYPES.map(ft => (
-              <TouchableOpacity key={ft.id} onPress={() => onFuelTypeChange(ft.id)} activeOpacity={0.7}
+              <TouchableOpacity key={ft.id} onPressIn={() => onFuelTypeChange(ft.id)} activeOpacity={0.7}
                 style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
                 <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
               </TouchableOpacity>
