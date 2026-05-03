@@ -208,147 +208,155 @@ const renderBackdrop = (props: BottomSheetBackdropProps) => (
   <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
 );
 
+function FixedFooter({ children, insets }: { children: React.ReactNode; insets: { bottom: number } }) {
+  return (
+    <View style={{
+      position: "absolute", bottom: 0, left: 0, right: 0,
+      backgroundColor: C.background,
+      borderTopWidth: 1, borderTopColor: C.border,
+      paddingHorizontal: S.xl,
+      paddingTop: S.md,
+      paddingBottom: Math.max(insets.bottom, S.xl),
+    }}>
+      {children}
+    </View>
+  );
+}
+
 // ─── STEP 1 — POSTO ──────────────────────────────────────────────────────────
 
 function StepStation({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage, insets }:
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void; insets: { bottom: number } }) {
 
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const sheetRef  = useRef<BottomSheetModal>(null);
   const searchRef = useRef<any>(null);
-  const addrRef = useRef<any>(null);
-  const [stationText, setStationText] = useState(draft.station ?? "");
-  const [sheetName, setSheetName] = useState(draft.station ?? "");
-  const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
+  const addrRef   = useRef<any>(null);
+  const [query,     setQuery]     = useState("");
+  const [sheetName, setSheetName] = useState("");
+  const [selected,  setSelected]  = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
 
   useEffect(() => {
-    if (draft.station && draft.station !== stationText) setStationText(draft.station);
-    if (draft.station && draft.station !== sheetName) setSheetName(draft.station);
     if (draft.stationObj) setSelected(draft.stationObj);
-  }, [draft.station, draft.stationObj]);
+  }, [draft.stationObj]);
 
-  const trimmed     = stationText.trim();
-  const visibleStations = SUGGESTED_STATIONS.filter((s): s is NonNullable<typeof s> => Boolean(s));
-  const suggestions = trimmed.length === 0
-    ? visibleStations
-    : visibleStations.filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
-  const exactMatch   = SUGGESTED_STATIONS.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
-  const showRegister = trimmed.length > 0 && !exactMatch && suggestions.length === 0;
+  const trimmed      = query.trim();
+  const suggestions  = trimmed.length === 0
+    ? SUGGESTED_STATIONS
+    : SUGGESTED_STATIONS.filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
+  const hasMatch     = SUGGESTED_STATIONS.some(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
+  const showRegister = trimmed.length > 0 && !hasMatch;
 
-  const handleSelect = (s: NonNullable<(typeof SUGGESTED_STATIONS)[number]>) => { setSelected(s); };
+  const handleToggle = (s: (typeof SUGGESTED_STATIONS)[number]) => {
+    setSelected(prev => prev?.id === s.id ? null : s);
+    setQuery("");
+  };
+
   const openRegisterSheet = () => {
     searchRef.current?.blur?.();
-    setSheetName(stationText);
+    setSheetName(trimmed);
     setDraftAddr("");
     sheetRef.current?.present();
   };
-  const saveSheet    = () => {
+
+  const saveSheet = () => {
     const name = sheetName.trim();
     const ns: StationObj = { id: Date.now(), name, address: draftAddr, distance: null, isNew: true };
     setSelected(ns);
-    setStationText(name);
     sheetRef.current?.dismiss();
   };
+
   const handleSheetChange = useCallback((index: number) => {
     if (index >= 0) setTimeout(() => addrRef.current?.focus?.(), 120);
   }, []);
 
+  const footerHeight = Math.max(insets.bottom, S.xl) + S.md + 52;
+
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <StepHeader title="Qual posto?" onBack={onBack} onCapture={onProcessImage} processing={processing} />
       {aiError && <AiErrorBanner message={aiError} onDismiss={() => setAiError(null)} />}
 
-      <FieldLabel label="Nome do posto" aiField={aiFields.station} />
-
-      <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
-        <Feather name="map-pin" size={I.lg} color={aiFields.station ? AI_ACCENT : C.textTertiary} />
+      {/* Search bar */}
+      <View style={{ backgroundColor: C.surface, borderRadius: R.xl, flexDirection: "row", alignItems: "center", paddingVertical: S.lg, paddingHorizontal: S.lg, gap: S.sm, marginBottom: S.lg }}>
+        <Feather name="map-pin" size={I.lg} color={C.textTertiary} />
         <TextInput
           ref={searchRef}
-          value={stationText}
-          onChangeText={t => { setStationText(t); }}
+          autoFocus
+          value={query}
+          onChangeText={t => { setQuery(t); setSelected(null); }}
           placeholder="Buscar posto..."
           placeholderTextColor={C.textTertiary}
           style={{ flex: 1, fontSize: F.xl, fontWeight: "600" as const, color: C.textPrimary }}
         />
-        {stationText.length > 0 && (
-          <TouchableOpacity onPress={() => { setStationText(""); }} activeOpacity={0.7}>
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery("")} activeOpacity={0.7}>
             <Feather name="x" size={I.sm} color={C.textTertiary} />
           </TouchableOpacity>
         )}
       </View>
 
-      <View style={{ marginTop: S.sm }}>
-        {suggestions.map((s, i) => (
-          <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: S.md,
-              padding: S.md,
-              paddingHorizontal: S.lg,
-              backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
-              borderRadius: R.xl,
-              marginBottom: i < suggestions.length - 1 ? S.sm : 0,
-            }}>
+      {/* Station list — loose, separator-divided */}
+      <View style={{ paddingBottom: footerHeight }}>
+        {suggestions.map((s) => {
+          const isSelected = selected?.id === s.id;
+          return (
+            <TouchableOpacity
+              key={s.id}
+              onPress={() => handleToggle(s)}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: S.md,
+                paddingVertical: S.md,
+                borderBottomWidth: 1,
+                borderBottomColor: C.border,
+              }}
+            >
+              <View style={{
+                width: 40, height: 40, borderRadius: R.md,
+                backgroundColor: isSelected ? C.textPrimary : C.iconBg,
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Feather name="shopping-bag" size={I.lg} color={isSelected ? C.textInverse : C.iconColor} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ fontSize: F.base, fontWeight: isSelected ? "700" : "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }} numberOfLines={1}>{s.address}</Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+                <Text style={{ fontSize: F.xs, fontWeight: "500" as const, color: C.textTertiary }}>{s.distance}</Text>
+                {isSelected && <Feather name="check" size={I.lg} color={C.textPrimary} />}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Register new station */}
+        {showRegister && (
+          <TouchableOpacity onPress={openRegisterSheet} activeOpacity={0.7}
+            style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
             <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name={selected && selected.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={C.iconColor} />
+              <Feather name="plus" size={I.lg} color={C.textTertiary} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }} numberOfLines={1}>{s.address}</Text>
+              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 0.6, textTransform: "uppercase" as const, marginBottom: 2 }}>Cadastrar</Text>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>"{trimmed}"</Text>
+              <Text style={{ fontSize: F.sm, color: C.textTertiary, marginTop: 2 }}>A definir</Text>
             </View>
-            <Text style={{ fontSize: F.xs, fontWeight: "500" as const, color: C.textTertiary }}>{s.distance}</Text>
+            <Feather name="chevron-right" size={I.lg} color={C.textTertiary} />
           </TouchableOpacity>
-        ))}
+        )}
       </View>
 
-      {selected && (
-        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl }}>
-          <View style={{ paddingHorizontal: S.md, paddingTop: S.md }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
-              <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
-                Selecionado
-              </Text>
-          <TouchableOpacity onPress={() => { setSelected(null); }} activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="x" size={I.sm} color={C.textTertiary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={{ backgroundColor: C.surface, borderWidth: 1.5, borderColor: aiFields.stationObj ? AI_ACCENT_BORDER : C.border, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
-            <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-              <Feather name="shopping-bag" size={I.lg} color={aiFields.stationObj ? AI_ACCENT : C.iconColor} />
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{selected.name}</Text>
-              <Text style={{ fontSize: F.sm, color: selected.address ? C.textSecondary : C.textTertiary, marginTop: 2 }}>{selected.address || "A definir"}</Text>
-            </View>
-            {selected.distance && <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{selected.distance}</Text>}
-            {selected.isNew && <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}><Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textPrimary }}>Novo</Text></View>}
-            {aiFields.stationObj && <AiBadge />}
-          </View>
-        </View>
-      )}
-
-      {showRegister && (
-        <TouchableOpacity onPress={openRegisterSheet} activeOpacity={0.7}
-          style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
-          <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-            <Feather name="plus" size={I.lg} color={C.textTertiary} />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 0.6, textTransform: "uppercase" as const, marginBottom: 2 }}>Cadastrar</Text>
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>"{trimmed}"</Text>
-            <Text style={{ fontSize: F.sm, color: C.textTertiary, marginTop: 2 }}>A definir</Text>
-          </View>
-          <Feather name="chevron-right" size={I.lg} color={C.textTertiary} />
-        </TouchableOpacity>
-      )}
-
-      <View style={{ marginTop: S.xxxl }}>
-        <NextButton onPress={() => { setFields({ station: selected!.name, stationObj: selected! }); onNext(); }} disabled={!selected} />
-      </View>
+      {/* Fixed footer with button */}
+      <FixedFooter insets={insets}>
+        <NextButton
+          onPress={() => { setFields({ station: selected!.name, stationObj: selected! }); onNext(); }}
+          disabled={!selected}
+        />
+      </FixedFooter>
 
       {/* SHEET — cadastrar posto */}
       <BottomSheetModal
@@ -391,8 +399,12 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
             />
           </View>
-          <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0 || sheetName.trim().length === 0} activeOpacity={0.85}
-            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 && sheetName.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+          <TouchableOpacity
+            onPress={saveSheet}
+            disabled={draftAddr.trim().length === 0 || sheetName.trim().length === 0}
+            activeOpacity={0.85}
+            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 && sheetName.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}
+          >
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 && sheetName.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
           </TouchableOpacity>
         </BottomSheetScrollView>
@@ -904,20 +916,25 @@ export default function RegisterFuelScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView
-          contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + S.xxxl, paddingHorizontal: S.xl }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {step === "station"  && <StepStation  {...stepProps} />}
-          {step === "fuels"    && <StepFuels    {...stepProps} />}
-          {step === "pump"     && <StepPump     {...stepProps} />}
-          {step === "odometer" && <StepOdometer {...stepProps} />}
-          {step === "payment"  && <StepPayment  {...stepProps} />}
-          {step === "details"  && <StepDetails  {...stepProps} />}
-          {step === "confirm"  && <StepConfirm  draft={draft} onConfirm={next} onBack={back} />}
-          {step === "success"  && <StepSuccess  draft={draft} onClose={reset} />}
-        </ScrollView>
+        {step === "station" ? (
+          <View style={{ flex: 1, paddingTop: topPad + S.lg, paddingHorizontal: S.xl }}>
+            <StepStation {...stepProps} />
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + S.xxxl, paddingHorizontal: S.xl }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {step === "fuels"    && <StepFuels    {...stepProps} />}
+            {step === "pump"     && <StepPump     {...stepProps} />}
+            {step === "odometer" && <StepOdometer {...stepProps} />}
+            {step === "payment"  && <StepPayment  {...stepProps} />}
+            {step === "details"  && <StepDetails  {...stepProps} />}
+            {step === "confirm"  && <StepConfirm  draft={draft} onConfirm={next} onBack={back} />}
+            {step === "success"  && <StepSuccess  draft={draft} onClose={reset} />}
+          </ScrollView>
+        )}
       </KeyboardAvoidingView>
     </View>
   );
