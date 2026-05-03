@@ -11,7 +11,7 @@ import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScro
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
-import { formatMoney, formatOdometer, formatVolume, parseDecimalInput, formatFuelInput, getFuelUnit, getFuelInputMode } from "@/lib/format";
+import { formatMoney, formatOdometer, parseDecimalInput, formatFuelInput, getFuelUnit, getFuelInputMode, formatFuelByUnit } from "@/lib/format";
 
 const C = colors.light;
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
@@ -444,7 +444,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatVolume(fuel.liters)} · {formatMoney(fuel.pricePerLiter)}/L{total ? ` · ${formatMoney(total)}` : ""}</Text>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatFuelByUnit(fuel.liters, fuel.type)} · {formatMoney(fuel.pricePerLiter)}/{getFuelUnit(fuel.type)}{total ? ` · ${formatMoney(total)}` : ""}</Text>
             </View>
             <TouchableOpacity onPress={() => removeFuel(fuel.id)} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="trash-2" size={I.md} color={C.textTertiary} />
@@ -716,7 +716,7 @@ function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: ()
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatVolume(f.liters)} · {formatMoney(f.pricePerLiter)}/L</Text>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatFuelByUnit(f.liters, f.type)} · {formatMoney(f.pricePerLiter)}/{getFuelUnit(f.type)}</Text>
               </View>
               <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(total)}</Text>
             </View>
@@ -724,7 +724,7 @@ function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: ()
         })}
         {(draft.fuels?.length ?? 0) > 1 && (
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.sm, paddingTop: S.xs }}>
-            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{formatVolume(totalLitros)} no total</Text>
+            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{formatFuelByUnit(totalLitros, draft.fuels?.[0]?.type ?? "liquid")} no total</Text>
             <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(totalGeral)}</Text>
           </View>
         )}

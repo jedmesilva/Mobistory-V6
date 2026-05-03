@@ -37,6 +37,12 @@ export function formatElectricEnergy(value: number | string | null | undefined) 
   return formatQuantity(value, "kWh", 2);
 }
 
+export function formatFuelByUnit(value: number | string | null | undefined, type: string) {
+  if (type === "gnv") return formatGaseousFuel(value);
+  if (type === "eletrico") return formatElectricEnergy(value);
+  return formatLiquidFuel(value);
+}
+
 export function formatOdometer(value: number | string | null | undefined) {
   return formatQuantity(value, "km", 0);
 }
