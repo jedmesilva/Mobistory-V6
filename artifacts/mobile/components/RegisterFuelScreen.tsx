@@ -265,13 +265,13 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         <TextInput
           ref={searchRef}
           value={stationText}
-          onChangeText={t => { setStationText(t); setSelected(null); }}
+          onChangeText={t => { setStationText(t); }}
           placeholder="Buscar posto..."
           placeholderTextColor={C.textTertiary}
           style={{ flex: 1, fontSize: F.xl, fontWeight: "600" as const, color: C.textPrimary }}
         />
         {stationText.length > 0 && (
-          <TouchableOpacity onPress={() => { setStationText(""); setSelected(null); }} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => { setStationText(""); }} activeOpacity={0.7}>
             <Feather name="x" size={I.sm} color={C.textTertiary} />
           </TouchableOpacity>
         )}
