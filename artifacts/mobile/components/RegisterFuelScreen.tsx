@@ -11,7 +11,7 @@ import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScro
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
-import { formatMoney, formatOdometer, parseDecimalInput, formatFuelInput, getFuelUnit, getFuelInputMode, formatFuelByUnit } from "@/lib/format";
+import { formatMoney, formatOdometer, parseDecimalInput, formatFuelInput, getFuelUnit, getFuelInputMode, formatFuelByUnit, formatDecimalInput } from "@/lib/format";
 
 const C = colors.light;
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
@@ -562,6 +562,7 @@ function StepOdometer({ draft, setFields, aiFields, processing, aiError, setAiEr
 
   const [odometer, setOdometer] = useState(draft.odometer ?? "");
   useEffect(() => { if (draft.odometer !== undefined && draft.odometer !== odometer) setOdometer(draft.odometer); }, [draft.odometer]);
+  const onOdometerChange = (t: string) => setOdometer(formatDecimalInput(t, 0));
 
   return (
     <View>
@@ -573,7 +574,7 @@ function StepOdometer({ draft, setFields, aiFields, processing, aiError, setAiEr
       <FieldLabel label="Quilometragem atual" aiField={aiFields.odometer} />
       <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: aiFields.odometer ? AI_ACCENT_BG : C.surface, borderWidth: aiFields.odometer ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, borderRadius: R.xl, padding: S.lg, gap: S.sm }}>
         <Feather name="activity" size={I.lg} color={aiFields.odometer ? AI_ACCENT : C.textTertiary} />
-        <TextInput autoFocus value={odometer} onChangeText={setOdometer} placeholder="Ex: 45.230" keyboardType="number-pad" placeholderTextColor={C.textTertiary}
+        <TextInput autoFocus value={odometer} onChangeText={onOdometerChange} placeholder="Ex: 45.230" keyboardType="number-pad" placeholderTextColor={C.textTertiary}
           style={{ flex: 1, fontSize: F.xl, fontWeight: "600" as const, color: C.textPrimary }} />
         <Text style={{ fontSize: F.base, color: C.textTertiary }}>km</Text>
       </View>
