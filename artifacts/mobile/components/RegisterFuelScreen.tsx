@@ -124,32 +124,6 @@ function FieldLabel({ label, aiField }: { label: string; aiField?: boolean }) {
   );
 }
 
-function BottomSheet({ visible, title, subtitle, onClose, children }: { visible: boolean; title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
-  if (!visible) return null;
-  return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.45)" }}>
-        <TouchableOpacity activeOpacity={1} onPress={onClose} style={{ flex: 1 }} />
-        <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxxl, borderTopRightRadius: R.xxxl, padding: S.xl, paddingBottom: S.xxxl }}>
-          <View style={{ alignItems: "center", marginBottom: S.lg }}>
-            <View style={{ width: 44, height: 4, borderRadius: R.pill, backgroundColor: C.border, marginBottom: S.lg }} />
-            <View style={{ width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{title}</Text>
-                {subtitle ? <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 4, lineHeight: 20 }}>{subtitle}</Text> : null}
-              </View>
-              <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: S.xs }}>
-                <Feather name="x" size={I.md} color={C.textTertiary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {children}
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 function StepHeader({ title, onBack, onCapture, processing }: { title: string; onBack: () => void; onCapture?: (uri: string, type: string) => void; processing?: boolean }) {
   const handleCapture = async () => {
     try {
@@ -333,33 +307,42 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       </View>
 
       {/* SHEET — cadastrar posto */}
-      <BottomSheet
-        visible={sheet}
-        title="Cadastrar posto"
-        subtitle={`Informe o endereço de "${trimmed}".`}
-        onClose={() => setSheet(false)}
-      >
-        <FieldLabel label="Nome" />
-        <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-          <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
-        </View>
-        <FieldLabel label="Endereço" />
-        <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
-          <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-          <TextInput
-            autoFocus
-            value={draftAddr}
-            onChangeText={setDraftAddr}
-            placeholder="Ex: Av. Paulista, 1000 · Centro"
-            placeholderTextColor={C.textTertiary}
-            style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
-          />
-        </View>
-        <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
-          style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
-        </TouchableOpacity>
-      </BottomSheet>
+      <Modal visible={sheet} transparent animationType="fade" onRequestClose={() => setSheet(false)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setSheet(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl, padding: S.xl, paddingBottom: S.xxxl }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
+              <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
+              <TouchableOpacity onPress={() => setSheet(false)} activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="x" size={I.md} color={C.textTertiary} />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
+              Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
+            </Text>
+            <FieldLabel label="Nome" />
+            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
+            </View>
+            <FieldLabel label="Endereço" />
+            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
+              <Feather name="map-pin" size={I.md} color={C.textTertiary} />
+              <TextInput
+                autoFocus
+                value={draftAddr}
+                onChangeText={setDraftAddr}
+                placeholder="Ex: Av. Paulista, 1000 · Centro"
+                placeholderTextColor={C.textTertiary}
+                style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
+              />
+            </View>
+            <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
+              style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -441,52 +424,60 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
 
       <NextButton onPress={() => { setFields({ fuels }); onNext(); }} disabled={!isValid} />
 
-      <BottomSheet
-        visible={sheet}
-        title={`${editing !== null ? "Editar" : "Adicionar"} combustível`}
-        onClose={() => setSheet(false)}
-      >
-        <FieldLabel label="Tipo" />
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
-          {FUEL_TYPES.map(ft => (
-            <TouchableOpacity key={ft.id} onPress={() => setDraftF(d => ({ ...d, type: ft.id }))} activeOpacity={0.7}
-              style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
-              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
+      <Modal visible={sheet} transparent animationType="fade" onRequestClose={() => setSheet(false)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setSheet(false)} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <View style={{ backgroundColor: C.surface, borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl, padding: S.xl, paddingBottom: S.xxxl }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
+              <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
+              <TouchableOpacity onPress={() => setSheet(false)} activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="x" size={I.md} color={C.textTertiary} />
+              </TouchableOpacity>
+            </View>
+
+            <FieldLabel label="Tipo" />
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
+              {FUEL_TYPES.map(ft => (
+                <TouchableOpacity key={ft.id} onPress={() => setDraftF(d => ({ ...d, type: ft.id }))} activeOpacity={0.7}
+                  style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
+                  <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.sm }}>
+              <View style={{ flex: 1 }}>
+                <FieldLabel label="Litros" />
+                <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
+                  <TextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                    style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
+                  <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
+                </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <FieldLabel label="Preço/L" />
+                <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
+                  <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
+                  <TextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                    style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
+                </View>
+              </View>
+            </View>
+
+            {calcTotal(draftF.liters, draftF.pricePerLiter) && (
+              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total</Text>
+                <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>R$ {calcTotal(draftF.liters, draftF.pricePerLiter)}</Text>
+              </View>
+            )}
+
+            <TouchableOpacity onPress={saveSheet} disabled={!isDraftValid} activeOpacity={0.85}
+              style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.sm }}>
-          <View style={{ flex: 1 }}>
-            <FieldLabel label="Litros" />
-            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-              <TextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
-                style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
-              <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
-            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            <FieldLabel label="Preço/L" />
-            <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-              <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
-              <TextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
-                style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
-            </View>
-          </View>
-        </View>
-
-        {calcTotal(draftF.liters, draftF.pricePerLiter) && (
-          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
-            <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total</Text>
-            <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>R$ {calcTotal(draftF.liters, draftF.pricePerLiter)}</Text>
-          </View>
-        )}
-
-        <TouchableOpacity onPress={saveSheet} disabled={!isDraftValid} activeOpacity={0.85}
-          style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
-        </TouchableOpacity>
-      </BottomSheet>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
