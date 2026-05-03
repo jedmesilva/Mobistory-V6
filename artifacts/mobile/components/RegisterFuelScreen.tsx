@@ -216,11 +216,13 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const searchRef = useRef<any>(null);
   const addrRef = useRef<any>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
+  const [draftStationName, setDraftStationName] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
 
   useEffect(() => {
     if (draft.station && draft.station !== stationText) setStationText(draft.station);
+    if (draft.station && draft.station !== draftStationName) setDraftStationName(draft.station);
     if (draft.stationObj) setSelected(draft.stationObj);
   }, [draft.station, draft.stationObj]);
 
@@ -235,12 +237,14 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
   const openRegisterSheet = () => {
     searchRef.current?.blur?.();
-    setStationText(stationText);
+    setDraftStationName(stationText.trim());
     setDraftAddr("");
     sheetRef.current?.present();
   };
   const saveSheet    = () => {
-    const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
+    const name = draftStationName.trim();
+    const ns: StationObj = { id: Date.now(), name, address: draftAddr, distance: null, isNew: true };
+    setStationText(name);
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
@@ -337,11 +341,17 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
             </TouchableOpacity>
           </View>
           <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
-            Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
+            Informe o endereço do posto abaixo.
           </Text>
           <FieldLabel label="Nome" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
+            <BottomSheetTextInput
+              value={draftStationName}
+              onChangeText={setDraftStationName}
+              placeholder="Nome do posto"
+              placeholderTextColor={C.textTertiary}
+              style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
+            />
           </View>
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
