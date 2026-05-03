@@ -23,7 +23,7 @@ export function formatQuantity(value: number | string | null | undefined, unit: 
 }
 
 export function formatLiquidFuel(value: number | string | null | undefined) {
-  return formatQuantity(value, "L", 2);
+  return formatQuantity(value, "L", 3);
 }
 
 export function formatGaseousFuel(value: number | string | null | undefined) {
