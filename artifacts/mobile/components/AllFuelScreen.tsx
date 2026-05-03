@@ -21,13 +21,6 @@ const FILTERS = [
   { id: "valor",    label: "Por valor" },
 ];
 
-function parseValue(v: string) {
-  return parseFloat(v.replace("R$ ", "").replace(/\./g, "").replace(",", ".")) || 0;
-}
-
-function formatTotal(total: number) {
-  return total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
 
 function FuelItem({ item }: { item: typeof ALL_FUEL[number] }) {
   return (
@@ -72,8 +65,6 @@ export default function AllFuelScreen() {
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const totalGasto = ALL_FUEL.reduce((acc, f) => acc + parseValue(f.value), 0);
-  const totalVolume = ALL_FUEL.reduce((acc, f) => acc + parseInt(f.volume), 0);
 
   const filtered = ALL_FUEL.filter(f => {
     const matchQuery =
@@ -118,16 +109,6 @@ export default function AllFuelScreen() {
         <BackButton onPress={() => router.back()} />
         <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: S.xxl }}>
           <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Abastecimentos</Text>
-          <View style={{ alignItems: "flex-end", gap: 4, marginBottom: 4 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 4, paddingHorizontal: S.md }}>
-              <Feather name="droplet" size={I.xs} color={C.textSecondary} />
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textSecondary }}>{totalVolume}L</Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: C.successBg, borderRadius: R.pill, paddingVertical: 4, paddingHorizontal: S.md }}>
-              <Feather name="dollar-sign" size={I.xs} color={C.success} />
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.success }}>{formatTotal(totalGasto)}</Text>
-            </View>
-          </View>
         </View>
 
         {/* ACTION BUTTONS */}
