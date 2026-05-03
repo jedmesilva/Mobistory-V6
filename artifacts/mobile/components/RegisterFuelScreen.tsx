@@ -209,8 +209,8 @@ const renderBackdrop = (props: BottomSheetBackdropProps) => (
 
 // ─── STEP 1 — POSTO ──────────────────────────────────────────────────────────
 
-function StepStation({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage }:
-  { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
+function StepStation({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage, insets }:
+  { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void; insets: { bottom: number } }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
   const searchRef = useRef<any>(null);
@@ -371,8 +371,8 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
 // ─── STEP 2 — COMBUSTÍVEIS ───────────────────────────────────────────────────
 
-function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage }:
-  { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
+function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError, onNext, onBack, onProcessImage, insets }:
+  { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void; insets: { bottom: number } }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
   const [fuels, setFuels] = useState<FuelEntry[]>(draft.fuels?.length ? draft.fuels : []);
@@ -848,7 +848,7 @@ export default function RegisterFuelScreen() {
   const back  = () => { if (stepIdx > 0) setStepIdx(i => i - 1); else router.back(); };
   const reset = () => { setDraftState({}); setAiFields({}); setAiError(null); setStepIdx(0); router.back(); };
 
-  const stepProps = { draft, setFields, aiFields, processing, aiError, setAiError, onNext: next, onBack: back, onProcessImage: processImage };
+  const stepProps = { draft, setFields, aiFields, processing, aiError, setAiError, onNext: next, onBack: back, onProcessImage: processImage, insets };
 
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
