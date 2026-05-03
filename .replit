@@ -33,8 +33,9 @@ args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
 waitForPort = 8080
 
 [agent]
-stack = "PNPM_WORKSPACE"
+stack = "BEST_EFFORT_FALLBACK"
 expertMode = true
+integrations = ["javascript_anthropic_ai_integrations:2.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"
@@ -55,3 +56,6 @@ externalPort = 80
 [[ports]]
 localPort = 18116
 externalPort = 3001
+
+[nix]
+channel = "stable-25_05"
