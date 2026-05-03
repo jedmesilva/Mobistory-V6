@@ -70,3 +70,9 @@ export function parseDecimalInput(value: string) {
   const n = toNumber(value);
   return n;
 }
+
+export function formatDecimalInput(value: string, decimals = 2) {
+  const n = parseDecimalInput(value);
+  if (n == null) return "";
+  return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: decimals }).format(n);
+}
