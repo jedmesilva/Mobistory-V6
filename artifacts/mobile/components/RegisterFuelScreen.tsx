@@ -401,8 +401,8 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
     setFuels(next); sheetRef.current?.dismiss();
   };
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
-  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: t.replace(/[^0-9,]/g, "") }));
-  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: t.replace(/[^0-9,]/g, "") }));
+  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: t }));
+  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: t }));
 
   const calcTotal = (liters: string, price: string) => {
     const l = parseDecimalInput(liters);
@@ -410,8 +410,8 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
     return l && p ? l * p : null;
   };
   const totalGeral   = fuels.reduce((acc, f) => { const t = calcTotal(f.liters, f.pricePerLiter); return t ? acc + t : acc; }, 0);
-  const isValid      = fuels.length > 0 && fuels.every(f => f.type && f.liters && f.pricePerLiter);
-  const isDraftValid = draftF.type && draftF.liters && draftF.pricePerLiter;
+  const isValid      = fuels.length > 0 && fuels.every(f => f.type && parseDecimalInput(f.liters) !== null && parseDecimalInput(f.pricePerLiter) !== null);
+  const isDraftValid = draftF.type && parseDecimalInput(draftF.liters) !== null && parseDecimalInput(draftF.pricePerLiter) !== null;
 
   return (
     <View>
@@ -489,7 +489,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             <View style={{ flex: 1 }}>
               <FieldLabel label="Litros" />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                <BottomSheetTextInput value={formatDecimalInput(draftF.liters, 2)} onChangeText={onLitersChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput value={draftF.liters} onChangeText={onLitersChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
               </View>
@@ -498,7 +498,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
               <FieldLabel label="Preço/L" />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
-                <BottomSheetTextInput value={formatDecimalInput(draftF.pricePerLiter, 2)} onChangeText={onPriceChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput value={draftF.pricePerLiter} onChangeText={onPriceChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
               </View>
             </View>
