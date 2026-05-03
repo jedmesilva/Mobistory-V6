@@ -213,6 +213,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
+  const addrRef = useRef<any>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
@@ -236,6 +237,9 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
+  const handleSheetChange = useCallback((index: number) => {
+    if (index >= 0) setTimeout(() => addrRef.current?.focus?.(), 120);
+  }, []);
 
   return (
     <View>
@@ -320,6 +324,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
+        onChange={handleSheetChange}
       >
         <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
@@ -339,7 +344,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
             <BottomSheetTextInput
-              autoFocus
+              ref={addrRef}
               value={draftAddr}
               onChangeText={setDraftAddr}
               placeholder="Ex: Av. Paulista, 1000 · Centro"
