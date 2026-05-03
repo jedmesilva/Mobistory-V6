@@ -401,9 +401,14 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
     setFuels(next); sheetRef.current?.dismiss();
   };
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
-  const normalizeDecimalText = (t: string) => t.replace(/[^\d.,]/g, "").replace(/\./g, ",");
-  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: normalizeDecimalText(t) }));
-  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: normalizeDecimalText(t) }));
+  const formatCentsInput = (t: string) => {
+    const digits = t.replace(/\D/g, "");
+    if (!digits) return "";
+    const value = Number(digits) / 100;
+    return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+  };
+  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatCentsInput(t) }));
+  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatCentsInput(t) }));
 
   const calcTotal = (liters: string, price: string) => {
     const l = parseDecimalInput(liters);
