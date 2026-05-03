@@ -296,14 +296,16 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {selected && (
-        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl, padding: S.md }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
-            <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
-              Selecionado
-            </Text>
-            <TouchableOpacity onPress={() => { setSelected(null); setStationText(""); }} activeOpacity={0.7} style={{ padding: S.xs }}>
-              <Feather name="x" size={I.sm} color={C.textTertiary} />
-            </TouchableOpacity>
+        <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl }}>
+          <View style={{ paddingHorizontal: S.md, paddingTop: S.md }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
+                Selecionado
+              </Text>
+              <TouchableOpacity onPress={() => { setSelected(null); setStationText(""); }} activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="x" size={I.sm} color={C.textTertiary} />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={{ backgroundColor: C.surface, borderWidth: 1.5, borderColor: aiFields.stationObj ? AI_ACCENT_BORDER : C.border, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
             <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
