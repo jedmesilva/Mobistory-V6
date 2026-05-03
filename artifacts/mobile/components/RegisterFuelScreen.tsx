@@ -310,6 +310,17 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         </View>
       )}
 
+      {selected && (
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: S.xs, marginBottom: S.sm }}>
+          <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
+            Posto selecionado
+          </Text>
+          <TouchableOpacity onPress={() => { setSelected(null); setStationText(""); }} activeOpacity={0.7}>
+            <Text style={{ fontSize: F.xs, color: C.textSecondary, fontWeight: "600" as const }}>Trocar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {showRegister && (
         <TouchableOpacity onPress={openRegisterSheet} activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
