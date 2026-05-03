@@ -58,6 +58,14 @@ export function formatPressure(value: number | string | null | undefined, unit =
   return formatQuantity(value, unit, 1);
 }
 
+export function formatTemperatureC(value: number | string | null | undefined) {
+  return formatQuantity(value, "°C", 1);
+}
+
+export function formatTemperatureF(value: number | string | null | undefined) {
+  return formatQuantity(value, "°F", 1);
+}
+
 export function parseDecimalInput(value: string) {
   const n = toNumber(value);
   return n;
