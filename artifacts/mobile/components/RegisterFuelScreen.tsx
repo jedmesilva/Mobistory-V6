@@ -216,11 +216,13 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const searchRef = useRef<any>(null);
   const addrRef = useRef<any>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
+  const [sheetName, setSheetName] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
 
   useEffect(() => {
     if (draft.station && draft.station !== stationText) setStationText(draft.station);
+    if (draft.station && draft.station !== sheetName) setSheetName(draft.station);
     if (draft.stationObj) setSelected(draft.stationObj);
   }, [draft.station, draft.stationObj]);
 
@@ -235,13 +237,15 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
   const openRegisterSheet = () => {
     searchRef.current?.blur?.();
-    setStationText(stationText);
+    setSheetName(stationText);
     setDraftAddr("");
     sheetRef.current?.present();
   };
   const saveSheet    = () => {
-    const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
+    const name = sheetName.trim();
+    const ns: StationObj = { id: Date.now(), name, address: draftAddr, distance: null, isNew: true };
     setSelected(ns);
+    setStationText(name);
     sheetRef.current?.dismiss();
   };
   const handleSheetChange = useCallback((index: number) => {
@@ -345,7 +349,13 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           </Text>
           <FieldLabel label="Nome" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
+            <BottomSheetTextInput
+              value={sheetName}
+              onChangeText={setSheetName}
+              placeholder="Nome do posto"
+              placeholderTextColor={C.textTertiary}
+              style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
+            />
           </View>
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
@@ -359,9 +369,9 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
             />
           </View>
-          <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
-            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
+          <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0 || sheetName.trim().length === 0} activeOpacity={0.85}
+            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 && sheetName.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 && sheetName.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
           </TouchableOpacity>
         </BottomSheetScrollView>
       </BottomSheetModal>
