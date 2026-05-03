@@ -7,7 +7,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
@@ -321,7 +321,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -338,7 +338,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-            <TextInput
+          <BottomSheetTextInput
               autoFocus
               value={draftAddr}
               onChangeText={setDraftAddr}
@@ -351,7 +351,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
             style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
           </TouchableOpacity>
-        </BottomSheetView>
+      </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );
@@ -441,7 +441,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
-        <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
+      <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -463,7 +463,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             <View style={{ flex: 1 }}>
               <FieldLabel label="Litros" />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                <TextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput value={draftF.liters} onChangeText={t => setDraftF(d => ({ ...d, liters: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
               </View>
@@ -472,7 +472,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
               <FieldLabel label="Preço/L" />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
-                <TextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput value={draftF.pricePerLiter} onChangeText={t => setDraftF(d => ({ ...d, pricePerLiter: t }))} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
               </View>
             </View>
@@ -489,7 +489,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             style={{ alignItems: "center", justifyContent: "center", backgroundColor: isDraftValid ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
             <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDraftValid ? C.textInverse : C.textTertiary }}>{editing !== null ? "Salvar" : "Adicionar"}</Text>
           </TouchableOpacity>
-        </BottomSheetView>
+      </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
   );
