@@ -5,7 +5,10 @@ const nf2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFr
 function toNumber(value: number | string | null | undefined) {
   if (value == null || value === "") return null;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  const normalized = value.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+  const normalized = value
+    .replace(/[^\d,.-]/g, "")
+    .replace(/\.(?=\d{3}(?:\D|$))/g, "")
+    .replace(",", ".");
   const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
