@@ -20,6 +20,8 @@ const RECORD_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
 function handleRecordSelect(router: ReturnType<typeof useRouter>, id: string) {
   if (id === "fuel") {
     router.navigate("/all-fuel");
+  } else if (id === "tire") {
+    router.navigate("/all-tire");
   } else if (id === "bonds") {
     router.navigate("/all-bonds");
   } else {

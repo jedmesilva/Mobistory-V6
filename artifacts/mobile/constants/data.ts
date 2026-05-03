@@ -77,6 +77,16 @@ export const ALL_FUEL = [
   { id: 6, date: "18 dez. 2022", time: "15:00", volume: "35L", type: "Etanol", value: "R$ 157,50", pricePerL: "R$ 4,50", km: "27.120 km", station: "Auto Posto Central" },
 ];
 
+export const ALL_TIRE = [
+  { id: 1, date: "01 mai. 2026", time: "08:30", pressure: "32 PSI", tires: 4, km: "45.180 km", place: "Borracharia Rápida" },
+  { id: 2, date: "22 abr. 2026", time: "16:10", pressure: "34 PSI", tires: 4, km: "44.200 km", place: "Auto Center Sul" },
+  { id: 3, date: "10 mar. 2026", time: "11:00", pressure: "33 PSI", tires: 4, km: "42.800 km", place: "Borracharia Rápida" },
+  { id: 4, date: "05 jan. 2026", time: "09:45", pressure: "32 PSI", tires: 2, km: "40.100 km", place: "Posto Shell Centro" },
+  { id: 5, date: "18 out. 2025", time: "14:20", pressure: "35 PSI", tires: 4, km: "37.650 km", place: "PneuFácil Pinheiros" },
+  { id: 6, date: "02 jul. 2025", time: "10:55", pressure: "32 PSI", tires: 4, km: "34.210 km", place: "Auto Center Sul" },
+  { id: 7, date: "14 mar. 2025", time: "17:30", pressure: "33 PSI", tires: 4, km: "30.900 km", place: "Borracharia Rápida" },
+];
+
 export const ALL_BONDS = [
   { id: 1, user: "Lucas Mendes", type: "Proprietário", since: "jan. 2023", until: null as string | null, active: true },
   { id: 2, user: "Carla Souza", type: "Condutor", since: "mar. 2023", until: null as string | null, active: true },

@@ -40,6 +40,8 @@ export default function RecordsScreen() {
       router.navigate("/all-bonds");
     } else if (id === "fuel") {
       router.navigate("/all-fuel");
+    } else if (id === "tire") {
+      router.navigate("/all-tire");
     } else {
       router.navigate("/activities");
     }
