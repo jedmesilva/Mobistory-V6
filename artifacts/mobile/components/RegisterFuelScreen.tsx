@@ -232,8 +232,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     ? SUGGESTED_STATIONS
     : SUGGESTED_STATIONS.filter(s => s.name.toLowerCase().includes(trimmed.toLowerCase()));
   const exactMatch   = SUGGESTED_STATIONS.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
-  const showRegister = trimmed.length > 0 && !selected && !exactMatch && suggestions.length === 0;
-  const showSugg     = suggestions.length > 0 && !selected;
+  const showRegister = trimmed.length > 0 && !exactMatch && suggestions.length === 0;
 
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
   const openRegisterSheet = () => {
@@ -260,7 +259,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
       <FieldLabel label="Nome do posto" aiField={aiFields.station} />
 
-      <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: showSugg ? R.xl : R.xl, borderBottomLeftRadius: showSugg ? 0 : R.xl, borderBottomRightRadius: showSugg ? 0 : R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
+      <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
         <Feather name="map-pin" size={I.lg} color={aiFields.station ? AI_ACCENT : C.textTertiary} />
         <TextInput
           ref={searchRef}
@@ -277,13 +276,13 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         )}
       </View>
 
-      {showSugg && (
-        <View style={{ backgroundColor: C.surface, borderBottomLeftRadius: R.xl, borderBottomRightRadius: R.xl, borderTopWidth: 1, borderTopColor: C.border, overflow: "hidden" }}>
+      <View style={{ marginTop: S.sm, backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: suggestions.length > 0 ? 1 : 0, borderColor: C.border, maxHeight: 260 }}>
+        <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled showsVerticalScrollIndicator={false}>
           {suggestions.map((s, i) => (
             <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
-              style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < suggestions.length - 1 ? 1 : 0, borderBottomColor: C.border }}>
+              style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < suggestions.length - 1 ? 1 : 0, borderBottomColor: C.border, opacity: selected?.id === s.id ? 0.85 : 1 }}>
               <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
-                <Feather name="shopping-bag" size={I.lg} color={C.iconColor} />
+                <Feather name={selected?.id === s.id ? "check-circle" : "shopping-bag"} size={I.lg} color={selected?.id === s.id ? AI_ACCENT : C.iconColor} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>{s.name}</Text>
@@ -292,8 +291,8 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               <Text style={{ fontSize: F.xs, fontWeight: "500" as const, color: C.textTertiary }}>{s.distance}</Text>
             </TouchableOpacity>
           ))}
-        </View>
-      )}
+        </ScrollView>
+      </View>
 
       {selected && (
         <View style={{ marginTop: S.sm, marginBottom: S.sm, backgroundColor: C.iconBg, borderRadius: R.xl }}>
