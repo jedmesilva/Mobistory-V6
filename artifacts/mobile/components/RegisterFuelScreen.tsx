@@ -386,6 +386,8 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void; insets: { bottom: number } }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
+  const litersRef = useRef<any>(null);
+  const priceRef = useRef<any>(null);
   const [fuels, setFuels] = useState<FuelEntry[]>(draft.fuels?.length ? draft.fuels : []);
   const [editing, setEditing] = useState<number | null>(null);
   const [draftF, setDraftF] = useState({ type: "", liters: "", pricePerLiter: "" });
@@ -405,6 +407,10 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
   const fuelUnit = getFuelUnit(draftF.type);
   const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatFuelInput(t, fuelInputMode) }));
   const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatFuelInput(t, "liquid") }));
+  const onFuelTypeChange = (type: string) => {
+    setDraftF(d => ({ ...d, type }));
+    requestAnimationFrame(() => litersRef.current?.focus?.());
+  };
 
   const calcTotal = (liters: string, price: string) => {
     const l = parseDecimalInput(liters);
@@ -480,7 +486,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
           <FieldLabel label="Tipo" />
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm, marginBottom: S.lg }}>
             {FUEL_TYPES.map(ft => (
-              <TouchableOpacity key={ft.id} onPress={() => setDraftF(d => ({ ...d, type: ft.id }))} activeOpacity={0.7}
+              <TouchableOpacity key={ft.id} onPress={() => onFuelTypeChange(ft.id)} activeOpacity={0.7}
                 style={{ paddingVertical: 6, paddingHorizontal: S.md, borderRadius: R.pill, borderWidth: 1.5, borderColor: draftF.type === ft.id ? C.textPrimary : C.border, backgroundColor: draftF.type === ft.id ? C.textPrimary : "transparent" }}>
                 <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: draftF.type === ft.id ? C.textInverse : C.textSecondary }}>{ft.label}</Text>
               </TouchableOpacity>
@@ -491,7 +497,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             <View style={{ flex: 1 }}>
               <FieldLabel label={fuelUnit === "kWh" ? "Energia" : fuelUnit === "m³" ? "Volume" : "Litros"} />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                <BottomSheetTextInput value={draftF.liters} onChangeText={onLitersChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput ref={litersRef} value={draftF.liters} onChangeText={onLitersChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{fuelUnit}</Text>
               </View>
@@ -500,7 +506,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
               <FieldLabel label={`Preço/${fuelUnit}`} />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
                 <Text style={{ fontSize: F.sm, color: C.textTertiary }}>R$</Text>
-                <BottomSheetTextInput value={draftF.pricePerLiter} onChangeText={onPriceChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
+                <BottomSheetTextInput ref={priceRef} value={draftF.pricePerLiter} onChangeText={onPriceChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
               </View>
             </View>
