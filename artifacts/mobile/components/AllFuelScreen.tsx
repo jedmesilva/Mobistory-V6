@@ -115,7 +115,6 @@ export default function AllFuelScreen() {
         <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl }}>
           <ActionButtonSquare iconName="plus" label="Registrar" onPress={() => router.push("/register-fuel")} />
           <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" />
-          <ActionButtonSquare iconName="download" label="Exportar" />
         </View>
 
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
