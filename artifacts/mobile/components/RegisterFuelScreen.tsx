@@ -235,7 +235,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const exactMatch   = SUGGESTED_STATIONS.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
   const showRegister = trimmed.length > 0 && !exactMatch && suggestions.length === 0;
 
-  const handleSelect = (s: NonNullable<(typeof SUGGESTED_STATIONS)[number]>) => { setStationText(s.name); setSelected(s); };
+  const handleSelect = (s: NonNullable<(typeof SUGGESTED_STATIONS)[number]>) => { setSelected(s); };
   const openRegisterSheet = () => {
     searchRef.current?.blur?.();
     setSheetName(stationText);
@@ -311,7 +311,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
               <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "600" as const, textTransform: "uppercase" as const, letterSpacing: 0.7 }}>
                 Selecionado
               </Text>
-              <TouchableOpacity onPress={() => { setSelected(null); setStationText(""); }} activeOpacity={0.7} style={{ padding: S.xs }}>
+          <TouchableOpacity onPress={() => { setSelected(null); }} activeOpacity={0.7} style={{ padding: S.xs }}>
                 <Feather name="x" size={I.sm} color={C.textTertiary} />
               </TouchableOpacity>
             </View>
