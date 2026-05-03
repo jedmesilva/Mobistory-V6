@@ -213,6 +213,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
+  const searchInputRef = useRef<TextInput>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
@@ -236,6 +237,11 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
+  const openSheet = () => {
+    setDraftAddr("");
+    searchInputRef.current?.blur();
+    sheetRef.current?.present();
+  };
   return (
     <View>
       <StepHeader title="Qual posto?" onBack={onBack} onCapture={onProcessImage} processing={processing} />
@@ -246,6 +252,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       <View style={{ backgroundColor: aiFields.station ? AI_ACCENT_BG : C.surface, borderRadius: showSugg ? R.xl : R.xl, borderBottomLeftRadius: showSugg ? 0 : R.xl, borderBottomRightRadius: showSugg ? 0 : R.xl, borderWidth: aiFields.station ? 1.5 : 0, borderColor: AI_ACCENT_BORDER, flexDirection: "row", alignItems: "center", padding: S.lg, gap: S.sm }}>
         <Feather name="map-pin" size={I.lg} color={aiFields.station ? AI_ACCENT : C.textTertiary} />
         <TextInput
+          ref={searchInputRef}
           value={stationText}
           onChangeText={t => { setStationText(t); setSelected(null); }}
           placeholder="Buscar posto..."
@@ -293,7 +300,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {showRegister && (
-        <TouchableOpacity onPress={() => { setDraftAddr(""); sheetRef.current?.present(); }} activeOpacity={0.7}
+        <TouchableOpacity onPress={openSheet} activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
           <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="plus" size={I.lg} color={C.textTertiary} />
