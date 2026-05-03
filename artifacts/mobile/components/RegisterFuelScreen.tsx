@@ -240,6 +240,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     setDraftStationName(stationText.trim());
     setDraftAddr("");
     sheetRef.current?.present();
+    requestAnimationFrame(() => addrRef.current?.focus?.());
   };
   const saveSheet    = () => {
     const name = draftStationName.trim();
