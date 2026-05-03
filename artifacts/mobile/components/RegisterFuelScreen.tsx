@@ -401,8 +401,9 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
     setFuels(next); sheetRef.current?.dismiss();
   };
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
-  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: t }));
-  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: t }));
+  const normalizeDecimalText = (t: string) => t.replace(/[^\d.,]/g, "").replace(/\./g, ",");
+  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: normalizeDecimalText(t) }));
+  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: normalizeDecimalText(t) }));
 
   const calcTotal = (liters: string, price: string) => {
     const l = parseDecimalInput(liters);
