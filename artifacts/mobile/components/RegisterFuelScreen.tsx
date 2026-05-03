@@ -216,13 +216,11 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const searchRef = useRef<any>(null);
   const addrRef = useRef<any>(null);
   const [stationText, setStationText] = useState(draft.station ?? "");
-  const [draftStationName, setDraftStationName] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
 
   useEffect(() => {
     if (draft.station && draft.station !== stationText) setStationText(draft.station);
-    if (draft.station && draft.station !== draftStationName) setDraftStationName(draft.station);
     if (draft.stationObj) setSelected(draft.stationObj);
   }, [draft.station, draft.stationObj]);
 
@@ -237,18 +235,19 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const handleSelect = (s: typeof SUGGESTED_STATIONS[number]) => { setStationText(s.name); setSelected(s); };
   const openRegisterSheet = () => {
     searchRef.current?.blur?.();
-    setDraftStationName(stationText.trim());
+    setStationText(stationText);
     setDraftAddr("");
     sheetRef.current?.present();
-    requestAnimationFrame(() => addrRef.current?.focus?.());
   };
   const saveSheet    = () => {
-    const name = draftStationName.trim();
-    const ns: StationObj = { id: Date.now(), name, address: draftAddr, distance: null, isNew: true };
-    setStationText(name);
+    const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
+  const handleSheetChange = useCallback((index: number) => {
+    if (index >= 0) setTimeout(() => addrRef.current?.focus?.(), 120);
+  }, []);
+
   return (
     <View>
       <StepHeader title="Qual posto?" onBack={onBack} onCapture={onProcessImage} processing={processing} />
@@ -331,10 +330,10 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         enablePanDownToClose
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
+        onChange={handleSheetChange}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.lg + insets.bottom }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xl + insets.bottom }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -342,17 +341,11 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
             </TouchableOpacity>
           </View>
           <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
-            Informe o endereço do posto abaixo.
+            Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
           </Text>
           <FieldLabel label="Nome" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-            <BottomSheetTextInput
-              value={draftStationName}
-              onChangeText={setDraftStationName}
-              placeholder="Nome do posto"
-              placeholderTextColor={C.textTertiary}
-              style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
-            />
+            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
           </View>
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
@@ -458,10 +451,9 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
         enablePanDownToClose
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
       >
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.lg + insets.bottom }}>
+        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xl + insets.bottom }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>{editing !== null ? "Editar" : "Adicionar"} combustível</Text>
             <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
