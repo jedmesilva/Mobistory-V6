@@ -214,6 +214,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
   const sheetRef = useRef<BottomSheetModal>(null);
   const addrRef = useRef<any>(null);
+  const shouldFocusAddrRef = useRef(false);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
@@ -237,8 +238,12 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
     setSelected(ns);
     sheetRef.current?.dismiss();
   };
-  const handleSheetChange = useCallback((index: number) => {
-    if (index >= 0) setTimeout(() => addrRef.current?.focus?.(), 120);
+  const handleSheetAnimate = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === -1 && toIndex === 0) shouldFocusAddrRef.current = true;
+    if (toIndex === 0 && shouldFocusAddrRef.current) {
+      shouldFocusAddrRef.current = false;
+      setTimeout(() => addrRef.current?.focus?.(), 300);
+    }
   }, []);
 
   return (
@@ -324,7 +329,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
-        onChange={handleSheetChange}
+        onAnimate={handleSheetAnimate}
       >
         <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
