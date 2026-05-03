@@ -314,7 +314,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       <BottomSheetModal
         ref={sheetRef}
         enablePanDownToClose
-        keyboardBehavior="interactive"
+        keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
@@ -335,7 +335,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
           <FieldLabel label="Endereço" />
           <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
             <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-            <TextInput
+            <BottomSheetTextInput
               value={draftAddr}
               onChangeText={setDraftAddr}
               placeholder="Ex: Av. Paulista, 1000 · Centro"
