@@ -278,7 +278,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
 
       <View style={{ marginTop: S.sm, backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: suggestions.length > 0 ? 1 : 0, borderColor: C.border, maxHeight: 260 }}>
         <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled showsVerticalScrollIndicator={false}>
-          {suggestions.map((s, i) => (
+          {suggestions.filter((s): s is NonNullable<typeof s> => Boolean(s)).map((s, i) => (
             <TouchableOpacity key={s.id} onPress={() => handleSelect(s)} activeOpacity={0.7}
               style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.md, paddingHorizontal: S.lg, borderBottomWidth: i < suggestions.length - 1 ? 1 : 0, borderBottomColor: C.border, opacity: selected?.id === s.id ? 0.85 : 1 }}>
               <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
