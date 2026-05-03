@@ -317,6 +317,8 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       <BottomSheetModal
         ref={sheetRef}
         enablePanDownToClose
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
         <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
@@ -435,6 +437,8 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
       <BottomSheetModal
         ref={sheetRef}
         enablePanDownToClose
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
       >
         <BottomSheetView style={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
