@@ -213,7 +213,6 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   { draft: Draft; setFields: (f: Partial<Draft>) => void; aiFields: Record<string, boolean>; processing: boolean; aiError: string | null; setAiError: (e: string | null) => void; onNext: () => void; onBack: () => void; onProcessImage: (b64: string, mime: string) => void }) {
 
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [stationText, setStationText] = useState(draft.station ?? "");
   const [selected, setSelected] = useState<StationObj | null>(draft.stationObj ?? null);
   const [draftAddr, setDraftAddr] = useState("");
@@ -235,7 +234,6 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
   const saveSheet    = () => {
     const ns: StationObj = { id: Date.now(), name: trimmed, address: draftAddr, distance: null, isNew: true };
     setSelected(ns);
-    setSheetOpen(false);
     sheetRef.current?.dismiss();
   };
   return (
@@ -295,7 +293,7 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
       )}
 
       {showRegister && (
-        <TouchableOpacity onPress={() => { setDraftAddr(""); setSheetOpen(true); sheetRef.current?.present(); }} activeOpacity={0.7}
+        <TouchableOpacity onPress={() => { setDraftAddr(""); sheetRef.current?.present(); }} activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", gap: S.md, borderWidth: 1.5, borderStyle: "dashed" as const, borderColor: C.separator, borderRadius: R.xl, padding: S.lg, marginTop: S.sm }}>
           <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="plus" size={I.lg} color={C.textTertiary} />
@@ -324,36 +322,32 @@ function StepStation({ draft, setFields, aiFields, processing, aiError, setAiErr
         <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: S.xl, paddingBottom: S.xxxl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Cadastrar posto</Text>
-          <TouchableOpacity onPress={() => { setSheetOpen(false); sheetRef.current?.dismiss(); }} activeOpacity={0.7} style={{ padding: S.xs }}>
+          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="x" size={I.md} color={C.textTertiary} />
             </TouchableOpacity>
           </View>
-          {sheetOpen && (
-            <>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
-                Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
-              </Text>
-              <FieldLabel label="Nome" />
-              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
-                <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
-              </View>
-              <FieldLabel label="Endereço" />
-              <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
-                <Feather name="map-pin" size={I.md} color={C.textTertiary} />
-                <TextInput
-                  value={draftAddr}
-                  onChangeText={setDraftAddr}
-                  placeholder="Ex: Av. Paulista, 1000 · Centro"
-                  placeholderTextColor={C.textTertiary}
-                  style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
-                />
-              </View>
-              <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
-                style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
-                <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl, lineHeight: 20 }}>
+            Informe o endereço de <Text style={{ fontWeight: "600" as const, color: C.textPrimary }}>"{trimmed}"</Text>.
+          </Text>
+          <FieldLabel label="Nome" />
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{trimmed}</Text>
+          </View>
+          <FieldLabel label="Endereço" />
+          <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.xl }}>
+            <Feather name="map-pin" size={I.md} color={C.textTertiary} />
+            <TextInput
+              value={draftAddr}
+              onChangeText={setDraftAddr}
+              placeholder="Ex: Av. Paulista, 1000 · Centro"
+              placeholderTextColor={C.textTertiary}
+              style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}
+            />
+          </View>
+          <TouchableOpacity onPress={saveSheet} disabled={draftAddr.trim().length === 0} activeOpacity={0.85}
+            style={{ alignItems: "center", justifyContent: "center", backgroundColor: draftAddr.trim().length > 0 ? C.textPrimary : C.iconBg, borderRadius: R.xxl, paddingVertical: S.lg }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: draftAddr.trim().length > 0 ? C.textInverse : C.textTertiary }}>Cadastrar</Text>
+          </TouchableOpacity>
         </BottomSheetScrollView>
       </BottomSheetModal>
     </View>
