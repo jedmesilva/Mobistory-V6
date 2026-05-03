@@ -11,7 +11,7 @@ import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScro
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
-import { formatMoney, formatOdometer, formatVolume, parseDecimalInput, formatDecimalInput } from "@/lib/format";
+import { formatMoney, formatOdometer, formatVolume, parseDecimalInput, formatFuelInput, getFuelUnit, getFuelInputMode } from "@/lib/format";
 
 const C = colors.light;
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
@@ -401,15 +401,10 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
     setFuels(next); sheetRef.current?.dismiss();
   };
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
-  const formatCentsInput = (t: string) => {
-    const digits = t.replace(/\D/g, "");
-    if (!digits) return "";
-    const whole = digits.length > 2 ? digits.slice(0, -2) : "0";
-    const cents = digits.slice(-2).padStart(2, "0");
-    return `${new Intl.NumberFormat("pt-BR").format(Number(whole))},${cents}`;
-  };
-  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatCentsInput(t) }));
-  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatCentsInput(t) }));
+  const fuelInputMode = getFuelInputMode(draftF.type);
+  const fuelUnit = getFuelUnit(draftF.type);
+  const onLitersChange = (t: string) => setDraftF(d => ({ ...d, liters: formatFuelInput(t, fuelInputMode) }));
+  const onPriceChange = (t: string) => setDraftF(d => ({ ...d, pricePerLiter: formatFuelInput(t, "liquid") }));
 
   const calcTotal = (liters: string, price: string) => {
     const l = parseDecimalInput(liters);
@@ -494,11 +489,11 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
 
           <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.sm }}>
             <View style={{ flex: 1 }}>
-              <FieldLabel label="Litros" />
+              <FieldLabel label={fuelUnit === "kWh" ? "Energia" : fuelUnit === "m³" ? "Volume" : "Litros"} />
               <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", gap: S.xs }}>
                 <BottomSheetTextInput value={draftF.liters} onChangeText={onLitersChange} placeholder="0,00" keyboardType="decimal-pad" placeholderTextColor={C.textTertiary}
                   style={{ flex: 1, fontSize: F.lg, fontWeight: "600" as const, color: C.textPrimary }} />
-                <Text style={{ fontSize: F.sm, color: C.textTertiary }}>L</Text>
+                <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{fuelUnit}</Text>
               </View>
             </View>
             <View style={{ flex: 1 }}>

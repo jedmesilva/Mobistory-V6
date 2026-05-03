@@ -76,3 +76,26 @@ export function formatDecimalInput(value: string, decimals = 2) {
   if (n == null) return "";
   return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: decimals }).format(n);
 }
+
+export function formatFuelInput(value: string, type: "liquid" | "gaseous" | "electric" = "liquid") {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  const decimals = type === "electric" ? 3 : 2;
+  const whole = digits.length > decimals ? digits.slice(0, -decimals) : "0";
+  const frac = digits.slice(-decimals).padStart(decimals, "0");
+  const separator = decimals > 0 ? "," : "";
+  return `${new Intl.NumberFormat("pt-BR").format(Number(whole))}${separator}${decimals > 0 ? frac : ""}`;
+}
+
+export function getFuelUnit(type: string) {
+  if (type === "diesel" || type === "diesel_s10" || type === "gasolina_comum" || type === "gasolina_aditivada" || type === "etanol") return "L";
+  if (type === "gnv") return "m³";
+  if (type === "eletrico") return "kWh";
+  return "L";
+}
+
+export function getFuelInputMode(type: string) {
+  if (type === "gnv") return "gaseous" as const;
+  if (type === "eletrico") return "electric" as const;
+  return "liquid" as const;
+}
