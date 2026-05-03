@@ -11,6 +11,7 @@ import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScro
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
+import { formatMoney, formatOdometer, formatVolume, parseDecimalInput } from "@/lib/format";
 
 const C = colors.light;
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
@@ -402,10 +403,11 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
   const removeFuel = (id: number) => setFuels(fuels.filter(f => f.id !== id));
 
   const calcTotal = (liters: string, price: string) => {
-    const l = parseFloat(liters), p = parseFloat(price);
-    return l > 0 && p > 0 ? (l * p).toFixed(2) : null;
+    const l = parseDecimalInput(liters);
+    const p = parseDecimalInput(price);
+    return l && p ? l * p : null;
   };
-  const totalGeral   = fuels.reduce((acc, f) => { const t = calcTotal(f.liters, f.pricePerLiter); return t ? acc + parseFloat(t) : acc; }, 0);
+  const totalGeral   = fuels.reduce((acc, f) => { const t = calcTotal(f.liters, f.pricePerLiter); return t ? acc + t : acc; }, 0);
   const isValid      = fuels.length > 0 && fuels.every(f => f.type && f.liters && f.pricePerLiter);
   const isDraftValid = draftF.type && draftF.liters && draftF.pricePerLiter;
 
@@ -432,7 +434,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{fuel.liters}L · R$ {fuel.pricePerLiter}/L{total ? ` · R$ ${total}` : ""}</Text>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatVolume(fuel.liters)} · {formatMoney(fuel.pricePerLiter)}/L{total ? ` · ${formatMoney(total)}` : ""}</Text>
             </View>
             <TouchableOpacity onPress={() => removeFuel(fuel.id)} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="trash-2" size={I.md} color={C.textTertiary} />
@@ -444,7 +446,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
       {fuels.length > 1 && totalGeral > 0 && (
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.sm, marginBottom: S.lg }}>
           <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total geral</Text>
-          <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>R$ {totalGeral.toFixed(2)}</Text>
+          <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(totalGeral)}</Text>
         </View>
       )}
 
@@ -503,7 +505,7 @@ function StepFuels({ draft, setFields, aiFields, processing, aiError, setAiError
           {calcTotal(draftF.liters, draftF.pricePerLiter) && (
             <View style={{ backgroundColor: C.background, borderRadius: R.xl, padding: S.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
               <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Total</Text>
-              <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>R$ {calcTotal(draftF.liters, draftF.pricePerLiter)}</Text>
+              <Text style={{ fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(calcTotal(draftF.liters, draftF.pricePerLiter))}</Text>
             </View>
           )}
 
@@ -666,7 +668,7 @@ function StepDetails({ draft, setFields, aiFields, processing, aiError, setAiErr
 function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: () => void; onBack: () => void }) {
   const calcTotal    = (liters: string, price: string) => parseFloat(liters) * parseFloat(price) || 0;
   const totalGeral   = draft.fuels?.reduce((acc, f) => acc + calcTotal(f.liters, f.pricePerLiter), 0) || 0;
-  const totalLitros  = draft.fuels?.reduce((acc, f) => acc + (parseFloat(f.liters) || 0), 0) || 0;
+  const totalLitros  = draft.fuels?.reduce((acc, f) => acc + (parseDecimalInput(f.liters) || 0), 0) || 0;
   const payLabel     = PAYMENT_METHODS.find(p => p.id === draft.method)?.label;
 
   return (
@@ -696,7 +698,7 @@ function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: ()
         <SectionDivider label="Combustíveis" />
         {draft.fuels?.map(f => {
           const label = FUEL_TYPES.find(ft => ft.id === f.type)?.label;
-          const total = calcTotal(f.liters, f.pricePerLiter).toFixed(2);
+          const total = calcTotal(f.liters, f.pricePerLiter);
           return (
             <View key={f.id} style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md, marginBottom: S.sm }}>
               <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
@@ -704,16 +706,16 @@ function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: ()
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{label}</Text>
-                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{f.liters}L · R$ {f.pricePerLiter}/L</Text>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{formatVolume(f.liters)} · {formatMoney(f.pricePerLiter)}/L</Text>
               </View>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>R$ {total}</Text>
+              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(total)}</Text>
             </View>
           );
         })}
         {(draft.fuels?.length ?? 0) > 1 && (
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.sm, paddingTop: S.xs }}>
-            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{totalLitros.toFixed(1)}L no total</Text>
-            <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>R$ {totalGeral.toFixed(2)}</Text>
+            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{formatVolume(totalLitros)} no total</Text>
+            <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>{formatMoney(totalGeral)}</Text>
           </View>
         )}
       </View>
@@ -726,7 +728,7 @@ function StepConfirm({ draft, onConfirm, onBack }: { draft: Draft; onConfirm: ()
               <Feather name="activity" size={I.md} color={C.iconColor} />
             </View>
             <Text style={{ flex: 1, fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>Quilometragem atual</Text>
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{draft.odometer} km</Text>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{formatOdometer(draft.odometer)}</Text>
           </View>
         </View>
       ) : null}
@@ -789,7 +791,7 @@ function StepSuccess({ draft, onClose }: { draft: Draft; onClose: () => void }) 
       </Text>
       <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xs }}>{draft.station}</Text>
       <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xxxl }}>
-        R$ {totalGeral.toFixed(2)}
+        {formatMoney(totalGeral)}
       </Text>
       <TouchableOpacity onPress={onClose} activeOpacity={0.85}
         style={{ width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: C.textPrimary, borderRadius: R.xxl, paddingVertical: S.lg }}>
