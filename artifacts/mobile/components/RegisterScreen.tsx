@@ -77,7 +77,7 @@ export default function RegisterScreen() {
               <TouchableOpacity
                 key={id}
                 onPress={() => {
-                  if (id === "fuel") { router.push("/register-fuel"); return; }
+                  if (id === "fuel") { router.navigate("/register-fuel"); return; }
                   setSelectedId(id);
                 }}
                 activeOpacity={0.75}

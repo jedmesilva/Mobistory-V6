@@ -278,7 +278,7 @@ export default function IdentityScreen() {
         {/* VÍNCULOS */}
         <SectionLabel title="Vínculos" />
 
-        <TouchableOpacity onPress={() => router.push("/bond")} activeOpacity={0.8}
+        <TouchableOpacity onPress={() => router.navigate("/bond")} activeOpacity={0.8}
           style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, marginBottom: S.sm, flexDirection: "row", alignItems: "center", gap: S.md }}>
           <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="user" size={I.lg} color={C.iconColor} />
@@ -295,7 +295,7 @@ export default function IdentityScreen() {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/all-bonds")} activeOpacity={0.8}
+        <TouchableOpacity onPress={() => router.navigate("/all-bonds")} activeOpacity={0.8}
           style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, flexDirection: "row", alignItems: "center", gap: S.md }}>
           <View style={{ width: 40, height: 40, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
             <Feather name="users" size={I.lg} color={C.iconColor} />
@@ -322,7 +322,7 @@ export default function IdentityScreen() {
           ))}
         </View>
         <TouchableOpacity
-          onPress={() => router.push("/activities?filter=identidade")}
+          onPress={() => router.navigate("/activities?filter=identidade")}
           activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.xs, marginTop: S.lg, paddingVertical: S.md, backgroundColor: C.surface, borderRadius: R.xl }}
         >

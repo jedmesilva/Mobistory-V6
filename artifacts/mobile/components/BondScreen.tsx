@@ -29,7 +29,7 @@ export default function BondScreen() {
           <MoreOptionsButton
             topOffset={topPad + 52}
             actions={[
-              { label: "Todos os vínculos", icon: "users", onPress: () => router.push("/all-bonds") },
+              { label: "Todos os vínculos", icon: "users", onPress: () => router.navigate("/all-bonds") },
             ]}
           />
         </View>

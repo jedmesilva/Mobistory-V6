@@ -181,7 +181,7 @@ export default function ActivitiesScreen() {
         renderItem={({ item }) => (
           <ActivityRow
             item={item}
-            onPress={() => router.push(`/activities/${item.id}`)}
+            onPress={() => router.navigate(`/activities/${item.id}`)}
           />
         )}
       />
@@ -213,7 +213,7 @@ export default function ActivitiesScreen() {
               renderItem={({ item }) => (
                 <ActivityRow
                   item={item}
-                  onPress={() => { setSearchOpen(false); router.push(`/activities/${item.id}`); }}
+                  onPress={() => { setSearchOpen(false); router.navigate(`/activities/${item.id}`); }}
                 />
               )}
             />

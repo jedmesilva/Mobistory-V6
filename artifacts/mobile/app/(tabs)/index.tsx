@@ -28,7 +28,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.push("/register")}
+          onPress={() => router.navigate("/register")}
           activeOpacity={0.85}
           style={styles.fab}
         >
@@ -38,7 +38,7 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={styles.navTab}
           activeOpacity={0.7}
-          onPress={() => router.push("/activities")}
+          onPress={() => router.navigate("/activities")}
         >
           <Feather name="activity" size={I.xxl} color={C.mutedForeground} />
           <Text style={{ fontSize: F.xxs, fontWeight: "500" as const, color: C.mutedForeground }}>Atividades</Text>

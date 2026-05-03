@@ -19,11 +19,11 @@ const RECORD_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
 
 function handleRecordSelect(router: ReturnType<typeof useRouter>, id: string) {
   if (id === "fuel") {
-    router.push("/all-fuel");
+    router.navigate("/all-fuel");
   } else if (id === "bonds") {
-    router.push("/all-bonds");
+    router.navigate("/all-bonds");
   } else {
-    router.push("/activities");
+    router.navigate("/activities");
   }
 }
 
@@ -65,7 +65,7 @@ export default function VehicleHome() {
     >
       {/* HEADER */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.md, paddingTop: topPad + 8, paddingBottom: S.md }}>
-        <BackButton onPress={() => router.push("/vehicles")} />
+        <BackButton onPress={() => router.navigate("/vehicles")} />
         <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
           <Feather name="message-circle" size={I.xxl} color={C.textSecondary} />
         </TouchableOpacity>
@@ -113,7 +113,7 @@ export default function VehicleHome() {
 
         {/* QUICK ACTIONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginTop: S.md }}>
-          <TouchableOpacity onPress={() => router.push("/identity")} activeOpacity={0.8}
+          <TouchableOpacity onPress={() => router.navigate("/identity")} activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
               <View style={{ width: 36, height: 36, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
@@ -123,7 +123,7 @@ export default function VehicleHome() {
             </View>
             <Feather name="chevron-right" size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push("/bond")} activeOpacity={0.8}
+          <TouchableOpacity onPress={() => router.navigate("/bond")} activeOpacity={0.8}
             style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: S.md, paddingHorizontal: S.md, backgroundColor: C.surface, borderRadius: R.xl }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
               <IconBox iconType="user" size={I.lg} boxSize={36} radius={R.md} />
@@ -136,7 +136,7 @@ export default function VehicleHome() {
 
       {/* RECORDS */}
       <View style={{ paddingHorizontal: S.xl, paddingTop: S.xxl }}>
-        <SectionLabel title="Registros" actionLabel="Ver tudo" onAction={() => router.push("/records")} />
+        <SectionLabel title="Registros" actionLabel="Ver tudo" onAction={() => router.navigate("/records")} />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
           {RECORDS.map(({ id, label, lastDate, lastValue }) => (
             <TouchableOpacity key={id} activeOpacity={0.8}

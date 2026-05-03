@@ -113,7 +113,7 @@ export default function AllFuelScreen() {
 
         {/* ACTION BUTTONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl, width: "66%" }}>
-          <ActionButtonSquare iconName="plus" label="Registrar" onPress={() => router.push("/register-fuel")} />
+          <ActionButtonSquare iconName="plus" label="Registrar" onPress={() => router.navigate("/register-fuel")} />
           <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" />
         </View>
 
