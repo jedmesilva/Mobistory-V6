@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Platform, Alert } from "react-native";
+import {
+  View, Text, TouchableOpacity, ScrollView, Platform, Alert, Image,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,15 +13,9 @@ import { R, S, F, I } from "@/components/shared";
 
 const C = colors.light;
 
-const PART_LABELS: Record<string, string> = {
-  frente:    "Frente",
-  traseira:  "Traseira",
-  lateral_e: "Lateral esquerda",
-  lateral_d: "Lateral direita",
-  painel:    "Painel",
-  placa:     "Placa",
-  chassi:    "Chassi físico",
-};
+const GREEN        = "#16A34A";
+const GREEN_BG     = "#F0FDF4";
+const GREEN_BORDER = "#BBF7D0";
 
 export default function InspectionRunScreen() {
   const router = useRouter();
@@ -32,7 +28,8 @@ export default function InspectionRunScreen() {
 
   const inspection = inspections.find(i => i.id === Number(id));
 
-  const [cameraStepIndex, setCameraStepIndex] = useState<number | null>(null);
+  const [photos, setPhotos]         = useState<Record<string, string>>({});
+  const [activeStepId, setActiveStepId] = useState<string | null>(null);
 
   if (!inspection) {
     return (
@@ -46,27 +43,25 @@ export default function InspectionRunScreen() {
   }
 
   const plannedIds: string[] = (inspection as any).plannedParts ?? INSPECTION_STEPS.map(s => s.id);
-  const steps     = INSPECTION_STEPS.filter(s => plannedIds.includes(s.id));
-  const doneSet   = new Set(inspection.parts);
-  const remaining = steps.filter(s => !doneSet.has(s.id));
-  const done      = steps.filter(s =>  doneSet.has(s.id));
-  const totalSteps = steps.length;
-  const doneCount  = done.length;
-  const progress   = totalSteps > 0 ? doneCount / totalSteps : 0;
-  const allDone    = remaining.length === 0;
-  const canFinish  = remaining.filter(s => s.required).length === 0 && doneCount > 0;
+  const steps = INSPECTION_STEPS.filter(s => plannedIds.includes(s.id));
 
-  const currentStepObj = cameraStepIndex !== null ? steps[cameraStepIndex] : null;
+  const required     = steps.filter(s => s.required);
+  const doneRequired = required.filter(s => !!photos[s.id]).length;
+  const totalPhotos  = Object.keys(photos).length;
+  const canFinish    = doneRequired === required.length && totalPhotos > 0;
 
-  const handleOpenCamera = (idx: number) => setCameraStepIndex(idx);
+  const activeStep      = steps.find(s => s.id === activeStepId) ?? null;
+  const activeStepIndex = activeStep ? steps.indexOf(activeStep) : 0;
 
-  const handleCapture = useCallback((_uri: string) => {
-    if (cameraStepIndex === null) return;
-    completeStep(Number(id), steps[cameraStepIndex].id);
-    setCameraStepIndex(null);
-  }, [cameraStepIndex, steps, id, completeStep]);
+  const openCamera  = useCallback((id: string) => setActiveStepId(id), []);
+  const closeCamera = useCallback(() => setActiveStepId(null), []);
 
-  const handleCloseCamera = useCallback(() => setCameraStepIndex(null), []);
+  const handleCapture = useCallback((uri: string) => {
+    if (!activeStepId) return;
+    setPhotos(prev => ({ ...prev, [activeStepId]: uri }));
+    completeStep(Number(id), activeStepId);
+    setActiveStepId(null);
+  }, [activeStepId, id, completeStep]);
 
   const handleFinish = () => {
     Alert.alert(
@@ -74,180 +69,203 @@ export default function InspectionRunScreen() {
       "Deseja concluir esta vistoria? As etapas fotografadas serão registradas.",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Concluir", onPress: () => { finishInspection(Number(id)); router.back(); } },
+        {
+          text: "Concluir",
+          onPress: () => { finishInspection(Number(id)); router.back(); },
+        },
       ]
     );
   };
 
+  const progressPercent = required.length > 0
+    ? Math.round((doneRequired / required.length) * 100)
+    : 0;
+
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: C.background }}
-        contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + (canFinish ? 100 : S.xxxl) }}
+        contentContainerStyle={{
+          paddingTop: topPad + S.lg,
+          paddingBottom: bottomPad + (canFinish ? 110 : S.xxxl),
+          padding: S.xl,
+        }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
+        {/* BACK */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+          style={{ marginBottom: S.xl, padding: S.xs, alignSelf: "flex-start" }}
+        >
+          <Feather name="arrow-left" size={I.lg} color="#374151" />
+        </TouchableOpacity>
+
         {/* HEADER */}
-        <View style={{ paddingHorizontal: S.xl }}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}
-            style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: S.xl }}>
-            <Feather name="arrow-left" size={I.md} color={C.textSecondary} />
-            <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Voltar</Text>
-          </TouchableOpacity>
+        <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xs }}>
+          Vistoria
+        </Text>
+        <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xl, lineHeight: F.base * 1.5 }}>
+          {inspection.type} · {inspection.requester} · {inspection.km}
+        </Text>
 
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
-            Vistoria em andamento
-          </Text>
-          <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xs }}>
-            {inspection.type}
-          </Text>
-          <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl }}>
-            {inspection.requester} · {inspection.km}
-          </Text>
-
-          {/* PROGRESSO */}
-          <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.xxl }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>Progresso</Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
-                {doneCount} de {totalSteps} etapas
-              </Text>
-            </View>
-            <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-              <View style={{ height: 4, width: `${progress * 100}%`, backgroundColor: C.textPrimary, borderRadius: R.pill }} />
-            </View>
-            {allDone && (
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: S.sm }}>
-                Todas as etapas concluídas
-              </Text>
-            )}
+        {/* PROGRESSO */}
+        <View style={{ marginBottom: S.xxl }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.sm }}>
+            <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
+              {doneRequired} de {required.length} fotos obrigatórias
+            </Text>
+            <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.textPrimary }}>
+              {progressPercent}%
+            </Text>
+          </View>
+          <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
+            <View style={{
+              height: "100%",
+              width: `${progressPercent}%` as any,
+              backgroundColor: C.primary,
+              borderRadius: R.pill,
+            }} />
           </View>
         </View>
 
-        {/* ETAPAS PENDENTES */}
-        {remaining.length > 0 && (
-          <View style={{ paddingHorizontal: S.xl, marginBottom: S.xxl }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
-              A fotografar · {remaining.length}
-            </Text>
-            <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, overflow: "hidden" }}>
-              {remaining.map((step, idx) => {
-                const globalIdx = steps.indexOf(step);
-                const isLast = idx === remaining.length - 1;
-                return (
+        {/* STEP CARDS */}
+        <View style={{ gap: S.sm }}>
+          {steps.map(step => {
+            const isDone = !!photos[step.id];
+            return (
+              <View
+                key={step.id}
+                style={{
+                  backgroundColor: C.surface,
+                  borderRadius: R.xl,
+                  overflow: "hidden",
+                  borderWidth: 1.5,
+                  borderColor: isDone ? GREEN_BORDER : "transparent",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.lg }}>
+                  {/* Thumbnail / placeholder */}
                   <TouchableOpacity
-                    key={step.id}
-                    onPress={() => handleOpenCamera(globalIdx)}
-                    activeOpacity={0.7}
+                    onPress={() => openCamera(step.id)}
+                    activeOpacity={0.8}
                     style={{
-                      flexDirection: "row", alignItems: "center",
-                      paddingVertical: S.md, paddingHorizontal: S.xl,
-                      borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
+                      width: 52, height: 52, borderRadius: R.md,
+                      overflow: "hidden", flexShrink: 0,
+                      backgroundColor: isDone ? "transparent" : C.iconBg,
+                      alignItems: "center", justifyContent: "center",
                     }}
                   >
-                    <View style={{
-                      width: 36, height: 36, borderRadius: 18,
-                      backgroundColor: C.iconBg,
-                      alignItems: "center", justifyContent: "center",
-                      marginRight: S.md,
-                    }}>
-                      <Feather name="camera" size={I.md} color={C.iconColor} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
-                        <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>
-                          {PART_LABELS[step.id] ?? step.label}
-                        </Text>
-                        {step.required && (
-                          <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: S.xs }}>
-                            <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.iconColor }}>Obrigatório</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{step.instruction}</Text>
-                    </View>
-                    <Feather name="chevron-right" size={I.md} color={C.textTertiary} />
+                    {isDone
+                      ? <Image source={{ uri: photos[step.id] }} style={{ width: 52, height: 52 }} resizeMode="cover" />
+                      : <Feather name="camera" size={I.xl} color={C.iconColor} />
+                    }
                   </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        )}
 
-        {/* ETAPAS CONCLUÍDAS */}
-        {done.length > 0 && (
-          <View style={{ paddingHorizontal: S.xl }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
-              Fotografadas · {done.length}
-            </Text>
-            <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, overflow: "hidden" }}>
-              {done.map((step, idx) => {
-                const isLast = idx === done.length - 1;
-                return (
-                  <View
-                    key={step.id}
-                    style={{
-                      flexDirection: "row", alignItems: "center",
-                      paddingVertical: S.md, paddingHorizontal: S.xl,
-                      borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
-                    }}
-                  >
-                    <View style={{
-                      width: 36, height: 36, borderRadius: 18,
-                      backgroundColor: C.iconBg,
-                      alignItems: "center", justifyContent: "center",
-                      marginRight: S.md,
-                    }}>
-                      <Feather name="check" size={I.md} color={C.textPrimary} />
+                  {/* Labels */}
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
+                      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>
+                        {step.label}
+                      </Text>
+                      {!step.required && (
+                        <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: 6 }}>
+                          <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.textTertiary }}>OPCIONAL</Text>
+                        </View>
+                      )}
                     </View>
-                    <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: C.textSecondary, flex: 1 }}>
-                      {PART_LABELS[step.id] ?? step.label}
+                    <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.4 }}>
+                      {step.instruction}
                     </Text>
                   </View>
-                );
-              })}
-            </View>
-          </View>
-        )}
+
+                  {/* Action */}
+                  {isDone ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+                      <TouchableOpacity
+                        onPress={() => openCamera(step.id)}
+                        activeOpacity={0.7}
+                        style={{ padding: S.xs }}
+                      >
+                        <Feather name="rotate-ccw" size={I.sm} color={C.textTertiary} />
+                      </TouchableOpacity>
+                      <View style={{
+                        width: 24, height: 24, borderRadius: 12,
+                        backgroundColor: GREEN,
+                        alignItems: "center", justifyContent: "center",
+                      }}>
+                        <Feather name="check" size={I.xs} color="#fff" />
+                      </View>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => openCamera(step.id)}
+                      activeOpacity={0.8}
+                      style={{
+                        flexDirection: "row", alignItems: "center", gap: S.xs,
+                        backgroundColor: C.primary,
+                        borderRadius: R.pill,
+                        paddingVertical: 6, paddingHorizontal: S.md,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Feather name="camera" size={I.xs} color={C.primaryForeground} />
+                      <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.primaryForeground }}>
+                        Fotografar
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
 
-      {/* BOTÃO CONCLUIR */}
-      {canFinish && (
-        <View style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          backgroundColor: C.background,
-          paddingHorizontal: S.xl,
-          paddingTop: S.md,
-          paddingBottom: bottomPad + S.md,
-          borderTopWidth: 1,
-          borderTopColor: C.border,
-        }}>
-          <TouchableOpacity
-            onPress={handleFinish}
-            activeOpacity={0.85}
-            style={{
-              backgroundColor: C.textPrimary, borderRadius: R.xxl,
-              paddingVertical: S.lg, flexDirection: "row",
-              alignItems: "center", justifyContent: "center", gap: S.sm,
-            }}
-          >
-            <Feather name="check-circle" size={I.lg} color={C.surface} />
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
-              Concluir vistoria
+      {/* FOOTER */}
+      <View style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        backgroundColor: C.background,
+        borderTopWidth: 1, borderTopColor: C.border,
+        paddingTop: S.md, paddingHorizontal: S.xl,
+        paddingBottom: bottomPad + S.sm,
+      }}>
+        {!canFinish && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.sm }}>
+            <Feather name="alert-circle" size={I.sm} color={C.textTertiary} />
+            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>
+              {required.length - doneRequired} foto{required.length - doneRequired !== 1 ? "s" : ""} obrigatória{required.length - doneRequired !== 1 ? "s" : ""} restante{required.length - doneRequired !== 1 ? "s" : ""}
             </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+          </View>
+        )}
+        <TouchableOpacity
+          onPress={canFinish ? handleFinish : undefined}
+          activeOpacity={canFinish ? 0.85 : 1}
+          style={{
+            flexDirection: "row", alignItems: "center", justifyContent: "center",
+            gap: S.sm,
+            backgroundColor: canFinish ? C.textPrimary : C.iconBg,
+            borderRadius: R.xxl,
+            paddingVertical: S.lg,
+          }}
+        >
+          <Feather name="check-circle" size={I.lg} color={canFinish ? C.surface : C.textTertiary} />
+          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: canFinish ? C.surface : C.textTertiary }}>
+            Finalizar vistoria
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* CÂMERA */}
-      {currentStepObj && (
+      {activeStep && (
         <InspectionCamera
-          step={currentStepObj}
-          stepIndex={cameraStepIndex!}
-          totalSteps={totalSteps}
+          step={activeStep}
+          stepIndex={activeStepIndex}
+          totalSteps={steps.length}
           onCapture={handleCapture}
-          onClose={handleCloseCamera}
+          onClose={closeCamera}
         />
       )}
-    </>
+    </View>
   );
 }
