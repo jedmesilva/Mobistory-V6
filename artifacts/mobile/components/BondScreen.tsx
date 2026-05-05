@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
-  Clipboard, Modal, Image,
+  Clipboard, Image,
 } from "react-native";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,7 +16,11 @@ const C = colors.light;
 
 const BOND_REF = `VCL-${VEHICLE.plate.replace("-", "")}-BOND`;
 
-function BondShareSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+const renderBackdrop = (props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+);
+
+function BondShareSheet({ sheetRef }: { sheetRef: React.RefObject<BottomSheetModal | null> }) {
   const insets = useSafeAreaInsets();
   const [copied, setCopied] = useState(false);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&color=111827&bgcolor=F7F8FA&data=${BOND_REF}`;
@@ -35,27 +41,14 @@ function BondShareSheet({ visible, onClose }: { visible: boolean; onClose: () =>
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={onClose}
-        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.45)" }}
-      />
-
-      <View style={{
-        backgroundColor: C.surface,
-        borderTopLeftRadius: R.xxl, borderTopRightRadius: R.xxl,
-        paddingBottom: bottomPad + S.xl,
-      }}>
-        {/* Handle + título */}
-        <View style={{ paddingHorizontal: S.xl, paddingTop: S.lg, paddingBottom: S.md }}>
-          <View style={{ width: 40, height: 4, backgroundColor: C.separator, borderRadius: R.pill, alignSelf: "center", marginBottom: S.lg }} />
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Meu vínculo</Text>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: S.xs }}>
-              <Feather name="x" size={I.md} color={C.textTertiary} />
-            </TouchableOpacity>
-          </View>
+    <BottomSheetModal ref={sheetRef} enablePanDownToClose backdropComponent={renderBackdrop}>
+      <BottomSheetView style={{ paddingBottom: bottomPad + S.xl }}>
+        {/* Título */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.md }}>
+          <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Meu vínculo</Text>
+          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+            <Feather name="x" size={I.md} color={C.textTertiary} />
+          </TouchableOpacity>
         </View>
 
         {/* QR Code */}
@@ -107,15 +100,15 @@ function BondShareSheet({ visible, onClose }: { visible: boolean; onClose: () =>
           <Feather name="share-2" size={I.lg} color={C.surface} />
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>Compartilhar vínculo</Text>
         </TouchableOpacity>
-      </View>
-    </Modal>
+      </BottomSheetView>
+    </BottomSheetModal>
   );
 }
 
 export default function BondScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [shareOpen, setShareOpen] = useState(false);
+  const shareSheetRef = useRef<BottomSheetModal>(null);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -138,7 +131,7 @@ export default function BondScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
             <BackButton onPress={() => router.back()} />
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
-              <TouchableOpacity onPress={() => setShareOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <TouchableOpacity onPress={() => shareSheetRef.current?.present()} activeOpacity={0.7} style={{ padding: S.xs }}>
                 <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ padding: S.xs }}>
@@ -201,7 +194,7 @@ export default function BondScreen() {
         </ScrollView>
       </View>
 
-      <BondShareSheet visible={shareOpen} onClose={() => setShareOpen(false)} />
+      <BondShareSheet sheetRef={shareSheetRef} />
     </>
   );
 }
