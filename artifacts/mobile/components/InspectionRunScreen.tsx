@@ -86,7 +86,7 @@ export default function InspectionRunScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingTop: topPad + S.lg,
-          paddingBottom: bottomPad + (canFinish ? 110 : S.xxxl),
+          paddingBottom: bottomPad + 120,
           padding: S.xl,
         }}
         showsVerticalScrollIndicator={false}
