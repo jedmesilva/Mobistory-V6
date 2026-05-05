@@ -138,7 +138,7 @@ export default function VehiclesScreen() {
           <TouchableOpacity onPress={() => setDrawerOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="menu" size={I.xxl} color={C.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.7} style={{ padding: S.xs }}>
+          <TouchableOpacity onPress={() => router.navigate("/add-vehicle")} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="plus" size={I.xxl} color={C.textSecondary} />
           </TouchableOpacity>
         </View>
