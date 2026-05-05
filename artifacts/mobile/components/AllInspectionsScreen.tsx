@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
+  View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert, TextInput,
 } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
@@ -8,18 +8,20 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
-import { INSPECTION_STEPS } from "@/constants/data";
+import { INSPECTION_STEPS, INSPECTION_MOTIVOS, CURRENT_USER } from "@/constants/data";
 import { useInspections } from "@/contexts/InspectionsContext";
 import { R, S, F, I, ActionButtonSquare, BackButton, SearchBar } from "@/components/shared";
 
 const C = colors.light;
 
 const FILTERS = [
-  { id: "todas", label: "Todas" },
-  { id: "pendentes", label: "Pendentes" },
-  { id: "Rotina", label: "Rotina" },
-  { id: "Transferência", label: "Transferência" },
-  { id: "Solicitada", label: "Solicitada" },
+  { id: "todas",               label: "Todas" },
+  { id: "pendentes",           label: "Pendentes" },
+  { id: "Rotina",              label: "Rotina" },
+  { id: "Transferência",       label: "Transferência" },
+  { id: "Abertura de sinistro",label: "Sinistro" },
+  { id: "Manutenção",          label: "Manutenção" },
+  { id: "Acidente",            label: "Acidente" },
 ];
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -29,9 +31,13 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  Rotina:       { bg: C.iconBg,   text: C.iconColor },
-  Transferência:{ bg: "#EFF6FF",  text: "#2563EB"   },
-  Solicitada:   { bg: "#FDF4FF",  text: "#9333EA"   },
+  Rotina:                { bg: C.iconBg,   text: C.iconColor },
+  "Transferência":       { bg: "#EFF6FF",  text: "#2563EB"   },
+  "Abertura de sinistro":{ bg: "#FFF7ED",  text: "#C2410C"   },
+  "Manutenção":          { bg: "#F0FDF4",  text: "#16A34A"   },
+  "Acidente":            { bg: "#FEF2F2",  text: "#DC2626"   },
+  "Auditoria":           { bg: "#FDF4FF",  text: "#9333EA"   },
+  "Outro":               { bg: C.iconBg,   text: C.iconColor },
 };
 
 const PART_LABELS: Record<string, string> = {
@@ -46,7 +52,7 @@ const PART_LABELS: Record<string, string> = {
 
 function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["inspections"][number] }) {
   const status = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
-  const typeCl = TYPE_COLORS[item.type]     ?? TYPE_COLORS.Rotina;
+  const typeCl = TYPE_COLORS[item.type]     ?? { bg: C.iconBg, text: C.iconColor };
   return (
     <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
@@ -98,13 +104,12 @@ function PendingInspectionCard({
   item: ReturnType<typeof useInspections>["inspections"][number];
   onStart: (id: number) => void;
 }) {
-  const typeCl   = TYPE_COLORS[item.type]      ?? TYPE_COLORS.Rotina;
-  const statusCl = STATUS_COLORS[item.status]  ?? STATUS_COLORS.Pendente;
+  const typeCl   = TYPE_COLORS[item.type]     ?? { bg: C.iconBg, text: C.iconColor };
+  const statusCl = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
   const progress = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
 
   return (
     <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
-      {/* TOP ROW — mesma estrutura do InspectionCard */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
         <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
@@ -114,7 +119,6 @@ function PendingInspectionCard({
         </View>
       </View>
 
-      {/* DATA E INFO */}
       <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
         {item.date}
       </Text>
@@ -128,7 +132,6 @@ function PendingInspectionCard({
         </View>
       ) : null}
 
-      {/* PROGRESS BAR — só se já tiver progresso */}
       {item.parts.length > 0 && (
         <View style={{ marginBottom: S.md }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: S.xs }}>
@@ -143,7 +146,6 @@ function PendingInspectionCard({
 
       <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
 
-      {/* CTA */}
       <TouchableOpacity
         onPress={() => onStart(item.id)}
         activeOpacity={0.85}
@@ -165,21 +167,39 @@ const renderBackdrop = (props: BottomSheetBackdropProps) => (
   <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
 );
 
-const INSPECTION_TYPES = ["Rotina", "Solicitada", "Transferência"] as const;
+type MotivoItem = typeof INSPECTION_MOTIVOS[number];
 
 function NewInspectionSheet({
   sheetRef,
   onConfirm,
 }: {
   sheetRef: React.RefObject<BottomSheetModal | null>;
-  onConfirm: (parts: string[], type: string) => void;
+  onConfirm: (parts: string[], motivo: string, descricao: string) => void;
 }) {
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+
   const [selected, setSelected] = useState<string[]>(
     INSPECTION_STEPS.filter(s => s.required).map(s => s.id)
   );
-  const [inspType, setInspType] = useState<string>("Rotina");
+  const [motivo, setMotivo] = useState<MotivoItem | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [descricao, setDescricao] = useState("");
+  const [customMotivo, setCustomMotivo] = useState("");
+
+  const isOutro = motivo?.id === "outro";
+  const canConfirm = selected.length > 0 && motivo !== null && (isOutro ? customMotivo.trim().length > 0 : true);
+
+  const handleSelectMotivo = (m: MotivoItem) => {
+    setMotivo(m);
+    setShowDropdown(false);
+    if (m.id !== "outro") {
+      setDescricao(m.desc);
+      setCustomMotivo("");
+    } else {
+      setDescricao("");
+    }
+  };
 
   const toggle = (id: string) => {
     setSelected(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
@@ -190,54 +210,176 @@ function NewInspectionSheet({
       Alert.alert("Selecione ao menos uma parte", "Escolha pelo menos uma parte do veículo para vistoriar.");
       return;
     }
+    if (!motivo) {
+      Alert.alert("Selecione um motivo", "Escolha o motivo da vistoria antes de continuar.");
+      return;
+    }
+    if (isOutro && customMotivo.trim().length === 0) {
+      Alert.alert("Informe o motivo", "Descreva brevemente o motivo da vistoria.");
+      return;
+    }
+    const motivoLabel = isOutro ? customMotivo.trim() : motivo.label;
     sheetRef.current?.dismiss();
-    onConfirm(selected, inspType);
+    onConfirm(selected, motivoLabel, descricao.trim());
     setSelected(INSPECTION_STEPS.filter(s => s.required).map(s => s.id));
-    setInspType("Rotina");
+    setMotivo(null);
+    setShowDropdown(false);
+    setDescricao("");
+    setCustomMotivo("");
   };
 
   return (
     <BottomSheetModal ref={sheetRef} enablePanDownToClose backdropComponent={renderBackdrop}>
-      <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}>
+      <BottomSheetScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}
+      >
         {/* Título */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.md }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.lg }}>
           <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Solicitar vistoria</Text>
           <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="x" size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
         </View>
 
-        {/* TIPO */}
-        <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
-          Tipo de vistoria
-        </Text>
-        <View style={{ flexDirection: "row", paddingHorizontal: S.xl, gap: S.sm, marginBottom: S.lg }}>
-          {INSPECTION_TYPES.map(t => (
-            <TouchableOpacity
-              key={t}
-              onPress={() => setInspType(t)}
-              activeOpacity={0.7}
-              style={{
-                paddingVertical: 6, paddingHorizontal: S.lg,
-                borderRadius: R.pill,
-                backgroundColor: inspType === t ? C.textPrimary : C.surface,
-                borderWidth: 1,
-                borderColor: inspType === t ? C.textPrimary : C.border,
-              }}
-            >
-              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: inspType === t ? C.surface : C.textSecondary }}>
-                {t}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* SOLICITANTE — read-only */}
+        <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
+            Solicitante
+          </Text>
+          <View style={{
+            flexDirection: "row", alignItems: "center", gap: S.sm,
+            backgroundColor: C.background, borderRadius: R.xl,
+            paddingVertical: S.md, paddingHorizontal: S.lg,
+            borderWidth: 1, borderColor: C.border,
+          }}>
+            <View style={{
+              width: 32, height: 32, borderRadius: 16,
+              backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center",
+            }}>
+              <Feather name="user" size={I.sm} color={C.iconColor} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{CURRENT_USER.name}</Text>
+              <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{CURRENT_USER.bond}</Text>
+            </View>
+            <Feather name="lock" size={I.sm} color={C.textTertiary} />
+          </View>
         </View>
 
+        {/* MOTIVO — dropdown */}
+        <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
+            Motivo
+          </Text>
+
+          {/* Dropdown trigger */}
+          <TouchableOpacity
+            onPress={() => setShowDropdown(v => !v)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+              backgroundColor: C.background, borderRadius: R.xl,
+              paddingVertical: S.md, paddingHorizontal: S.lg,
+              borderWidth: 1, borderColor: showDropdown ? C.textPrimary : C.border,
+            }}
+          >
+            <Text style={{ fontSize: F.base, color: motivo ? C.textPrimary : C.textTertiary, fontWeight: motivo ? "500" as const : "400" as const }}>
+              {motivo ? motivo.label : "Selecione um motivo…"}
+            </Text>
+            <Feather name={showDropdown ? "chevron-up" : "chevron-down"} size={I.md} color={C.textTertiary} />
+          </TouchableOpacity>
+
+          {/* Dropdown list */}
+          {showDropdown && (
+            <View style={{
+              marginTop: S.xs, backgroundColor: C.surface,
+              borderRadius: R.xl, borderWidth: 1, borderColor: C.border,
+              overflow: "hidden",
+            }}>
+              {INSPECTION_MOTIVOS.map((m, idx) => {
+                const isSelected = motivo?.id === m.id;
+                const isLast = idx === INSPECTION_MOTIVOS.length - 1;
+                return (
+                  <TouchableOpacity
+                    key={m.id}
+                    onPress={() => handleSelectMotivo(m)}
+                    activeOpacity={0.7}
+                    style={{
+                      flexDirection: "row", alignItems: "center",
+                      paddingVertical: S.md, paddingHorizontal: S.lg,
+                      borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
+                      backgroundColor: isSelected ? C.background : "transparent",
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{m.label}</Text>
+                      {m.desc ? (
+                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{m.desc}</Text>
+                      ) : (
+                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2, fontStyle: "italic" as const }}>Descreva abaixo</Text>
+                      )}
+                    </View>
+                    {isSelected && <Feather name="check" size={I.md} color={C.textPrimary} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        {/* MOTIVO PERSONALIZADO — só para "Outro" */}
+        {isOutro && (
+          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
+              Nome do motivo
+            </Text>
+            <TextInput
+              value={customMotivo}
+              onChangeText={setCustomMotivo}
+              placeholder="Ex: Revisão pré-viagem…"
+              placeholderTextColor={C.textTertiary}
+              style={{
+                backgroundColor: C.background, borderRadius: R.xl,
+                paddingVertical: S.md, paddingHorizontal: S.lg,
+                borderWidth: 1, borderColor: C.border,
+                fontSize: F.base, color: C.textPrimary,
+              }}
+            />
+          </View>
+        )}
+
+        {/* DESCRIÇÃO — auto-preenchida ou livre */}
+        {motivo && (
+          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
+              Descrição
+            </Text>
+            <TextInput
+              value={descricao}
+              onChangeText={setDescricao}
+              placeholder={isOutro ? "Descreva o contexto da vistoria…" : "Adicione detalhes opcionais…"}
+              placeholderTextColor={C.textTertiary}
+              multiline
+              numberOfLines={3}
+              style={{
+                backgroundColor: C.background, borderRadius: R.xl,
+                paddingVertical: S.md, paddingHorizontal: S.lg,
+                borderWidth: 1, borderColor: C.border,
+                fontSize: F.base, color: C.textPrimary,
+                minHeight: 80, textAlignVertical: "top" as const,
+              }}
+            />
+          </View>
+        )}
+
+        {/* PARTES DO VEÍCULO */}
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
           Partes do veículo
         </Text>
 
         {INSPECTION_STEPS.map((step, idx) => {
-          const isSelected = selected.includes(step.id);
+          const isChecked = selected.includes(step.id);
           const isLast = idx === INSPECTION_STEPS.length - 1;
           return (
             <TouchableOpacity
@@ -252,11 +394,11 @@ function NewInspectionSheet({
             >
               <View style={{
                 width: 22, height: 22, borderRadius: 6,
-                borderWidth: isSelected ? 0 : 2, borderColor: C.border,
-                backgroundColor: isSelected ? C.textPrimary : "transparent",
+                borderWidth: isChecked ? 0 : 2, borderColor: C.border,
+                backgroundColor: isChecked ? C.textPrimary : "transparent",
                 alignItems: "center", justifyContent: "center", marginRight: S.md,
               }}>
-                {isSelected && <Feather name="check" size={13} color={C.surface} />}
+                {isChecked && <Feather name="check" size={13} color={C.surface} />}
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
@@ -273,17 +415,20 @@ function NewInspectionSheet({
           );
         })}
 
+        {/* BOTÃO CONFIRMAR */}
         <TouchableOpacity
           onPress={handleStart}
-          activeOpacity={0.85}
+          activeOpacity={canConfirm ? 0.85 : 1}
           style={{
             marginHorizontal: S.xl, marginTop: S.xl,
-            backgroundColor: C.textPrimary, borderRadius: R.xxl,
-            paddingVertical: S.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
+            backgroundColor: canConfirm ? C.textPrimary : C.border,
+            borderRadius: R.xxl,
+            paddingVertical: S.lg,
+            flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
           }}
         >
-          <Feather name="camera" size={I.lg} color={C.surface} />
-          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
+          <Feather name="camera" size={I.lg} color={canConfirm ? C.surface : C.textTertiary} />
+          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: canConfirm ? C.surface : C.textTertiary }}>
             Criar vistoria pendente · {selected.length} {selected.length === 1 ? "parte" : "partes"}
           </Text>
         </TouchableOpacity>
@@ -324,8 +469,8 @@ export default function AllInspectionsScreen() {
     );
   };
 
-  const handleConfirmNew = (parts: string[], type: string) => {
-    const newId = addInspection(parts, type);
+  const handleConfirmNew = (parts: string[], motivo: string, descricao: string) => {
+    const newId = addInspection(parts, motivo, descricao);
     router.navigate(`/inspection-run?id=${newId}`);
   };
 
@@ -386,7 +531,7 @@ export default function AllInspectionsScreen() {
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
             Histórico de vistorias
           </Text>
-          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, tipo, solicitante…" style={{ marginTop: S.md, marginBottom: S.sm }} />
+          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, motivo, solicitante…" style={{ marginTop: S.md, marginBottom: S.sm }} />
         </View>
 
         {/* FILTROS */}

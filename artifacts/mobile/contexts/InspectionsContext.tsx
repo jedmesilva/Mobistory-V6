@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState } from "react";
-import { ALL_INSPECTIONS } from "@/constants/data";
+import { ALL_INSPECTIONS, CURRENT_USER } from "@/constants/data";
 
 export type Inspection = typeof ALL_INSPECTIONS[number] & {
   plannedParts?: string[];
+  descricao?: string;
 };
 
 interface InspectionsContextValue {
   inspections: Inspection[];
-  addInspection: (plannedParts: string[], type: string) => number;
+  addInspection: (plannedParts: string[], motivo: string, descricao: string) => number;
   completeStep: (id: number, partId: string) => void;
   finishInspection: (id: number) => void;
 }
@@ -27,18 +28,19 @@ function nowTimeLabel(): string {
 export function InspectionsProvider({ children }: { children: React.ReactNode }) {
   const [inspections, setInspections] = useState<Inspection[]>(ALL_INSPECTIONS);
 
-  const addInspection = (plannedParts: string[], type: string): number => {
+  const addInspection = (plannedParts: string[], motivo: string, descricao: string): number => {
     const id = nextId++;
     const newInspection: Inspection = {
       id,
       date: todayLabel(),
       time: nowTimeLabel(),
-      type,
+      type: motivo,
+      descricao,
       km: "—",
       parts: [],
       totalParts: plannedParts.length,
       status: "Pendente",
-      requester: "Usuário",
+      requester: CURRENT_USER.name,
       deadline: "Vence em 7 dias",
       plannedParts,
     };

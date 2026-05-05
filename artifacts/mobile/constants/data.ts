@@ -157,14 +157,26 @@ export const DOCS_BY_BOND: Record<string, string> = {
   outro:          "Qualquer documento que comprove sua relação com o veículo",
 };
 
+export const CURRENT_USER = { name: "Lucas Mendes", bond: "Proprietário" };
+
+export const INSPECTION_MOTIVOS = [
+  { id: "rotina",        label: "Rotina",                desc: "Vistoria periódica de manutenção preventiva." },
+  { id: "transferencia", label: "Transferência",          desc: "Vistoria para transferência de propriedade do veículo." },
+  { id: "sinistro",      label: "Abertura de sinistro",   desc: "Vistoria para registro e documentação de sinistro." },
+  { id: "manutencao",    label: "Manutenção",             desc: "Vistoria pré ou pós intervenção de manutenção." },
+  { id: "acidente",      label: "Acidente",               desc: "Vistoria após ocorrência de acidente ou colisão." },
+  { id: "auditoria",     label: "Auditoria",              desc: "Vistoria para controle interno ou externo." },
+  { id: "outro",         label: "Outro",                  desc: "" },
+] as const;
+
 export const ALL_INSPECTIONS = [
-  { id: 6, date: "05 mai. 2026", time: "—", type: "Rotina", km: "45.400 km", parts: [], totalParts: 7, status: "Pendente", requester: "Mobistory", deadline: "Vence em 2 dias" },
-  { id: 7, date: "03 mai. 2026", time: "—", type: "Solicitada", km: "45.320 km", parts: ["frente"], totalParts: 6, status: "Pendente", requester: "Seguradora", deadline: "Vencida" },
-  { id: 1, date: "01 mai. 2026", time: "10:30", type: "Rotina", km: "45.230 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa"], totalParts: 6, status: "Aprovada", requester: "Usuário", deadline: null },
-  { id: 2, date: "10 out. 2023", time: "09:00", type: "Rotina", km: "31.450 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
-  { id: 3, date: "15 jan. 2023", time: "14:00", type: "Transferência", km: "27.890 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
-  { id: 4, date: "02 mar. 2022", time: "11:20", type: "Solicitada", km: "15.300 km", parts: ["frente", "traseira", "painel", "placa"], totalParts: 4, status: "Aprovada", requester: "Seguradora", deadline: null },
-  { id: 5, date: "18 set. 2021", time: "08:45", type: "Transferência", km: "3.200 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
+  { id: 6, date: "05 mai. 2026", time: "—", type: "Rotina", descricao: "Vistoria periódica de manutenção preventiva.", km: "45.400 km", parts: [], totalParts: 7, status: "Pendente", requester: "Lucas Mendes", deadline: "Vence em 2 dias" },
+  { id: 7, date: "03 mai. 2026", time: "—", type: "Abertura de sinistro", descricao: "Vistoria solicitada para abertura de sinistro junto à seguradora.", km: "45.320 km", parts: ["frente"], totalParts: 6, status: "Pendente", requester: "Lucas Mendes", deadline: "Vencida" },
+  { id: 1, date: "01 mai. 2026", time: "10:30", type: "Rotina", descricao: "Vistoria periódica de manutenção preventiva.", km: "45.230 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa"], totalParts: 6, status: "Aprovada", requester: "Lucas Mendes", deadline: null },
+  { id: 2, date: "10 out. 2023", time: "09:00", type: "Rotina", descricao: "Vistoria periódica de manutenção preventiva.", km: "31.450 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Lucas Mendes", deadline: null },
+  { id: 3, date: "15 jan. 2023", time: "14:00", type: "Transferência", descricao: "Vistoria para transferência de propriedade do veículo.", km: "27.890 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Lucas Mendes", deadline: null },
+  { id: 4, date: "02 mar. 2022", time: "11:20", type: "Abertura de sinistro", descricao: "Vistoria para registro e documentação de sinistro.", km: "15.300 km", parts: ["frente", "traseira", "painel", "placa"], totalParts: 4, status: "Aprovada", requester: "Lucas Mendes", deadline: null },
+  { id: 5, date: "18 set. 2021", time: "08:45", type: "Transferência", descricao: "Vistoria para transferência de propriedade do veículo.", km: "3.200 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Lucas Mendes", deadline: null },
 ];
 
 export const ALL_IDENTITY_HISTORY = [
