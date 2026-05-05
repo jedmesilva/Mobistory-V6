@@ -326,7 +326,7 @@ export default function IdentityScreen() {
           ))}
         </View>
         <TouchableOpacity
-          onPress={() => router.navigate("/activities?filter=identidade")}
+          onPress={() => router.navigate("/all-identity")}
           activeOpacity={0.7}
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.xs, marginTop: S.lg, paddingVertical: S.md, backgroundColor: C.surface, borderRadius: R.xl }}
         >

@@ -1,0 +1,301 @@
+import React, { useState, useRef } from "react";
+import {
+  View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
+} from "react-native";
+import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import colors from "@/constants/colors";
+import { ALL_INSPECTIONS, INSPECTION_STEPS } from "@/constants/data";
+import { R, S, F, I, ActionButtonSquare, BackButton, SearchBar } from "@/components/shared";
+
+const C = colors.light;
+
+const FILTERS = [
+  { id: "todas", label: "Todas" },
+  { id: "Rotina", label: "Rotina" },
+  { id: "Transferência", label: "Transferência" },
+  { id: "Solicitada", label: "Solicitada" },
+];
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  Aprovada:  { bg: "#DCFCE7", text: "#16A34A" },
+  Pendente:  { bg: "#FEF9C3", text: "#CA8A04" },
+  Reprovada: { bg: "#FEF2F2", text: "#DC2626" },
+};
+
+const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
+  Rotina:       { bg: C.iconBg,   text: C.iconColor },
+  Transferência:{ bg: "#EFF6FF",  text: "#2563EB"   },
+  Solicitada:   { bg: "#FDF4FF",  text: "#9333EA"   },
+};
+
+const PART_LABELS: Record<string, string> = {
+  frente:    "Frente",
+  traseira:  "Traseira",
+  lateral_e: "Lateral esquerda",
+  lateral_d: "Lateral direita",
+  painel:    "Painel",
+  placa:     "Placa",
+  chassi:    "Chassi físico",
+};
+
+function InspectionCard({ item }: { item: typeof ALL_INSPECTIONS[number] }) {
+  const status  = STATUS_COLORS[item.status]  ?? STATUS_COLORS.Pendente;
+  const typeCl  = TYPE_COLORS[item.type]      ?? TYPE_COLORS.Rotina;
+  return (
+    <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+          <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
+          </View>
+        </View>
+        <View style={{ backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: status.text }}>{item.status}</Text>
+        </View>
+      </View>
+
+      <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
+        {item.date}
+      </Text>
+      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.lg }}>
+        {item.time} · {item.km} · {item.requester}
+      </Text>
+
+      <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
+
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+          <Feather name="camera" size={I.sm} color={C.textTertiary} />
+          <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
+            {item.totalParts} {item.totalParts === 1 ? "parte" : "partes"} registradas
+          </Text>
+        </View>
+        <View style={{ flexDirection: "row", gap: S.xs }}>
+          {item.parts.slice(0, 3).map(p => (
+            <View key={p} style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
+              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>{PART_LABELS[p] ?? p}</Text>
+            </View>
+          ))}
+          {item.parts.length > 3 && (
+            <View style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
+              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>+{item.parts.length - 3}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const renderBackdrop = (props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+);
+
+function NewInspectionSheet({ sheetRef }: { sheetRef: React.RefObject<BottomSheetModal | null> }) {
+  const insets = useSafeAreaInsets();
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const [selected, setSelected] = useState<string[]>(
+    INSPECTION_STEPS.filter(s => s.required).map(s => s.id)
+  );
+
+  const toggle = (id: string) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
+  };
+
+  const handleStart = () => {
+    if (selected.length === 0) {
+      Alert.alert("Selecione ao menos uma parte", "Escolha pelo menos uma parte do veículo para vistoriar.");
+      return;
+    }
+    sheetRef.current?.dismiss();
+    Alert.alert("Vistoria iniciada", `${selected.length} parte(s) selecionada(s). Câmera seria aberta aqui.`);
+  };
+
+  return (
+    <BottomSheetModal ref={sheetRef} enablePanDownToClose backdropComponent={renderBackdrop}>
+      <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}>
+        {/* Título */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.md }}>
+          <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Nova vistoria</Text>
+          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+            <Feather name="x" size={I.md} color={C.textTertiary} />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={{ fontSize: F.sm, color: C.textSecondary, paddingHorizontal: S.xl, marginBottom: S.lg }}>
+          Selecione as partes do veículo que deseja fotografar nesta vistoria.
+        </Text>
+
+        <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
+          Partes do veículo
+        </Text>
+
+        {INSPECTION_STEPS.map((step, idx) => {
+          const isSelected = selected.includes(step.id);
+          const isLast = idx === INSPECTION_STEPS.length - 1;
+          return (
+            <TouchableOpacity
+              key={step.id}
+              onPress={() => toggle(step.id)}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: "row", alignItems: "center",
+                paddingVertical: S.md, paddingHorizontal: S.xl,
+                borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
+              }}
+            >
+              <View style={{
+                width: 22, height: 22, borderRadius: 6,
+                borderWidth: isSelected ? 0 : 2, borderColor: C.border,
+                backgroundColor: isSelected ? C.textPrimary : "transparent",
+                alignItems: "center", justifyContent: "center", marginRight: S.md,
+              }}>
+                {isSelected && <Feather name="check" size={13} color={C.surface} />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+                  <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: C.textPrimary }}>{step.label}</Text>
+                  {step.required && (
+                    <View style={{ backgroundColor: "#EFF6FF", borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: S.xs }}>
+                      <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: "#2563EB" }}>Obrigatório</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{step.instruction}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        <TouchableOpacity
+          onPress={handleStart}
+          activeOpacity={0.85}
+          style={{
+            marginHorizontal: S.xl, marginTop: S.xl,
+            backgroundColor: C.textPrimary, borderRadius: R.xxl,
+            paddingVertical: S.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
+          }}
+        >
+          <Feather name="camera" size={I.lg} color={C.surface} />
+          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
+            Iniciar vistoria · {selected.length} {selected.length === 1 ? "parte" : "partes"}
+          </Text>
+        </TouchableOpacity>
+      </BottomSheetScrollView>
+    </BottomSheetModal>
+  );
+}
+
+export default function AllInspectionsScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("todas");
+  const newInspectionRef = useRef<BottomSheetModal>(null);
+
+  const topPad    = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+
+  const handleShare = async () => {
+    try {
+      await Share.share({ message: `Histórico de vistorias — ${ALL_INSPECTIONS.length} registros` });
+    } catch (_) {}
+  };
+
+  const handleExport = () => {
+    Alert.alert("Exportar", "Escolha o formato de exportação", [
+      { text: "CSV", onPress: () => {} },
+      { text: "PDF", onPress: () => {} },
+      { text: "Cancelar", style: "cancel" },
+    ]);
+  };
+
+  const handleStats = () => {
+    Alert.alert(
+      "Estatísticas",
+      `Total: ${ALL_INSPECTIONS.length} vistorias\nAprovadas: ${ALL_INSPECTIONS.filter(i => i.status === "Aprovada").length}\nMédia de partes: ${Math.round(ALL_INSPECTIONS.reduce((a, b) => a + b.totalParts, 0) / ALL_INSPECTIONS.length)}/vistoria`,
+    );
+  };
+
+  const filtered = ALL_INSPECTIONS.filter(item => {
+    const matchFilter = filter === "todas" || item.type === filter;
+    const matchQuery  = query === "" || item.date.toLowerCase().includes(query.toLowerCase()) || item.type.toLowerCase().includes(query.toLowerCase()) || item.requester.toLowerCase().includes(query.toLowerCase());
+    return matchFilter && matchQuery;
+  });
+
+  return (
+    <>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: C.background }}
+        contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + S.xxxl }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* BACK + TITLE */}
+        <View style={{ paddingHorizontal: S.xl }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <BackButton onPress={() => router.back()} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+              <TouchableOpacity onPress={handleShare} activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ padding: S.xs }}>
+                <Feather name="download" size={I.xxl} color={C.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={{ marginBottom: S.xxl }}>
+            <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Vistorias</Text>
+          </View>
+
+          {/* ACTION BUTTONS */}
+          <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl }}>
+            <ActionButtonSquare iconName="camera" label="Nova vistoria" onPress={() => newInspectionRef.current?.present()} />
+            <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" onPress={handleStats} />
+          </View>
+
+          {/* FILTROS */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: S.lg }} contentContainerStyle={{ gap: S.xs }}>
+            {FILTERS.map(f => (
+              <TouchableOpacity
+                key={f.id}
+                onPress={() => setFilter(f.id)}
+                activeOpacity={0.7}
+                style={{
+                  paddingVertical: S.sm, paddingHorizontal: S.md,
+                  borderRadius: R.pill,
+                  backgroundColor: filter === f.id ? C.textPrimary : C.surface,
+                }}
+              >
+                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: filter === f.id ? C.surface : C.textSecondary }}>
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* BUSCA */}
+          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, tipo, solicitante…" style={{ marginBottom: S.xl }} />
+        </View>
+
+        {/* LISTA */}
+        <View style={{ paddingHorizontal: S.xl }}>
+          {filtered.length === 0 ? (
+            <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
+              <Feather name="search" size={I.xxxl} color={C.textTertiary} />
+              <Text style={{ fontSize: F.sm, color: C.textTertiary }}>Nenhuma vistoria encontrada</Text>
+            </View>
+          ) : (
+            filtered.map(item => <InspectionCard key={item.id} item={item} />)
+          )}
+        </View>
+      </ScrollView>
+
+      <NewInspectionSheet sheetRef={newInspectionRef} />
+    </>
+  );
+}

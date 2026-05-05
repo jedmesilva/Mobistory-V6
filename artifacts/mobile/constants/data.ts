@@ -155,6 +155,24 @@ export const DOCS_BY_BOND: Record<string, string> = {
   outro:          "Qualquer documento que comprove sua relação com o veículo",
 };
 
+export const ALL_INSPECTIONS = [
+  { id: 1, date: "01 mai. 2026", time: "10:30", type: "Rotina", km: "45.230 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa"], totalParts: 6, status: "Aprovada", requester: "Usuário" },
+  { id: 2, date: "10 out. 2023", time: "09:00", type: "Rotina", km: "31.450 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
+  { id: 3, date: "15 jan. 2023", time: "14:00", type: "Transferência", km: "27.890 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
+  { id: 4, date: "02 mar. 2022", time: "11:20", type: "Solicitada", km: "15.300 km", parts: ["frente", "traseira", "painel", "placa"], totalParts: 4, status: "Aprovada", requester: "Seguradora" },
+  { id: 5, date: "18 set. 2021", time: "08:45", type: "Transferência", km: "3.200 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
+];
+
+export const ALL_IDENTITY_HISTORY = [
+  { id: 1, version: 3, type: "aprovacao", typeLabel: "Aprovação de alteração", date: "12 abr. 2026", time: "14:00", desc: "Cor alterada para Azul Metálico" },
+  { id: 2, version: 2, type: "aprovacao", typeLabel: "Aprovação de alteração", date: "03 ago. 2024", time: "10:30", desc: "Acessório adicionado: Engate reboque" },
+  { id: 3, version: 2, type: "atualizacao", typeLabel: "Atualização cadastral", date: "20 jul. 2024", time: "09:15", desc: "KM atualizado para 39.800 km" },
+  { id: 4, version: 1, type: "vistoria", typeLabel: "Vistoria de rotina", date: "10 out. 2023", time: "09:00", desc: "Checagem anual — nenhuma alteração" },
+  { id: 5, version: 1, type: "atualizacao", typeLabel: "Atualização cadastral", date: "05 mai. 2023", time: "16:40", desc: "Documento CRLV 2023 anexado" },
+  { id: 6, version: 1, type: "vistoria", typeLabel: "Vistoria de transferência", date: "15 jan. 2023", time: "13:00", desc: "Vistoria realizada para transferência de propriedade" },
+  { id: 7, version: 1, type: "emissao", typeLabel: "Emissão da identidade", date: "15 jan. 2023", time: "15:00", desc: "Identidade do veículo emitida pelo sistema Mobistory" },
+];
+
 export const INSPECTION_STEPS = [
   { id: "frente",    label: "Frente",           instruction: "Fotografe a parte frontal do veículo inteira, de frente",  required: true  },
   { id: "traseira",  label: "Traseira",         instruction: "Fotografe a parte traseira do veículo inteira",            required: true  },
