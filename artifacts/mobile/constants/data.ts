@@ -11,19 +11,19 @@ export const VEHICLE = {
 
 export const RECORDS = [
   { id: "fuel", label: "Abastecimento", lastDate: "Hoje, 09:14", lastValue: "45L · R$ 312,30" },
-  { id: "tire", label: "Pneus", lastDate: "Há 3 dias", lastValue: "32 PSI · 4 pneus" },
+  { id: "tire", label: "Calibragem", lastDate: "Há 3 dias", lastValue: "32 PSI · 4 pneus" },
   { id: "bonds", label: "Vínculos", lastDate: "jan. 2023", lastValue: "Proprietário" },
 ];
 
 export const MODULES = [
   { id: "fuel", label: "Abastecimento", desc: "Histórico de abastecimentos" },
-  { id: "tire", label: "Pneus", desc: "Histórico de calibragens" },
+  { id: "tire", label: "Calibragem", desc: "Histórico de calibragens" },
   { id: "bonds", label: "Vínculos", desc: "Histórico de vínculos do veículo" },
 ];
 
 export const REGISTER_MODULES = [
   { id: "fuel", label: "Abastecimento", desc: "Registrar novo abastecimento" },
-  { id: "tire", label: "Pneus", desc: "Registrar calibragem dos pneus" },
+  { id: "tire", label: "Calibragem", desc: "Registrar calibragem dos pneus" },
   { id: "bonds", label: "Vínculo", desc: "Registrar novo vínculo com o veículo" },
 ];
 
@@ -168,7 +168,7 @@ export const INSPECTION_STEPS = [
 export const ACTIVITY_TYPES = [
   { id: "todos", label: "Todos" },
   { id: "abastecimento", label: "Abastecimento" },
-  { id: "pneus", label: "Pneus" },
+  { id: "pneus", label: "Calibragem" },
   { id: "vinculo", label: "Vínculos" },
   { id: "documento", label: "Documentos" },
   { id: "identidade", label: "Identidade" },
