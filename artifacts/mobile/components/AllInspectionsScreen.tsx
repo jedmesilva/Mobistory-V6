@@ -2,13 +2,14 @@ import React, { useState, useRef } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
 } from "react-native";
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
-import { ALL_INSPECTIONS, INSPECTION_STEPS } from "@/constants/data";
+import { INSPECTION_STEPS } from "@/constants/data";
+import { useInspections } from "@/contexts/InspectionsContext";
 import { R, S, F, I, ActionButtonSquare, BackButton, SearchBar } from "@/components/shared";
 
 const C = colors.light;
@@ -174,12 +175,21 @@ const renderBackdrop = (props: BottomSheetBackdropProps) => (
   <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
 );
 
-function NewInspectionSheet({ sheetRef }: { sheetRef: React.RefObject<BottomSheetModal | null> }) {
+const INSPECTION_TYPES = ["Rotina", "Solicitada", "Transferência"] as const;
+
+function NewInspectionSheet({
+  sheetRef,
+  onConfirm,
+}: {
+  sheetRef: React.RefObject<BottomSheetModal | null>;
+  onConfirm: (parts: string[], type: string) => void;
+}) {
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
   const [selected, setSelected] = useState<string[]>(
     INSPECTION_STEPS.filter(s => s.required).map(s => s.id)
   );
+  const [inspType, setInspType] = useState<string>("Rotina");
 
   const toggle = (id: string) => {
     setSelected(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
@@ -191,7 +201,9 @@ function NewInspectionSheet({ sheetRef }: { sheetRef: React.RefObject<BottomShee
       return;
     }
     sheetRef.current?.dismiss();
-    Alert.alert("Vistoria iniciada", `${selected.length} parte(s) selecionada(s). Câmera seria aberta aqui.`);
+    onConfirm(selected, inspType);
+    setSelected(INSPECTION_STEPS.filter(s => s.required).map(s => s.id));
+    setInspType("Rotina");
   };
 
   return (
@@ -205,9 +217,30 @@ function NewInspectionSheet({ sheetRef }: { sheetRef: React.RefObject<BottomShee
           </TouchableOpacity>
         </View>
 
-        <Text style={{ fontSize: F.sm, color: C.textSecondary, paddingHorizontal: S.xl, marginBottom: S.lg }}>
-          Selecione as partes do veículo que deseja fotografar nesta vistoria.
+        {/* TIPO */}
+        <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
+          Tipo de vistoria
         </Text>
+        <View style={{ flexDirection: "row", paddingHorizontal: S.xl, gap: S.sm, marginBottom: S.lg }}>
+          {INSPECTION_TYPES.map(t => (
+            <TouchableOpacity
+              key={t}
+              onPress={() => setInspType(t)}
+              activeOpacity={0.7}
+              style={{
+                paddingVertical: 6, paddingHorizontal: S.lg,
+                borderRadius: R.pill,
+                backgroundColor: inspType === t ? C.textPrimary : C.surface,
+                borderWidth: 1,
+                borderColor: inspType === t ? C.textPrimary : C.border,
+              }}
+            >
+              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: inspType === t ? C.surface : C.textSecondary }}>
+                {t}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
           Partes do veículo
@@ -261,7 +294,7 @@ function NewInspectionSheet({ sheetRef }: { sheetRef: React.RefObject<BottomShee
         >
           <Feather name="camera" size={I.lg} color={C.surface} />
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
-            Iniciar vistoria · {selected.length} {selected.length === 1 ? "parte" : "partes"}
+            Criar vistoria pendente · {selected.length} {selected.length === 1 ? "parte" : "partes"}
           </Text>
         </TouchableOpacity>
       </BottomSheetScrollView>
@@ -275,13 +308,14 @@ export default function AllInspectionsScreen() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todas");
   const newInspectionRef = useRef<BottomSheetModal>(null);
+  const { inspections, addInspection } = useInspections();
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: `Histórico de vistorias — ${ALL_INSPECTIONS.length} registros` });
+      await Share.share({ message: `Histórico de vistorias — ${inspections.length} registros` });
     } catch (_) {}
   };
 
@@ -296,23 +330,32 @@ export default function AllInspectionsScreen() {
   const handleStats = () => {
     Alert.alert(
       "Estatísticas",
-      `Total: ${ALL_INSPECTIONS.length} vistorias\nAprovadas: ${ALL_INSPECTIONS.filter(i => i.status === "Aprovada").length}\nMédia de partes: ${Math.round(ALL_INSPECTIONS.reduce((a, b) => a + b.totalParts, 0) / ALL_INSPECTIONS.length)}/vistoria`,
+      `Total: ${inspections.length} vistorias\nAprovadas: ${inspections.filter(i => i.status === "Aprovada").length}\nMédia de partes: ${Math.round(inspections.reduce((a, b) => a + b.totalParts, 0) / inspections.length)}/vistoria`,
     );
   };
 
-  const matchesQuery = (item: typeof ALL_INSPECTIONS[number]) =>
+  const handleConfirmNew = (parts: string[], type: string) => {
+    addInspection(parts, type);
+    Alert.alert(
+      "Vistoria criada!",
+      `Uma vistoria de ${type.toLowerCase()} com ${parts.length} ${parts.length === 1 ? "parte" : "partes"} foi adicionada como pendente.`,
+      [{ text: "OK" }],
+    );
+  };
+
+  const matchesQuery = (item: typeof inspections[number]) =>
     query === "" ||
     item.date.toLowerCase().includes(query.toLowerCase()) ||
     item.type.toLowerCase().includes(query.toLowerCase()) ||
     item.requester.toLowerCase().includes(query.toLowerCase());
 
-  const pendingItems = ALL_INSPECTIONS.filter(item => {
+  const pendingItems = inspections.filter(item => {
     const isPending = item.status === "Pendente";
     const matchFilter = filter === "todas" || filter === "pendentes" || item.type === filter;
     return isPending && matchFilter && matchesQuery(item);
   });
 
-  const historyItems = ALL_INSPECTIONS.filter(item => {
+  const historyItems = inspections.filter(item => {
     const isDone = item.status !== "Pendente";
     const matchFilter = filter === "todas" || (filter !== "pendentes" && item.type === filter);
     return isDone && matchFilter && matchesQuery(item);
@@ -434,7 +477,7 @@ export default function AllInspectionsScreen() {
         </View>
       </ScrollView>
 
-      <NewInspectionSheet sheetRef={newInspectionRef} />
+      <NewInspectionSheet sheetRef={newInspectionRef} onConfirm={handleConfirmNew} />
     </>
   );
 }

@@ -15,6 +15,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { InspectionsProvider } from "@/contexts/InspectionsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,13 +57,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </BottomSheetModalProvider>
-          </GestureHandlerRootView>
+          <InspectionsProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <KeyboardProvider>
+                  <RootLayoutNav />
+                </KeyboardProvider>
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+          </InspectionsProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
