@@ -201,7 +201,7 @@ function NewInspectionSheet({
       <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}>
         {/* Título */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.md }}>
-          <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Nova vistoria</Text>
+          <Text style={{ fontSize: F.xxl, fontWeight: "700" as const, color: C.textPrimary }}>Solicitar vistoria</Text>
           <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
             <Feather name="x" size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
@@ -378,7 +378,7 @@ export default function AllInspectionsScreen() {
 
           {/* ACTION BUTTONS */}
           <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl, width: "66%" }}>
-            <ActionButtonSquare iconName="camera" label="Nova vistoria" onPress={() => newInspectionRef.current?.present()} />
+            <ActionButtonSquare iconName="camera" label="Solicitar vistoria" onPress={() => newInspectionRef.current?.present()} />
             <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" onPress={handleStats} />
           </View>
 
