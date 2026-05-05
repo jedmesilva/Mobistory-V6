@@ -1,11 +1,15 @@
 import React, { createContext, useContext, useState } from "react";
 import { ALL_INSPECTIONS } from "@/constants/data";
 
-type Inspection = typeof ALL_INSPECTIONS[number];
+export type Inspection = typeof ALL_INSPECTIONS[number] & {
+  plannedParts?: string[];
+};
 
 interface InspectionsContextValue {
   inspections: Inspection[];
-  addInspection: (parts: string[], type: string) => void;
+  addInspection: (plannedParts: string[], type: string) => number;
+  completeStep: (id: number, partId: string) => void;
+  finishInspection: (id: number) => void;
 }
 
 const InspectionsContext = createContext<InspectionsContextValue | null>(null);
@@ -23,24 +27,47 @@ function nowTimeLabel(): string {
 export function InspectionsProvider({ children }: { children: React.ReactNode }) {
   const [inspections, setInspections] = useState<Inspection[]>(ALL_INSPECTIONS);
 
-  const addInspection = (parts: string[], type: string) => {
+  const addInspection = (plannedParts: string[], type: string): number => {
+    const id = nextId++;
     const newInspection: Inspection = {
-      id: nextId++,
+      id,
       date: todayLabel(),
       time: nowTimeLabel(),
       type,
       km: "—",
       parts: [],
-      totalParts: parts.length,
+      totalParts: plannedParts.length,
       status: "Pendente",
       requester: "Usuário",
       deadline: "Vence em 7 dias",
+      plannedParts,
     };
     setInspections(prev => [newInspection, ...prev]);
+    return id;
+  };
+
+  const completeStep = (id: number, partId: string) => {
+    setInspections(prev =>
+      prev.map(insp =>
+        insp.id === id && !insp.parts.includes(partId)
+          ? { ...insp, parts: [...insp.parts, partId] }
+          : insp
+      )
+    );
+  };
+
+  const finishInspection = (id: number) => {
+    setInspections(prev =>
+      prev.map(insp =>
+        insp.id === id
+          ? { ...insp, status: "Aprovada", deadline: null, time: nowTimeLabel() }
+          : insp
+      )
+    );
   };
 
   return (
-    <InspectionsContext.Provider value={{ inspections, addInspection }}>
+    <InspectionsContext.Provider value={{ inspections, addInspection, completeStep, finishInspection }}>
       {children}
     </InspectionsContext.Provider>
   );

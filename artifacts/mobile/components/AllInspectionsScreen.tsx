@@ -44,7 +44,7 @@ const PART_LABELS: Record<string, string> = {
   chassi:    "Chassi físico",
 };
 
-function InspectionCard({ item }: { item: typeof ALL_INSPECTIONS[number] }) {
+function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["inspections"][number] }) {
   const status = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
   const typeCl = TYPE_COLORS[item.type]     ?? TYPE_COLORS.Rotina;
   return (
@@ -95,8 +95,8 @@ function PendingInspectionCard({
   item,
   onStart,
 }: {
-  item: typeof ALL_INSPECTIONS[number];
-  onStart: () => void;
+  item: ReturnType<typeof useInspections>["inspections"][number];
+  onStart: (id: number) => void;
 }) {
   const typeCl  = TYPE_COLORS[item.type] ?? TYPE_COLORS.Rotina;
   const isOverdue = item.deadline === "Vencida";
@@ -154,7 +154,7 @@ function PendingInspectionCard({
 
       {/* CTA */}
       <TouchableOpacity
-        onPress={onStart}
+        onPress={() => onStart(item.id)}
         activeOpacity={0.85}
         style={{
           flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
@@ -335,12 +335,8 @@ export default function AllInspectionsScreen() {
   };
 
   const handleConfirmNew = (parts: string[], type: string) => {
-    addInspection(parts, type);
-    Alert.alert(
-      "Vistoria criada!",
-      `Uma vistoria de ${type.toLowerCase()} com ${parts.length} ${parts.length === 1 ? "parte" : "partes"} foi adicionada como pendente.`,
-      [{ text: "OK" }],
-    );
+    const newId = addInspection(parts, type);
+    router.navigate(`/inspection-run?id=${newId}`);
   };
 
   const matchesQuery = (item: typeof inspections[number]) =>
@@ -455,7 +451,7 @@ export default function AllInspectionsScreen() {
                     <PendingInspectionCard
                       key={item.id}
                       item={item}
-                      onStart={() => newInspectionRef.current?.present()}
+                      onStart={(id) => router.navigate(`/inspection-run?id=${id}`)}
                     />
                   ))}
                 </View>
