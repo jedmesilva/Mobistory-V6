@@ -1,58 +1,58 @@
-# Workspace
+# Mobistory V6
 
-## Overview
+Aplicativo móvel de histórico e gestão de veículos, construído com Expo (React Native) e um servidor API em Express/Node.js.
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
-This is **Mobistory** — a vehicle fuel/supply tracking app with AI-powered receipt extraction.
+## Estrutura do Projeto
 
-## Stack
-
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM (provisioned via Replit)
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **AI**: Anthropic Claude via Replit AI Integrations (no API key needed — billed to Replit credits)
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (ESM bundle)
-
-## Project Structure
+Este é um monorepo pnpm com a seguinte estrutura:
 
 ```
 artifacts/
-  api-server/      — Express API backend (port 8080)
-  mobile/          — React Native / Expo mobile app
-  mockup-sandbox/  — Vite + React UI prototyping environment
+  mobile/        - App Expo (React Native + Web)
+  api-server/    - API REST em Express/TypeScript
 lib/
-  api-spec/        — OpenAPI specification
-  api-client-react/ — Generated React Query hooks
-  api-zod/         — Generated Zod schemas
-  db/              — Drizzle ORM schema + PostgreSQL client
-  integrations-anthropic-ai/ — Anthropic Claude client wrapper
+  db/            - Schema Drizzle ORM (PostgreSQL)
+  api-zod/       - Schemas de validação Zod
+  api-spec/      - Especificação da API
+  api-client-react/ - Cliente React para a API
+  integrations-anthropic-ai/ - Integração com Anthropic AI
+  integrations/  - Utilitários de integração
 ```
 
-## Key Endpoints
+## Tecnologias
 
-- `GET  /api/healthz` — health check, returns `{"status":"ok"}`
-- `POST /api/fuel/analyze` — AI image extraction (base64 + mediaType → structured fuel data)
-- `POST /api/vehicle/analyze` — AI vehicle field extraction (base64 + mediaType + field → `{data: {field: value}}`)
-
-## Environment Variables (Auto-configured)
-
-- `DATABASE_URL` — PostgreSQL connection string (Replit-managed)
-- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` — Replit AI Integrations proxy URL
-- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` — Replit AI Integrations key
-
-## Key Commands
-
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+- **Mobile**: Expo ~54, React Native, Expo Router, TypeScript
+- **Backend**: Express 5, Node.js 24, TypeScript, pino (logging)
+- **Banco de dados**: PostgreSQL + Drizzle ORM
+- **AI**: Anthropic Claude (via Replit AI Integrations)
+- **Build**: pnpm workspaces, esbuild
 
 ## Workflows
 
-- **API Server** — runs `PORT=8080 pnpm --filter @workspace/api-server run dev` (build + start)
+- **Start application**: `PORT=5000 pnpm --filter @workspace/mobile run dev` (porta 5000, webview)
+- **Start Backend**: `PORT=8080 pnpm --filter @workspace/api-server run dev` (porta 8080, console)
+
+## Variáveis de Ambiente
+
+- `DATABASE_URL` — URL do banco PostgreSQL (provisionado automaticamente pelo Replit)
+- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` — URL base da integração Anthropic (auto-configurada)
+- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` — Chave da integração Anthropic (auto-configurada)
+
+## Comandos Úteis
+
+```bash
+# Instalar dependências
+pnpm install
+
+# Push do schema para o banco
+pnpm --filter @workspace/db run push
+
+# Build do backend
+pnpm --filter @workspace/api-server run build
+
+# Rodar o app mobile em dev
+PORT=5000 pnpm --filter @workspace/mobile run dev
+
+# Rodar o backend em dev
+PORT=8080 pnpm --filter @workspace/api-server run dev
+```
