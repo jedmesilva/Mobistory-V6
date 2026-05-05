@@ -67,22 +67,22 @@ function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["ins
 
       <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
 
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
-          <Feather name="camera" size={I.sm} color={C.textTertiary} />
-          <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, flex: 1, minWidth: 0 }}>
+          <Feather name="camera" size={I.sm} color={C.textTertiary} style={{ flexShrink: 0 }} />
+          <Text numberOfLines={1} style={{ fontSize: F.sm, color: C.textSecondary, flexShrink: 1 }}>
             {item.parts.length}/{item.totalParts} {item.totalParts === 1 ? "parte" : "partes"} registradas
           </Text>
         </View>
-        <View style={{ flexDirection: "row", gap: S.xs }}>
-          {item.parts.slice(0, 3).map(p => (
+        <View style={{ flexDirection: "row", gap: S.xs, flexShrink: 0 }}>
+          {item.parts.slice(0, 2).map(p => (
             <View key={p} style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
               <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>{PART_LABELS[p] ?? p}</Text>
             </View>
           ))}
-          {item.parts.length > 3 && (
+          {item.parts.length > 2 && (
             <View style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
-              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>+{item.parts.length - 3}</Text>
+              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>+{item.parts.length - 2}</Text>
             </View>
           )}
         </View>
