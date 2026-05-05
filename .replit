@@ -45,8 +45,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=8000 pnpm --filter @workspace/mobile run dev"
-waitForPort = 8000
+args = "PORT=8081 pnpm --filter @workspace/mobile run dev"
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
