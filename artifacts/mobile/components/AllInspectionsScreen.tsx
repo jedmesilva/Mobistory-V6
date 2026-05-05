@@ -282,9 +282,18 @@ function NewInspectionSheet({
               paddingVertical: S.md, paddingHorizontal: S.lg,
             }}
           >
-            <Text style={{ fontSize: F.base, color: motivo ? C.textPrimary : C.textTertiary, fontWeight: motivo ? "500" as const : "400" as const }}>
-              {motivo ? motivo.label : "Selecione um motivo…"}
-            </Text>
+            {motivo ? (
+              <View style={{ flex: 1, marginRight: S.sm }}>
+                <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{motivo.label}</Text>
+                {motivo.desc ? (
+                  <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{motivo.desc}</Text>
+                ) : (
+                  <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2, fontStyle: "italic" as const }}>Informe abaixo</Text>
+                )}
+              </View>
+            ) : (
+              <Text style={{ flex: 1, fontSize: F.base, color: C.textTertiary }}>Selecione um motivo…</Text>
+            )}
             <Feather name={showDropdown ? "chevron-up" : "chevron-down"} size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
 
