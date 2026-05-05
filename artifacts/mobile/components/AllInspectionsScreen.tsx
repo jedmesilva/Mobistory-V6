@@ -235,7 +235,7 @@ export default function AllInspectionsScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* BACK + TITLE */}
+        {/* BACK + SHARE/EXPORT */}
         <View style={{ paddingHorizontal: S.xl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <BackButton onPress={() => router.back()} />
@@ -248,42 +248,53 @@ export default function AllInspectionsScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* TITLE */}
           <View style={{ marginBottom: S.xxl }}>
             <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Vistorias</Text>
           </View>
 
           {/* ACTION BUTTONS */}
-          <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl }}>
+          <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl, width: "66%" }}>
             <ActionButtonSquare iconName="camera" label="Nova vistoria" onPress={() => newInspectionRef.current?.present()} />
             <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" onPress={handleStats} />
           </View>
 
-          {/* FILTROS */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: S.lg }} contentContainerStyle={{ gap: S.xs }}>
-            {FILTERS.map(f => (
-              <TouchableOpacity
-                key={f.id}
-                onPress={() => setFilter(f.id)}
-                activeOpacity={0.7}
-                style={{
-                  paddingVertical: S.sm, paddingHorizontal: S.md,
-                  borderRadius: R.pill,
-                  backgroundColor: filter === f.id ? C.textPrimary : C.surface,
-                }}
-              >
-                <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: filter === f.id ? C.surface : C.textSecondary }}>
-                  {f.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* BUSCA */}
-          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, tipo, solicitante…" style={{ marginBottom: S.xl }} />
+          {/* LABEL + BUSCA */}
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
+            Histórico de vistorias
+          </Text>
+          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, tipo, solicitante…" style={{ marginTop: S.md, marginBottom: S.sm }} />
         </View>
 
+        {/* FILTROS */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={{ paddingHorizontal: S.xl, paddingVertical: S.md, gap: S.sm }}
+        >
+          {FILTERS.map(f => (
+            <TouchableOpacity
+              key={f.id}
+              onPress={() => setFilter(f.id)}
+              activeOpacity={0.7}
+              style={{
+                paddingVertical: 6, paddingHorizontal: S.lg,
+                borderRadius: R.pill,
+                backgroundColor: filter === f.id ? C.textPrimary : C.surface,
+                marginRight: S.sm,
+              }}
+            >
+              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: filter === f.id ? C.surface : C.textSecondary }}>
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* LISTA */}
-        <View style={{ paddingHorizontal: S.xl }}>
+        <View style={{ paddingHorizontal: S.xl, paddingTop: S.xs }}>
           {filtered.length === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
               <Feather name="search" size={I.xxxl} color={C.textTertiary} />
