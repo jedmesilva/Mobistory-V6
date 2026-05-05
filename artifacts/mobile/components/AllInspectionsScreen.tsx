@@ -349,8 +349,23 @@ function NewInspectionSheet({
           </View>
         )}
 
-        {/* DESCRIÇÃO — auto-preenchida ou livre */}
-        {motivo && (
+        {/* DESCRIÇÃO — leitura para motivos padrão, livre para "Outro" */}
+        {motivo && !isOutro && descricao ? (
+          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
+              Descrição
+            </Text>
+            <View style={{
+              backgroundColor: C.background, borderRadius: R.xl,
+              paddingVertical: S.md, paddingHorizontal: S.lg,
+              borderWidth: 1, borderColor: C.border,
+              flexDirection: "row", alignItems: "flex-start", gap: S.sm,
+            }}>
+              <Text style={{ fontSize: F.base, color: C.textSecondary, flex: 1, lineHeight: 22 }}>{descricao}</Text>
+              <Feather name="lock" size={I.sm} color={C.textTertiary} style={{ marginTop: 3 }} />
+            </View>
+          </View>
+        ) : isOutro ? (
           <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
               Descrição
@@ -358,7 +373,7 @@ function NewInspectionSheet({
             <TextInput
               value={descricao}
               onChangeText={setDescricao}
-              placeholder={isOutro ? "Descreva o contexto da vistoria…" : "Adicione detalhes opcionais…"}
+              placeholder="Descreva o contexto da vistoria…"
               placeholderTextColor={C.textTertiary}
               multiline
               numberOfLines={3}
@@ -371,7 +386,7 @@ function NewInspectionSheet({
               }}
             />
           </View>
-        )}
+        ) : null}
 
         {/* PARTES DO VEÍCULO */}
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
