@@ -309,7 +309,14 @@ function NewInspectionSheet({
                       borderRadius: R.lg,
                     }}
                   >
-                    <Text style={{ flex: 1, fontSize: F.base, fontWeight: isSelected ? "600" as const : "400" as const, color: C.textPrimary }}>{m.label}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: F.base, fontWeight: isSelected ? "600" as const : "400" as const, color: C.textPrimary }}>{m.label}</Text>
+                      {m.desc ? (
+                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{m.desc}</Text>
+                      ) : (
+                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2, fontStyle: "italic" as const }}>Informe abaixo</Text>
+                      )}
+                    </View>
                     {isSelected && <Feather name="check" size={I.md} color={C.textPrimary} />}
                   </TouchableOpacity>
                 );
@@ -338,22 +345,8 @@ function NewInspectionSheet({
           </View>
         )}
 
-        {/* DESCRIÇÃO — leitura para motivos padrão, livre para "Outro" */}
-        {motivo && !isOutro && descricao ? (
-          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
-              Descrição
-            </Text>
-            <View style={{
-              backgroundColor: C.background, borderRadius: R.xl,
-              paddingVertical: S.md, paddingHorizontal: S.lg,
-              flexDirection: "row", alignItems: "flex-start", gap: S.sm,
-            }}>
-              <Text style={{ fontSize: F.base, color: C.textSecondary, flex: 1, lineHeight: 22 }}>{descricao}</Text>
-              <Feather name="lock" size={I.sm} color={C.textTertiary} style={{ marginTop: 3 }} />
-            </View>
-          </View>
-        ) : isOutro ? (
+        {/* DESCRIÇÃO — campo livre só para "Outro" */}
+        {isOutro ? (
           <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
               Descrição
