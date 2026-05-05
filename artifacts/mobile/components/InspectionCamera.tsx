@@ -30,37 +30,109 @@ interface InspectionCameraProps {
 const DARK      = "#111827";
 const WHITE     = "#FFFFFF";
 const WHITE_DIM = "rgba(255,255,255,0.75)";
+const OVERLAY   = "rgba(0,0,0,0.42)";
 
-// ─── CORNER BRACKETS ─────────────────────────────────────────────────────────
+// ─── ASPECT RATIOS PER STEP ──────────────────────────────────────────────────
+//
+// width / height ratio for each inspection step.
+// Examples:
+//   placa      → very wide strip  (4 / 1)
+//   lateral    → panoramic        (8 / 3)
+//   painel     → landscape widescreen (16 / 9)
+//   frente/traseira → standard landscape (4 / 3)
+//   chassi     → near-square      (3 / 2)
 
-function CornerBrackets() {
-  const S = 22;
-  const T = 3;
-  const C = 10;
+const STEP_RATIOS: Record<string, number> = {
+  frente:    4 / 3,
+  traseira:  4 / 3,
+  lateral_e: 8 / 3,
+  lateral_d: 8 / 3,
+  painel:    16 / 9,
+  placa:     4 / 1,
+  chassi:    3 / 2,
+};
 
-  const corners = [
-    { top: -T / 2, left:  -T / 2, borderTopWidth: T, borderLeftWidth:  T, borderTopLeftRadius:     C },
-    { top: -T / 2, right: -T / 2, borderTopWidth: T, borderRightWidth: T, borderTopRightRadius:    C },
-    { bottom: -T / 2, left:  -T / 2, borderBottomWidth: T, borderLeftWidth:  T, borderBottomLeftRadius:  C },
-    { bottom: -T / 2, right: -T / 2, borderBottomWidth: T, borderRightWidth: T, borderBottomRightRadius: C },
-  ] as const;
+const { width: SW, height: SH } = Dimensions.get("window");
+
+// Maximum frame bounds (leaves breathing room on all sides)
+const MAX_W = SW * 0.84;
+const MAX_H = SH * 0.50;
+
+function getFrameDims(stepId: string): { w: number; h: number; l: number; t: number } {
+  const ratio = STEP_RATIOS[stepId] ?? 4 / 3;
+
+  let w = MAX_W;
+  let h = w / ratio;
+
+  if (h > MAX_H) {
+    h = MAX_H;
+    w = h * ratio;
+  }
+
+  // Center horizontally; shift upward slightly so the shutter bar doesn't crowd the frame
+  const l = (SW - w) / 2;
+  const t = (SH - h) / 2 - SH * 0.04;
+
+  return { w, h, l, t };
+}
+
+// ─── FLOATING CORNER BRACKETS ─────────────────────────────────────────────────
+//
+// Four L-shaped brackets positioned absolutely over the full screen.
+// No border box → no corner-radius mismatch with the overlay.
+
+interface BracketsProps {
+  stepId: string;
+}
+
+function FloatingBrackets({ stepId }: BracketsProps) {
+  const { w, h, l, t } = getFrameDims(stepId);
+
+  const ARM  = 24;   // length of each bracket arm
+  const THICK = 3;   // line thickness
+  const R    = 8;    // corner radius on the bracket itself
+  const r    = l;    // right-edge distance from screen right = l (symmetric)
+
+  const bTop    = t;
+  const bBottom = SH - (t + h);
+  const bLeft   = l;
+  const bRight  = r;
 
   return (
     <>
-      {corners.map((style, i) => (
-        <View
-          key={i}
-          style={[{
-            position: "absolute", width: S, height: S,
-            borderColor: WHITE,
-          }, style]}
-        />
-      ))}
+      {/* ── Top-left ── */}
+      <View style={[s.bracket, {
+        top: bTop, left: bLeft,
+        borderTopWidth: THICK, borderLeftWidth: THICK,
+        borderTopLeftRadius: R,
+        width: ARM, height: ARM,
+      }]} />
+      {/* ── Top-right ── */}
+      <View style={[s.bracket, {
+        top: bTop, right: bRight,
+        borderTopWidth: THICK, borderRightWidth: THICK,
+        borderTopRightRadius: R,
+        width: ARM, height: ARM,
+      }]} />
+      {/* ── Bottom-left ── */}
+      <View style={[s.bracket, {
+        bottom: bBottom, left: bLeft,
+        borderBottomWidth: THICK, borderLeftWidth: THICK,
+        borderBottomLeftRadius: R,
+        width: ARM, height: ARM,
+      }]} />
+      {/* ── Bottom-right ── */}
+      <View style={[s.bracket, {
+        bottom: bBottom, right: bRight,
+        borderBottomWidth: THICK, borderRightWidth: THICK,
+        borderBottomRightRadius: R,
+        width: ARM, height: ARM,
+      }]} />
     </>
   );
 }
 
-// ─── CAMERA VIEW ─────────────────────────────────────────────────────────────
+// ─── CAMERA CAPTURE ───────────────────────────────────────────────────────────
 
 function CameraCapture({
   step, stepIndex, totalSteps, onCapture, onClose,
@@ -85,10 +157,10 @@ function CameraCapture({
   const pickFromGallery = useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9 });
-    if (!result.canceled && result.assets[0]) {
-      onCapture(result.assets[0].uri);
-    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.9,
+    });
+    if (!result.canceled && result.assets[0]) onCapture(result.assets[0].uri);
   }, [onCapture]);
 
   const topPad    = Platform.OS === "web" ? 48 : insets.top + 12;
@@ -98,18 +170,18 @@ function CameraCapture({
 
   if (!permission.granted) {
     return (
-      <View style={styles.noPermContainer}>
-        <View style={styles.noPermBox}>
-          <View style={styles.noPermIcon}>
+      <View style={s.noPermContainer}>
+        <View style={s.noPermBox}>
+          <View style={s.noPermIcon}>
             <Feather name="camera-off" size={28} color="#6B7280" />
           </View>
-          <Text style={styles.noPermTitle}>Câmera bloqueada</Text>
-          <Text style={styles.noPermDesc}>Autorize o acesso à câmera para continuar.</Text>
-          <TouchableOpacity onPress={requestPermission} activeOpacity={0.85} style={styles.noPermBtn}>
-            <Text style={styles.noPermBtnText}>Permitir câmera</Text>
+          <Text style={s.noPermTitle}>Câmera bloqueada</Text>
+          <Text style={s.noPermDesc}>Autorize o acesso à câmera para continuar.</Text>
+          <TouchableOpacity onPress={requestPermission} activeOpacity={0.85} style={s.noPermBtn}>
+            <Text style={s.noPermBtnText}>Permitir câmera</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={pickFromGallery} activeOpacity={0.75} style={styles.noPermGallery}>
-            <Text style={styles.noPermGalleryText}>Escolher da galeria</Text>
+          <TouchableOpacity onPress={pickFromGallery} activeOpacity={0.75} style={s.noPermGallery}>
+            <Text style={s.noPermGalleryText}>Escolher da galeria</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -119,7 +191,7 @@ function CameraCapture({
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
 
-      {/* Camera */}
+      {/* Camera feed */}
       <CameraView
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -127,73 +199,55 @@ function CameraCapture({
         enableTorch={torch}
       />
 
-      {/* Dark edge vignette */}
+      {/* Single dark overlay + floating corner brackets (no border box!) */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <View style={StyleSheet.absoluteFill}>
-          {/* frame overlay — transparent hole in center */}
-          <View style={styles.frameOverlay}>
-            {/* top strip */}
-            <View style={styles.frameShadowTop} />
-            {/* middle row */}
-            <View style={styles.frameMiddle}>
-              <View style={styles.frameShadowSide} />
-              {/* clear window */}
-              <View style={styles.frameWindow}>
-                <CornerBrackets />
-              </View>
-              <View style={styles.frameShadowSide} />
-            </View>
-            {/* bottom strip */}
-            <View style={styles.frameShadowBottom} />
-          </View>
-        </View>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: OVERLAY }]} />
+        <FloatingBrackets stepId={step.id} />
       </View>
 
       {/* ── Top bar ── */}
-      <View style={[styles.topBar, { paddingTop: topPad }]}>
-        <TouchableOpacity onPress={onClose} activeOpacity={0.8} style={styles.circleBtn}>
+      <View style={[s.topBar, { paddingTop: topPad }]}>
+        <TouchableOpacity onPress={onClose} activeOpacity={0.8} style={s.circleBtn}>
           <Feather name="arrow-left" size={17} color={WHITE} />
         </TouchableOpacity>
 
-        <View style={styles.stepBadge}>
-          <Text style={styles.stepBadgeText}>{stepIndex + 1} de {totalSteps}</Text>
+        <View style={s.stepBadge}>
+          <Text style={s.stepBadgeText}>{stepIndex + 1} de {totalSteps}</Text>
         </View>
 
         <TouchableOpacity
           onPress={() => setTorch(t => !t)}
           activeOpacity={0.8}
-          style={[styles.circleBtn, torch && styles.circleBtnActive]}
+          style={[s.circleBtn, torch && s.circleBtnActive]}
         >
           <Feather name={torch ? "zap" : "zap-off"} size={17} color={torch ? "#FFD700" : WHITE} />
         </TouchableOpacity>
       </View>
 
       {/* ── Instruction pill ── */}
-      <View style={styles.instructionWrap} pointerEvents="none">
-        <View style={styles.instructionBox}>
-          <Text style={styles.instructionLabel}>{step.label}</Text>
-          <Text style={styles.instructionText}>{step.instruction}</Text>
+      <View style={s.instructionWrap} pointerEvents="none">
+        <View style={s.instructionBox}>
+          <Text style={s.instructionLabel}>{step.label}</Text>
+          <Text style={s.instructionText}>{step.instruction}</Text>
         </View>
       </View>
 
       {/* ── Bottom shutter bar ── */}
-      <View style={[styles.shutterBar, { paddingBottom: bottomPad }]}>
-        {/* Gallery */}
-        <TouchableOpacity onPress={pickFromGallery} activeOpacity={0.75} style={styles.sideBtn}>
+      <View style={[s.shutterBar, { paddingBottom: bottomPad }]}>
+        <TouchableOpacity onPress={pickFromGallery} activeOpacity={0.75} style={s.sideBtn}>
           <Feather name="image" size={17} color="rgba(255,255,255,0.7)" />
         </TouchableOpacity>
 
-        {/* Shutter */}
         <TouchableOpacity
           onPress={shoot}
           activeOpacity={0.85}
           disabled={shooting}
-          style={styles.shutter}
+          style={s.shutter}
         >
-          <View style={styles.shutterInner} />
+          <View style={s.shutterInner} />
         </TouchableOpacity>
 
-        <View style={styles.sideBtnSpacer} />
+        <View style={s.sideBtnSpacer} />
       </View>
     </View>
   );
@@ -211,54 +265,39 @@ function PhotoPreview({
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
 
-      {/* Label */}
-      <View style={styles.instructionWrap} pointerEvents="none">
-        <View style={styles.instructionBox}>
-          <Text style={styles.instructionLabel}>{step.label}</Text>
+      <View style={s.instructionWrap} pointerEvents="none">
+        <View style={s.instructionBox}>
+          <Text style={s.instructionLabel}>{step.label}</Text>
         </View>
       </View>
 
-      {/* Actions */}
-      <View style={[styles.previewActions, { paddingBottom: bottomPad }]}>
-        <TouchableOpacity onPress={onRetake} activeOpacity={0.8} style={styles.previewBtnOutline}>
+      <View style={[s.previewActions, { paddingBottom: bottomPad }]}>
+        <TouchableOpacity onPress={onRetake} activeOpacity={0.8} style={s.previewBtnOutline}>
           <Feather name="rotate-ccw" size={15} color={WHITE} />
-          <Text style={styles.previewBtnOutlineText}>Refazer</Text>
+          <Text style={s.previewBtnOutlineText}>Refazer</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onConfirm} activeOpacity={0.85} style={styles.previewBtnSolid}>
+        <TouchableOpacity onPress={onConfirm} activeOpacity={0.85} style={s.previewBtnSolid}>
           <Feather name="check" size={15} color={DARK} />
-          <Text style={styles.previewBtnSolidText}>Usar foto</Text>
+          <Text style={s.previewBtnSolidText}>Usar foto</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-// ─── MAIN MODAL COMPONENT ─────────────────────────────────────────────────────
+// ─── MAIN MODAL ───────────────────────────────────────────────────────────────
 
-/**
- * Full-screen camera modal for a single inspection step.
- * Shows camera → preview → calls onCapture(uri) on confirm.
- */
 export default function InspectionCamera({
   step, stepIndex, totalSteps, onCapture, onClose,
 }: InspectionCameraProps) {
   const [previewUri, setPreviewUri] = useState<string | null>(null);
 
-  const handlePhoto = useCallback((uri: string) => {
-    setPreviewUri(uri);
-  }, []);
-
+  const handlePhoto   = useCallback((uri: string) => setPreviewUri(uri), []);
   const handleConfirm = useCallback(() => {
-    if (previewUri) {
-      onCapture(previewUri);
-      setPreviewUri(null);
-    }
+    if (previewUri) { onCapture(previewUri); setPreviewUri(null); }
   }, [previewUri, onCapture]);
-
-  const handleRetake = useCallback(() => {
-    setPreviewUri(null);
-  }, []);
+  const handleRetake  = useCallback(() => setPreviewUri(null), []);
 
   return (
     <Modal
@@ -292,34 +331,12 @@ export default function InspectionCamera({
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
 
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-const FRAME_W  = SCREEN_W * 0.82;
-const FRAME_H  = SCREEN_H * 0.54;
-const FRAME_L  = (SCREEN_W - FRAME_W) / 2;
-const FRAME_T  = (SCREEN_H - FRAME_H) / 2;
-const OVERLAY  = "rgba(0,0,0,0.42)";
+const s = StyleSheet.create({
 
-const styles = StyleSheet.create({
-  // ── Frame overlay ──
-  frameOverlay: {
-    flex: 1, flexDirection: "column",
-  },
-  frameShadowTop: {
-    width: "100%", height: FRAME_T, backgroundColor: OVERLAY,
-  },
-  frameMiddle: {
-    flexDirection: "row", height: FRAME_H,
-  },
-  frameShadowSide: {
-    width: FRAME_L, backgroundColor: OVERLAY,
-  },
-  frameWindow: {
-    width: FRAME_W, height: FRAME_H,
-    borderRadius: 12, overflow: "hidden",
-    borderWidth: 2, borderColor: "rgba(255,255,255,0.8)",
-  },
-  frameShadowBottom: {
-    flex: 1, backgroundColor: OVERLAY,
+  // ── Bracket ──
+  bracket: {
+    position: "absolute",
+    borderColor: WHITE,
   },
 
   // ── Top bar ──
@@ -371,9 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     alignItems: "center", justifyContent: "center",
   },
-  sideBtnSpacer: {
-    width: 44,
-  },
+  sideBtnSpacer: { width: 44 },
   shutter: {
     width: 72, height: 72, borderRadius: 36,
     borderWidth: 4, borderColor: WHITE,
@@ -407,32 +422,24 @@ const styles = StyleSheet.create({
 
   // ── No permission ──
   noPermContainer: {
-    flex: 1, backgroundColor: "#000", alignItems: "center", justifyContent: "center", padding: 32,
+    flex: 1, backgroundColor: "#000",
+    alignItems: "center", justifyContent: "center", padding: 32,
   },
-  noPermBox: {
-    alignItems: "center", gap: 12,
-  },
+  noPermBox: { alignItems: "center", gap: 12 },
   noPermIcon: {
     width: 64, height: 64, borderRadius: 32, backgroundColor: "#1F2937",
     alignItems: "center", justifyContent: "center", marginBottom: 8,
   },
-  noPermTitle: {
-    fontSize: 18, fontWeight: "700" as const, color: WHITE,
-  },
+  noPermTitle: { fontSize: 18, fontWeight: "700" as const, color: WHITE },
   noPermDesc: {
-    fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: "center", lineHeight: 19,
+    fontSize: 13, color: "rgba(255,255,255,0.6)",
+    textAlign: "center", lineHeight: 19,
   },
   noPermBtn: {
-    marginTop: 8, backgroundColor: WHITE, borderRadius: 20,
-    paddingVertical: 14, paddingHorizontal: 28,
+    marginTop: 8, backgroundColor: WHITE,
+    borderRadius: 20, paddingVertical: 14, paddingHorizontal: 28,
   },
-  noPermBtnText: {
-    fontSize: 14, fontWeight: "700" as const, color: DARK,
-  },
-  noPermGallery: {
-    paddingVertical: 10, paddingHorizontal: 20,
-  },
-  noPermGalleryText: {
-    fontSize: 13, color: "rgba(255,255,255,0.55)",
-  },
+  noPermBtnText: { fontSize: 14, fontWeight: "700" as const, color: DARK },
+  noPermGallery: { paddingVertical: 10, paddingHorizontal: 20 },
+  noPermGalleryText: { fontSize: 13, color: "rgba(255,255,255,0.55)" },
 });
