@@ -135,6 +135,18 @@ export default function InspectionRunScreen() {
             </View>
           ) : null}
 
+          {/* Descrição / motivo */}
+          {inspection.descricao ? (
+            <View style={{ marginTop: S.lg, paddingTop: S.lg, borderTopWidth: 1, borderTopColor: C.border }}>
+              <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textTertiary, letterSpacing: 1.2, textTransform: "uppercase" as const, marginBottom: S.xs }}>
+                Motivo
+              </Text>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: 20 }}>
+                {inspection.descricao}
+              </Text>
+            </View>
+          ) : null}
+
           {/* Barra de progresso */}
           <View style={{ marginTop: S.lg }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.xs }}>
