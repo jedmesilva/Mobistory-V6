@@ -96,9 +96,9 @@ export default function InspectionRunScreen() {
         <TouchableOpacity
           onPress={() => router.back()}
           activeOpacity={0.7}
-          style={{ marginBottom: S.xl, padding: S.xs, alignSelf: "flex-start" }}
+          style={{ marginBottom: S.xl, paddingVertical: S.sm, paddingRight: S.md, paddingLeft: 0, marginLeft: -S.xs, alignSelf: "flex-start" }}
         >
-          <Feather name="arrow-left" size={I.lg} color="#374151" />
+          <Feather name="arrow-left" size={I.xl} color={C.textSecondary} />
         </TouchableOpacity>
 
         {/* HEADER */}

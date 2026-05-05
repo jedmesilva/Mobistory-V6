@@ -25,7 +25,7 @@ interface BackButtonProps {
 
 export function BackButton({ onPress }: BackButtonProps) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ padding: S.xs, alignSelf: "flex-start" }}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ paddingVertical: S.sm, paddingRight: S.md, paddingLeft: 0, marginLeft: -S.xs, alignSelf: "flex-start" }}>
       <Feather name="arrow-left" size={I.xl} color={C.textSecondary} />
     </TouchableOpacity>
   );
