@@ -102,6 +102,69 @@ export const MY_VEHICLES = [
   { id: 3, name: "Fiat Pulse", version: "Impetus", plate: "GHI-9012", year: 2023, bond: "Gestor de frota", verified: false },
 ];
 
+export const VEHICLE_BRANDS = [
+  "Chevrolet","Fiat","Ford","Honda","Hyundai","Jeep","Nissan","Peugeot",
+  "Renault","Toyota","Volkswagen","BMW","Mercedes-Benz","Audi","Mitsubishi",
+  "Kia","Citroën","BYD","Ram",
+];
+
+export const VEHICLE_MODELS: Record<string, string[]> = {
+  Honda:       ["HR-V","Civic","City","Fit","CR-V","WR-V"],
+  Toyota:      ["Corolla","Hilux","Yaris","RAV4","Corolla Cross"],
+  Volkswagen:  ["Gol","Polo","T-Cross","Virtus","Nivus","Amarok"],
+  Fiat:        ["Strada","Pulse","Argo","Cronos","Toro"],
+  Chevrolet:   ["Onix","Tracker","S10","Montana","Cruze"],
+  Hyundai:     ["HB20","Creta","Tucson","Santa Fe"],
+  Jeep:        ["Compass","Renegade","Commander","Wrangler"],
+  Ford:        ["Maverick","Territory","Ranger"],
+  BMW:         ["Série 3","Série 5","X1","X3"],
+  BYD:         ["Dolphin","Seal","Han","Atto 3"],
+};
+
+export const VEHICLE_VERSIONS: Record<string, string[]> = {
+  "Civic":   ["EX CVT","EXL CVT","Touring CVT","Si 1.5 Turbo"],
+  "Corolla": ["GLi 2.0","XEi 2.0","Altis 2.0","GR-S 2.0"],
+  "HB20":    ["Sense 1.0","Vision 1.0 Turbo","Platinum 1.0 Turbo"],
+  "Creta":   ["Action 1.0 Turbo","Limited 1.0 Turbo","Platinum 1.0 Turbo"],
+  "Onix":    ["Joy 1.0","Plus LT 1.0 Turbo","Plus LTZ 1.0 Turbo"],
+  "Polo":    ["Track 1.0","MPI 1.0","GTS 1.4 TSI"],
+};
+
+export const VEHICLE_YEARS: string[] = Array.from({ length: 16 }, (_, i) => String(2025 - i));
+
+export const VEHICLE_COLORS = [
+  "Branco","Prata","Preto","Cinza","Vermelho","Azul",
+  "Verde","Amarelo","Laranja","Marrom","Bege","Dourado",
+];
+
+export const VEHICLE_FUELS = ["Flex","Gasolina","Etanol","Diesel","GNV","Elétrico","Híbrido"];
+
+export const BOND_TYPES = [
+  { id: "proprietario",   icon: "key",              label: "Proprietário",         description: "O veículo está registrado em seu nome" },
+  { id: "coproprietario", icon: "users",             label: "Co-proprietário",      description: "O veículo está registrado em seu nome junto a outra pessoa" },
+  { id: "condutor",       icon: "navigation",        label: "Condutor habitual",    description: "Você utiliza o veículo regularmente mas não é o proprietário" },
+  { id: "mecanico",       icon: "tool",              label: "Mecânico responsável", description: "Você é responsável pela manutenção deste veículo" },
+  { id: "outro",          icon: "more-horizontal",   label: "Outro",                description: "Outro tipo de relação com o veículo" },
+] as const;
+
+export const DOCS_BY_BOND: Record<string, string> = {
+  proprietario:   "CRLV, nota fiscal, DUT ou documento de transferência",
+  coproprietario: "CRLV com seu nome ou documento de transferência",
+  condutor:       "CNH acompanhada de declaração do proprietário",
+  mecanico:       "Contrato de prestação de serviço ou declaração",
+  outro:          "Qualquer documento que comprove sua relação com o veículo",
+};
+
+export const INSPECTION_STEPS = [
+  { id: "frente",    label: "Frente",           instruction: "Fotografe a parte frontal do veículo inteira, de frente",  required: true  },
+  { id: "traseira",  label: "Traseira",         instruction: "Fotografe a parte traseira do veículo inteira",            required: true  },
+  { id: "lateral_e", label: "Lateral esquerda", instruction: "Fotografe toda a lateral esquerda",                        required: true  },
+  { id: "lateral_d", label: "Lateral direita",  instruction: "Fotografe toda a lateral direita",                         required: true  },
+  { id: "painel",    label: "Painel",           instruction: "Fotografe o painel com o hodômetro visível",               required: true  },
+  { id: "placa",     label: "Placa",            instruction: "Fotografe a placa com boa iluminação",                     required: true  },
+  { id: "chassi",    label: "Chassi físico",    instruction: "Fotografe o número do chassi gravado na carroceria",       required: false },
+];
+
 export const ACTIVITY_TYPES = [
   { id: "todos", label: "Todos" },
   { id: "abastecimento", label: "Abastecimento" },

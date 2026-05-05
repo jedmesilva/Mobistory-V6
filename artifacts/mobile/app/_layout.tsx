@@ -31,6 +31,7 @@ function RootLayoutNav() {
       <Stack.Screen name="activities/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="records" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false, animation: "slide_from_bottom" }} />
+      <Stack.Screen name="add-vehicle" options={{ headerShown: false, animation: "slide_from_bottom" }} />
     </Stack>
   );
 }

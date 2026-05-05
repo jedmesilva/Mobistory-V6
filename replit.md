@@ -37,6 +37,7 @@ lib/
 
 - `GET  /api/healthz` — health check, returns `{"status":"ok"}`
 - `POST /api/fuel/analyze` — AI image extraction (base64 + mediaType → structured fuel data)
+- `POST /api/vehicle/analyze` — AI vehicle field extraction (base64 + mediaType + field → `{data: {field: value}}`)
 
 ## Environment Variables (Auto-configured)
 

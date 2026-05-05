@@ -186,6 +186,7 @@ export default function VehiclesScreen() {
 
         {/* ADD BUTTON */}
         <TouchableOpacity activeOpacity={0.85}
+          onPress={() => router.navigate("/add-vehicle")}
           style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm, backgroundColor: C.primary, borderRadius: R.xxl, paddingVertical: S.lg, marginTop: filtered.length > 0 ? S.xl : S.lg }}>
           <Feather name="plus" size={I.lg} color={C.primaryForeground} />
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.primaryForeground }}>Adicionar veículo</Text>
