@@ -251,7 +251,6 @@ function NewInspectionSheet({
             flexDirection: "row", alignItems: "center", gap: S.sm,
             backgroundColor: C.background, borderRadius: R.xl,
             paddingVertical: S.md, paddingHorizontal: S.lg,
-            borderWidth: 1, borderColor: C.border,
           }}>
             <View style={{
               width: 32, height: 32, borderRadius: 16,
@@ -281,7 +280,6 @@ function NewInspectionSheet({
               flexDirection: "row", alignItems: "center", justifyContent: "space-between",
               backgroundColor: C.background, borderRadius: R.xl,
               paddingVertical: S.md, paddingHorizontal: S.lg,
-              borderWidth: 1, borderColor: showDropdown ? C.textPrimary : C.border,
             }}
           >
             <Text style={{ fontSize: F.base, color: motivo ? C.textPrimary : C.textTertiary, fontWeight: motivo ? "500" as const : "400" as const }}>
@@ -293,13 +291,11 @@ function NewInspectionSheet({
           {/* Dropdown list */}
           {showDropdown && (
             <View style={{
-              marginTop: S.xs, backgroundColor: C.surface,
-              borderRadius: R.xl, borderWidth: 1, borderColor: C.border,
-              overflow: "hidden",
+              marginTop: S.xs, backgroundColor: C.background,
+              borderRadius: R.xl, overflow: "hidden",
             }}>
-              {INSPECTION_MOTIVOS.map((m, idx) => {
+              {INSPECTION_MOTIVOS.map((m) => {
                 const isSelected = motivo?.id === m.id;
-                const isLast = idx === INSPECTION_MOTIVOS.length - 1;
                 return (
                   <TouchableOpacity
                     key={m.id}
@@ -308,8 +304,9 @@ function NewInspectionSheet({
                     style={{
                       flexDirection: "row", alignItems: "center",
                       paddingVertical: S.md, paddingHorizontal: S.lg,
-                      borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
-                      backgroundColor: isSelected ? C.background : "transparent",
+                      marginBottom: 2,
+                      backgroundColor: isSelected ? C.iconBg : "transparent",
+                      borderRadius: R.lg,
                     }}
                   >
                     <View style={{ flex: 1 }}>
@@ -342,7 +339,6 @@ function NewInspectionSheet({
               style={{
                 backgroundColor: C.background, borderRadius: R.xl,
                 paddingVertical: S.md, paddingHorizontal: S.lg,
-                borderWidth: 1, borderColor: C.border,
                 fontSize: F.base, color: C.textPrimary,
               }}
             />
@@ -358,7 +354,6 @@ function NewInspectionSheet({
             <View style={{
               backgroundColor: C.background, borderRadius: R.xl,
               paddingVertical: S.md, paddingHorizontal: S.lg,
-              borderWidth: 1, borderColor: C.border,
               flexDirection: "row", alignItems: "flex-start", gap: S.sm,
             }}>
               <Text style={{ fontSize: F.base, color: C.textSecondary, flex: 1, lineHeight: 22 }}>{descricao}</Text>
@@ -380,7 +375,6 @@ function NewInspectionSheet({
               style={{
                 backgroundColor: C.background, borderRadius: R.xl,
                 paddingVertical: S.md, paddingHorizontal: S.lg,
-                borderWidth: 1, borderColor: C.border,
                 fontSize: F.base, color: C.textPrimary,
                 minHeight: 80, textAlignVertical: "top" as const,
               }}
