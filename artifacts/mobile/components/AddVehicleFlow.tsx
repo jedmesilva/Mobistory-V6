@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import InspectionCamera from "@/components/InspectionCamera";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
@@ -1024,24 +1025,24 @@ function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: 
 // ─── SCREEN: INSPECTION ───────────────────────────────────────────────────────
 
 function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
-  const [photos, setPhotos] = useState<Record<string, string>>({});
-  const required = INSPECTION_STEPS.filter(s => s.required);
+  const [photos, setPhotos]         = useState<Record<string, string>>({});
+  const [activeStepId, setActiveStepId] = useState<string | null>(null);
+
+  const required     = INSPECTION_STEPS.filter(s => s.required);
   const doneRequired = required.filter(s => photos[s.id]).length;
-  const canFinish = doneRequired === required.length;
+  const canFinish    = doneRequired === required.length;
 
-  const takePhoto = async (id: string) => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) { Alert.alert("Permissão necessária", "Habilite a câmera nas configurações."); return; }
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
-    if (!result.canceled && result.assets[0]) {
-      setPhotos(prev => ({ ...prev, [id]: result.assets[0].uri }));
-    }
-  };
+  const activeStep      = INSPECTION_STEPS.find(s => s.id === activeStepId) ?? null;
+  const activeStepIndex = activeStep ? INSPECTION_STEPS.indexOf(activeStep) : 0;
 
-  const retakePhoto = async (id: string) => {
-    setPhotos(prev => { const n = { ...prev }; delete n[id]; return n; });
-    await takePhoto(id);
-  };
+  const openCamera = useCallback((id: string) => setActiveStepId(id), []);
+  const closeCamera = useCallback(() => setActiveStepId(null), []);
+
+  const handleCapture = useCallback((uri: string) => {
+    if (!activeStepId) return;
+    setPhotos(prev => ({ ...prev, [activeStepId]: uri }));
+    setActiveStepId(null);
+  }, [activeStepId]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -1051,6 +1052,7 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
           Fotografe o veículo seguindo as etapas abaixo.
         </Text>
 
+        {/* Progress bar */}
         <View style={{ marginBottom: S.xxl }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.sm }}>
             <Text style={{ fontSize: F.sm, color: C.textSecondary }}>{doneRequired} de {required.length} fotos obrigatórias</Text>
@@ -1061,6 +1063,7 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
           </View>
         </View>
 
+        {/* Step list */}
         <View style={{ gap: S.sm }}>
           {INSPECTION_STEPS.map(step => {
             const isDone = !!photos[step.id];
@@ -1070,11 +1073,18 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
                 style={{ backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: 1.5, borderColor: isDone ? GREEN_BORDER : "transparent" }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.lg }}>
-                  <View style={{ width: 52, height: 52, borderRadius: R.md, overflow: "hidden", flexShrink: 0, backgroundColor: isDone ? "transparent" : C.iconBg, alignItems: "center", justifyContent: "center" }}>
+                  {/* Thumbnail / placeholder */}
+                  <TouchableOpacity
+                    onPress={() => openCamera(step.id)}
+                    activeOpacity={0.8}
+                    style={{ width: 52, height: 52, borderRadius: R.md, overflow: "hidden", flexShrink: 0, backgroundColor: isDone ? "transparent" : C.iconBg, alignItems: "center", justifyContent: "center" }}
+                  >
                     {isDone
                       ? <Image source={{ uri: photos[step.id] }} style={{ width: 52, height: 52 }} resizeMode="cover" />
                       : <Feather name="camera" size={I.xl} color={C.iconColor} />}
-                  </View>
+                  </TouchableOpacity>
+
+                  {/* Labels */}
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
                       <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{step.label}</Text>
@@ -1086,9 +1096,11 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
                     </View>
                     <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.4 }}>{step.instruction}</Text>
                   </View>
+
+                  {/* Action */}
                   {isDone ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-                      <TouchableOpacity onPress={() => retakePhoto(step.id)} activeOpacity={0.7} style={{ padding: S.xs }}>
+                      <TouchableOpacity onPress={() => openCamera(step.id)} activeOpacity={0.7} style={{ padding: S.xs }}>
                         <Feather name="rotate-ccw" size={I.sm} color={C.textTertiary} />
                       </TouchableOpacity>
                       <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: GREEN, alignItems: "center", justifyContent: "center" }}>
@@ -1097,7 +1109,7 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
                     </View>
                   ) : (
                     <TouchableOpacity
-                      onPress={() => takePhoto(step.id)}
+                      onPress={() => openCamera(step.id)}
                       activeOpacity={0.8}
                       style={{ flexDirection: "row", alignItems: "center", gap: S.xs, backgroundColor: C.primary, borderRadius: R.pill, paddingVertical: 6, paddingHorizontal: S.md, flexShrink: 0 }}
                     >
@@ -1112,6 +1124,7 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
         </View>
       </ScrollView>
 
+      {/* Finish footer */}
       <Footer>
         {!canFinish && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.sm }}>
@@ -1123,6 +1136,17 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
         )}
         <PrimaryButton label="Finalizar vistoria" onPress={() => navigate("pending")} disabled={!canFinish} />
       </Footer>
+
+      {/* Custom camera modal */}
+      {activeStep && (
+        <InspectionCamera
+          step={activeStep}
+          stepIndex={activeStepIndex}
+          totalSteps={INSPECTION_STEPS.length}
+          onCapture={handleCapture}
+          onClose={closeCamera}
+        />
+      )}
     </View>
   );
 }
