@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -17,6 +17,20 @@ export default function BondScreen() {
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
+  const handleShare = async () => {
+    try {
+      await Share.share({ message: `Meu vínculo — ${VEHICLE.bond.type} · ${VEHICLE.name} · ${VEHICLE.plate}` });
+    } catch (_) {}
+  };
+
+  const handleExport = () => {
+    Alert.alert("Exportar vínculo", "Escolha o formato de exportação", [
+      { text: "CSV", onPress: () => {} },
+      { text: "PDF", onPress: () => {} },
+      { text: "Cancelar", style: "cancel" },
+    ]);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
@@ -26,12 +40,17 @@ export default function BondScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
           <BackButton onPress={() => router.back()} />
-          <MoreOptionsButton
-            topOffset={topPad + 52}
-            actions={[
-              { label: "Todos os vínculos", icon: "users", onPress: () => router.navigate("/all-bonds") },
-            ]}
-          />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+            <TouchableOpacity onPress={handleShare} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
+            <MoreOptionsButton
+              topOffset={topPad + 52}
+              actions={[
+                { label: "Todos os vínculos", icon: "users", onPress: () => router.navigate("/all-bonds") },
+              ]}
+            />
+          </View>
         </View>
 
         <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.xxl }}>Meu vínculo</Text>
@@ -61,8 +80,8 @@ export default function BondScreen() {
 
         {/* ACTION BUTTONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl }}>
-          <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md }}>
-            <Feather name="share-2" size={I.lg} color={C.textSecondary} />
+          <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm, backgroundColor: C.surface, borderRadius: R.xl, paddingVertical: S.md }}>
+            <Feather name="download" size={I.lg} color={C.textSecondary} />
             <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Exportar vínculo</Text>
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm, backgroundColor: "#FEF2F2", borderRadius: R.xl, paddingVertical: S.md }}>
