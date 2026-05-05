@@ -24,126 +24,180 @@ const FILTERS = [
   { id: "Acidente",             label: "Acidente" },
 ];
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  Aprovada:  { bg: "#DCFCE7", text: "#16A34A" },
-  Pendente:  { bg: "#FEF9C3", text: "#CA8A04" },
-  Reprovada: { bg: "#FEF2F2", text: "#DC2626" },
+const STATUS_CONFIG: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
+  Aprovada:  { bg: "#DCFCE7", text: "#16A34A", icon: "check-circle" },
+  Pendente:  { bg: "#FEF9C3", text: "#CA8A04", icon: "clock" },
+  Reprovada: { bg: "#FEF2F2", text: "#DC2626", icon: "x-circle" },
 };
 
-const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  Rotina:                 { bg: C.iconBg,   text: C.iconColor },
-  "Transferência":        { bg: "#EFF6FF",  text: "#2563EB"   },
-  "Abertura de sinistro": { bg: "#FFF7ED",  text: "#C2410C"   },
-  "Manutenção":           { bg: "#F0FDF4",  text: "#16A34A"   },
-  "Acidente":             { bg: "#FEF2F2",  text: "#DC2626"   },
-  "Auditoria":            { bg: "#FDF4FF",  text: "#9333EA"   },
-  "Outro":                { bg: C.iconBg,   text: C.iconColor },
+const TYPE_CONFIG: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
+  "Rotina":               { bg: "#F3F4F6", text: "#6B7280", icon: "refresh-cw" },
+  "Transferência":        { bg: "#EFF6FF", text: "#2563EB", icon: "repeat" },
+  "Abertura de sinistro": { bg: "#FFF7ED", text: "#C2410C", icon: "alert-triangle" },
+  "Manutenção":           { bg: "#F0FDF4", text: "#16A34A", icon: "tool" },
+  "Acidente":             { bg: "#FEF2F2", text: "#DC2626", icon: "alert-octagon" },
+  "Auditoria":            { bg: "#FDF4FF", text: "#9333EA", icon: "shield" },
 };
 
 const PART_LABELS: Record<string, string> = {
   frente:    "Frente",
   traseira:  "Traseira",
-  lateral_e: "Lateral esquerda",
-  lateral_d: "Lateral direita",
+  lateral_e: "Lat. esq.",
+  lateral_d: "Lat. dir.",
   painel:    "Painel",
   placa:     "Placa",
-  chassi:    "Chassi físico",
+  chassi:    "Chassi",
 };
 
-function typeColor(type: string) {
-  return TYPE_COLORS[type] ?? { bg: C.iconBg, text: C.iconColor };
+function typeConfig(type: string) {
+  return TYPE_CONFIG[type] ?? { bg: C.iconBg, text: C.iconColor, icon: "file-text" as const };
 }
 
+/* ─────────────────────────────────────────────
+   Card de vistoria concluída / reprovada
+───────────────────────────────────────────── */
 function InspectionCard({ item, onPress }: { item: Inspection; onPress: () => void }) {
-  const status = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
-  const typeCl = typeColor(item.type);
+  const status  = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.Aprovada;
+  const typeCfg = typeConfig(item.type);
+  const doneParts = item.parts.length;
+  const totalParts = item.totalParts;
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-        <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
-        </View>
-        <View style={{ backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: status.text }}>{item.status}</Text>
-        </View>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{
+        backgroundColor: C.surface,
+        borderRadius: R.xxl,
+        padding: S.lg,
+        marginBottom: S.md,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: S.lg,
+      }}
+    >
+      {/* Ícone do tipo */}
+      <View style={{
+        width: 46, height: 46, borderRadius: R.lg,
+        backgroundColor: typeCfg.bg,
+        alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>
+        <Feather name={typeCfg.icon} size={I.xl} color={typeCfg.text} />
       </View>
 
-      <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
-        {item.completedAt ?? item.requestedAt}
-      </Text>
-      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.lg }}>
-        {item.completedTime ? `${item.completedTime} · ` : ""}{item.requester}
-      </Text>
-
-      <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
-
-      <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, flex: 1, minWidth: 0 }}>
-          <Feather name="camera" size={I.sm} color={C.textTertiary} style={{ flexShrink: 0 }} />
-          <Text numberOfLines={1} style={{ fontSize: F.sm, color: C.textSecondary, flexShrink: 1 }}>
-            {item.parts.length}/{item.totalParts} {item.totalParts === 1 ? "parte" : "partes"} registradas
+      {/* Conteúdo principal */}
+      <View style={{ flex: 1, minWidth: 0 }}>
+        {/* Tipo + Data */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+          <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>
+            {item.type}
+          </Text>
+          <Text style={{ fontSize: F.xs, color: C.textTertiary, flexShrink: 0, marginLeft: S.sm }}>
+            {item.completedAt ?? item.requestedAt}
           </Text>
         </View>
-        <View style={{ flexDirection: "row", gap: S.xs, flexShrink: 0 }}>
-          {item.parts.slice(0, 2).map(p => (
-            <View key={p} style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
-              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>{PART_LABELS[p] ?? p}</Text>
-            </View>
-          ))}
-          {item.parts.length > 2 && (
-            <View style={{ backgroundColor: C.background, borderRadius: R.sm, paddingVertical: 2, paddingHorizontal: S.xs }}>
-              <Text style={{ fontSize: F.xxs, color: C.textTertiary, fontWeight: "500" as const }}>+{item.parts.length - 2}</Text>
-            </View>
-          )}
+
+        {/* Solicitante */}
+        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: S.sm }} numberOfLines={1}>
+          {item.requester}{item.completedTime ? ` · ${item.completedTime}` : ""}
+        </Text>
+
+        {/* Footer: partes + status */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+            <Feather name="camera" size={11} color={C.textTertiary} />
+            <Text style={{ fontSize: F.xxs, color: C.textTertiary }}>
+              {doneParts}/{totalParts} {totalParts === 1 ? "parte" : "partes"}
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+            <Feather name={status.icon} size={10} color={status.text} />
+            <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: status.text }}>
+              {item.status}
+            </Text>
+          </View>
         </View>
       </View>
+
+      {/* Seta */}
+      <Feather name="chevron-right" size={I.lg} color={C.border} style={{ flexShrink: 0 }} />
     </TouchableOpacity>
   );
 }
 
-function PendingInspectionCard({ item, onPress, onStart }: { item: Inspection; onPress: () => void; onStart: (id: number) => void }) {
-  const typeCl   = typeColor(item.type);
-  const statusCl = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
-  const progress = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
+/* ─────────────────────────────────────────────
+   Card de vistoria pendente
+───────────────────────────────────────────── */
+function PendingInspectionCard({
+  item, onPress, onStart,
+}: { item: Inspection; onPress: () => void; onStart: (id: number) => void }) {
+  const typeCfg   = typeConfig(item.type);
+  const progress  = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
+  const hasStarted = item.parts.length > 0;
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-        <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}
+    >
+      {/* Top row: ícone + info + seta */}
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: S.md, marginBottom: S.lg }}>
+        <View style={{
+          width: 46, height: 46, borderRadius: R.lg,
+          backgroundColor: typeCfg.bg,
+          alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Feather name={typeCfg.icon} size={I.xl} color={typeCfg.text} />
         </View>
-        <View style={{ backgroundColor: statusCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: statusCl.text }}>{item.status}</Text>
+
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }} numberOfLines={1}>
+              {item.type}
+            </Text>
+            <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm, flexShrink: 0, marginLeft: S.sm }}>
+              <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>Pendente</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: F.sm, color: C.textTertiary, marginTop: 2 }} numberOfLines={1}>
+            {item.requestedAt} · {item.requester}
+          </Text>
         </View>
       </View>
 
-      <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
-        {item.requestedAt}
-      </Text>
-      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: item.deadline ? S.xs : S.lg }}>
-        {item.requester}
-      </Text>
+      {/* Prazo */}
       {item.deadline ? (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: S.lg }}>
-          <Feather name="clock" size={I.xs} color={C.textTertiary} />
-          <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{item.deadline}</Text>
+        <View style={{
+          flexDirection: "row", alignItems: "center", gap: S.xs,
+          backgroundColor: "#FFF7ED", borderRadius: R.lg,
+          paddingVertical: S.xs, paddingHorizontal: S.md,
+          alignSelf: "flex-start" as const, marginBottom: S.lg,
+        }}>
+          <Feather name="clock" size={11} color="#C2410C" />
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: "#C2410C" }}>{item.deadline}</Text>
         </View>
       ) : null}
 
-      {item.parts.length > 0 && (
-        <View style={{ marginBottom: S.md }}>
+      {/* Barra de progresso */}
+      {hasStarted && (
+        <View style={{ marginBottom: S.lg }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: S.xs }}>
             <Text style={{ fontSize: F.xs, color: C.textTertiary }}>Progresso</Text>
-            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{item.parts.length}/{item.totalParts} partes</Text>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textSecondary }}>
+              {item.parts.length}/{item.totalParts} partes
+            </Text>
           </View>
-          <View style={{ height: 3, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-            <View style={{ height: 3, width: `${progress * 100}%`, backgroundColor: C.textPrimary, borderRadius: R.pill }} />
+          <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
+            <View style={{ height: 4, width: `${progress * 100}%` as any, backgroundColor: "#CA8A04", borderRadius: R.pill }} />
           </View>
         </View>
       )}
 
+      {/* Separador */}
       <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
 
+      {/* CTA */}
       <TouchableOpacity
         onPress={(e) => { e.stopPropagation?.(); onStart(item.id); }}
         activeOpacity={0.85}
@@ -154,145 +208,19 @@ function PendingInspectionCard({ item, onPress, onStart }: { item: Inspection; o
       >
         <Feather name="camera" size={I.md} color={C.surface} />
         <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.surface }}>
-          {item.parts.length > 0 ? "Continuar vistoria" : "Iniciar vistoria"}
+          {hasStarted ? "Continuar vistoria" : "Iniciar vistoria"}
         </Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 }
 
+/* ─────────────────────────────────────────────
+   Sheet: nova vistoria
+───────────────────────────────────────────── */
 const renderBackdrop = (props: BottomSheetBackdropProps) => (
   <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
 );
-
-function InspectionDetailSheet({
-  sheetRef,
-  item,
-  onStart,
-}: {
-  sheetRef: React.RefObject<BottomSheetModal | null>;
-  item: Inspection | null;
-  onStart: (id: number) => void;
-}) {
-  const insets = useSafeAreaInsets();
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
-  if (!item) return null;
-
-  const typeCl   = typeColor(item.type);
-  const statusCl = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
-  const isPending = item.status === "Pendente";
-
-  const allParts = (item.plannedParts ?? INSPECTION_STEPS.map(s => s.id)).map(id => ({
-    id,
-    label: PART_LABELS[id] ?? id,
-    done: item.parts.includes(id),
-  }));
-
-  function Row({ label, value }: { label: string; value: string }) {
-    return (
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: S.sm }}>
-        <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{label}</Text>
-        <Text style={{ fontSize: F.sm, fontWeight: "500" as const, color: C.textPrimary }}>{value}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <BottomSheetModal ref={sheetRef} enablePanDownToClose backdropComponent={renderBackdrop}>
-      <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}>
-        {/* Header */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.lg }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-            <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
-            </View>
-            <View style={{ backgroundColor: statusCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: statusCl.text }}>{item.status}</Text>
-            </View>
-          </View>
-          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
-            <Feather name="x" size={I.md} color={C.textTertiary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Descrição */}
-        {item.descricao ? (
-          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
-            <Text style={{ fontSize: F.base, color: C.textSecondary, lineHeight: 22 }}>{item.descricao}</Text>
-          </View>
-        ) : null}
-
-        {/* Solicitação */}
-        <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.md }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
-            Solicitação
-          </Text>
-          <Row label="Solicitante" value={item.requester} />
-          <Row label="Data de solicitação" value={item.requestedAt} />
-          {item.deadline ? <Row label="Prazo" value={item.deadline} /> : null}
-        </View>
-
-        {/* Realização */}
-        {!isPending && item.completedAt ? (
-          <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.md }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
-              Realização
-            </Text>
-            <Row label="Data de realização" value={item.completedAt} />
-            {item.completedTime ? <Row label="Horário" value={item.completedTime} /> : null}
-            {item.km && item.km !== "—" ? <Row label="KM no ato" value={item.km} /> : null}
-          </View>
-        ) : null}
-
-        {/* Partes */}
-        <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.lg }}>
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
-            Partes do veículo
-          </Text>
-          {allParts.map((p, idx) => (
-            <View
-              key={p.id}
-              style={{
-                flexDirection: "row", alignItems: "center", gap: S.sm,
-                paddingVertical: S.sm,
-                borderTopWidth: idx === 0 ? 0 : 1, borderTopColor: C.border,
-              }}
-            >
-              <View style={{
-                width: 22, height: 22, borderRadius: 11,
-                backgroundColor: p.done ? "#DCFCE7" : C.background,
-                alignItems: "center", justifyContent: "center",
-              }}>
-                <Feather name={p.done ? "check" : "clock"} size={12} color={p.done ? "#16A34A" : C.textTertiary} />
-              </View>
-              <Text style={{ fontSize: F.sm, color: p.done ? C.textPrimary : C.textTertiary, fontWeight: p.done ? "500" as const : "400" as const }}>
-                {p.label}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* CTA — só pendentes */}
-        {isPending && (
-          <TouchableOpacity
-            onPress={() => { sheetRef.current?.dismiss(); onStart(item.id); }}
-            activeOpacity={0.85}
-            style={{
-              marginHorizontal: S.xl,
-              backgroundColor: C.textPrimary, borderRadius: R.xxl,
-              paddingVertical: S.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
-            }}
-          >
-            <Feather name="camera" size={I.lg} color={C.surface} />
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
-              {item.parts.length > 0 ? "Continuar vistoria" : "Iniciar vistoria"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </BottomSheetScrollView>
-    </BottomSheetModal>
-  );
-}
 
 type MotivoItem = typeof INSPECTION_MOTIVOS[number];
 
@@ -390,7 +318,7 @@ function NewInspectionSheet({
           </View>
         </View>
 
-        {/* MOTIVO — dropdown */}
+        {/* MOTIVO */}
         <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
             Motivo
@@ -453,7 +381,7 @@ function NewInspectionSheet({
           )}
         </View>
 
-        {/* MOTIVO PERSONALIZADO — só para "Outro" */}
+        {/* MOTIVO PERSONALIZADO */}
         {isOutro && (
           <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
@@ -473,8 +401,8 @@ function NewInspectionSheet({
           </View>
         )}
 
-        {/* DESCRIÇÃO — campo livre só para "Outro" */}
-        {isOutro ? (
+        {/* DESCRIÇÃO */}
+        {isOutro && (
           <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
               Descrição
@@ -494,7 +422,7 @@ function NewInspectionSheet({
               }}
             />
           </View>
-        ) : null}
+        )}
 
         {/* PARTES DO VEÍCULO */}
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, paddingHorizontal: S.xl, marginBottom: S.sm }}>
@@ -558,22 +486,22 @@ function NewInspectionSheet({
   );
 }
 
+/* ─────────────────────────────────────────────
+   Tela principal
+───────────────────────────────────────────── */
 export default function AllInspectionsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todas");
-  const [selectedItem, setSelectedItem] = useState<Inspection | null>(null);
   const newInspectionRef = useRef<BottomSheetModal>(null);
-  const detailSheetRef   = useRef<BottomSheetModal>(null);
   const { inspections, addInspection } = useInspections();
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const openDetail = (item: Inspection) => {
-    setSelectedItem(item);
-    detailSheetRef.current?.present();
+    router.push(`/inspection-detail?id=${item.id}` as any);
   };
 
   const handleShare = async () => {
@@ -591,9 +519,14 @@ export default function AllInspectionsScreen() {
   };
 
   const handleStats = () => {
+    const aprovadas = inspections.filter(i => i.status === "Aprovada").length;
+    const pendentes = inspections.filter(i => i.status === "Pendente").length;
+    const media = inspections.length > 0
+      ? Math.round(inspections.reduce((a, b) => a + b.totalParts, 0) / inspections.length)
+      : 0;
     Alert.alert(
       "Estatísticas",
-      `Total: ${inspections.length} vistorias\nAprovadas: ${inspections.filter(i => i.status === "Aprovada").length}\nMédia de partes: ${Math.round(inspections.reduce((a, b) => a + b.totalParts, 0) / inspections.length)}/vistoria`,
+      `Total: ${inspections.length} vistorias\nAprovadas: ${aprovadas}\nPendentes: ${pendentes}\nMédia de partes: ${media}/vistoria`,
     );
   };
 
@@ -652,12 +585,10 @@ export default function AllInspectionsScreen() {
             <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" onPress={handleStats} />
           </View>
 
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
-            Histórico de vistorias
-          </Text>
-          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, motivo, solicitante…" style={{ marginTop: S.md, marginBottom: S.sm }} />
+          <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, motivo, solicitante…" style={{ marginBottom: S.sm }} />
         </View>
 
+        {/* Filtros */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -691,10 +622,11 @@ export default function AllInspectionsScreen() {
             </View>
           ) : (
             <>
+              {/* Pendentes */}
               {pendingItems.length > 0 && (
                 <View style={{ marginBottom: S.xs }}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
-                    <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
+                    <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
                       Pendentes
                     </Text>
                     <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 2, paddingHorizontal: S.sm }}>
@@ -712,13 +644,15 @@ export default function AllInspectionsScreen() {
                 </View>
               )}
 
+              {/* Histórico */}
               {historyItems.length > 0 && filter !== "pendentes" && (
                 <View>
-                  {pendingItems.length > 0 && (
-                    <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm, marginTop: S.sm }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm, marginTop: pendingItems.length > 0 ? S.sm : 0 }}>
+                    <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
                       Histórico
                     </Text>
-                  )}
+                    <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{historyItems.length} {historyItems.length === 1 ? "registro" : "registros"}</Text>
+                  </View>
                   {historyItems.map(item => (
                     <InspectionCard key={item.id} item={item} onPress={() => openDetail(item)} />
                   ))}
@@ -730,11 +664,6 @@ export default function AllInspectionsScreen() {
       </ScrollView>
 
       <NewInspectionSheet sheetRef={newInspectionRef} onConfirm={handleConfirmNew} />
-      <InspectionDetailSheet
-        sheetRef={detailSheetRef}
-        item={selectedItem}
-        onStart={(id) => router.navigate(`/inspection-run?id=${id}`)}
-      />
     </>
   );
 }
