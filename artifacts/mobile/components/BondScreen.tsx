@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { VEHICLE, BOND_TIMELINE } from "@/constants/data";
-import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge, BackButton, MoreOptionsButton } from "@/components/shared";
+import { R, S, F, I, getActivityIcon, TimelineItem, ActiveBadge, BackButton } from "@/components/shared";
 
 const C = colors.light;
 
@@ -44,12 +44,9 @@ export default function BondScreen() {
             <TouchableOpacity onPress={handleShare} activeOpacity={0.7} style={{ padding: S.xs }}>
               <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
             </TouchableOpacity>
-            <MoreOptionsButton
-              topOffset={topPad + 52}
-              actions={[
-                { label: "Todos os vínculos", icon: "users", onPress: () => router.navigate("/all-bonds") },
-              ]}
-            />
+            <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="download" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
           </View>
         </View>
 
