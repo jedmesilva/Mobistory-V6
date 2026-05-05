@@ -309,14 +309,7 @@ function NewInspectionSheet({
                       borderRadius: R.lg,
                     }}
                   >
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>{m.label}</Text>
-                      {m.desc ? (
-                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2 }}>{m.desc}</Text>
-                      ) : (
-                        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: 2, fontStyle: "italic" as const }}>Descreva abaixo</Text>
-                      )}
-                    </View>
+                    <Text style={{ flex: 1, fontSize: F.base, fontWeight: isSelected ? "600" as const : "400" as const, color: C.textPrimary }}>{m.label}</Text>
                     {isSelected && <Feather name="check" size={I.md} color={C.textPrimary} />}
                   </TouchableOpacity>
                 );
