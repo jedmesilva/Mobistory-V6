@@ -13,6 +13,7 @@ export const RECORDS = [
   { id: "fuel", label: "Abastecimento", lastDate: "Hoje, 09:14", lastValue: "45L · R$ 312,30" },
   { id: "tire", label: "Calibragem", lastDate: "Há 3 dias", lastValue: "32 PSI · 4 pneus" },
   { id: "bonds", label: "Vínculos", lastDate: "jan. 2023", lastValue: "Proprietário" },
+  { id: "inspections", label: "Vistorias", lastDate: "2 pendentes", lastValue: "Última: 01 mai. 2026" },
 ];
 
 export const MODULES = [
@@ -157,11 +158,13 @@ export const DOCS_BY_BOND: Record<string, string> = {
 };
 
 export const ALL_INSPECTIONS = [
-  { id: 1, date: "01 mai. 2026", time: "10:30", type: "Rotina", km: "45.230 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa"], totalParts: 6, status: "Aprovada", requester: "Usuário" },
-  { id: 2, date: "10 out. 2023", time: "09:00", type: "Rotina", km: "31.450 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
-  { id: 3, date: "15 jan. 2023", time: "14:00", type: "Transferência", km: "27.890 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
-  { id: 4, date: "02 mar. 2022", time: "11:20", type: "Solicitada", km: "15.300 km", parts: ["frente", "traseira", "painel", "placa"], totalParts: 4, status: "Aprovada", requester: "Seguradora" },
-  { id: 5, date: "18 set. 2021", time: "08:45", type: "Transferência", km: "3.200 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory" },
+  { id: 6, date: "05 mai. 2026", time: "—", type: "Rotina", km: "45.400 km", parts: [], totalParts: 7, status: "Pendente", requester: "Mobistory", deadline: "Vence em 2 dias" },
+  { id: 7, date: "03 mai. 2026", time: "—", type: "Solicitada", km: "45.320 km", parts: ["frente"], totalParts: 6, status: "Pendente", requester: "Seguradora", deadline: "Vencida" },
+  { id: 1, date: "01 mai. 2026", time: "10:30", type: "Rotina", km: "45.230 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa"], totalParts: 6, status: "Aprovada", requester: "Usuário", deadline: null },
+  { id: 2, date: "10 out. 2023", time: "09:00", type: "Rotina", km: "31.450 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
+  { id: 3, date: "15 jan. 2023", time: "14:00", type: "Transferência", km: "27.890 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
+  { id: 4, date: "02 mar. 2022", time: "11:20", type: "Solicitada", km: "15.300 km", parts: ["frente", "traseira", "painel", "placa"], totalParts: 4, status: "Aprovada", requester: "Seguradora", deadline: null },
+  { id: 5, date: "18 set. 2021", time: "08:45", type: "Transferência", km: "3.200 km", parts: ["frente", "traseira", "lateral_e", "lateral_d", "painel", "placa", "chassi"], totalParts: 7, status: "Aprovada", requester: "Mobistory", deadline: null },
 ];
 
 export const ALL_IDENTITY_HISTORY = [

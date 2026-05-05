@@ -15,6 +15,7 @@ const C = colors.light;
 
 const FILTERS = [
   { id: "todas", label: "Todas" },
+  { id: "pendentes", label: "Pendentes" },
   { id: "Rotina", label: "Rotina" },
   { id: "Transferência", label: "Transferência" },
   { id: "Solicitada", label: "Solicitada" },
@@ -43,15 +44,13 @@ const PART_LABELS: Record<string, string> = {
 };
 
 function InspectionCard({ item }: { item: typeof ALL_INSPECTIONS[number] }) {
-  const status  = STATUS_COLORS[item.status]  ?? STATUS_COLORS.Pendente;
-  const typeCl  = TYPE_COLORS[item.type]      ?? TYPE_COLORS.Rotina;
+  const status = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
+  const typeCl = TYPE_COLORS[item.type]     ?? TYPE_COLORS.Rotina;
   return (
     <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
-          <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
-          </View>
+        <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
         </View>
         <View style={{ backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: status.text }}>{item.status}</Text>
@@ -71,7 +70,7 @@ function InspectionCard({ item }: { item: typeof ALL_INSPECTIONS[number] }) {
         <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
           <Feather name="camera" size={I.sm} color={C.textTertiary} />
           <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
-            {item.totalParts} {item.totalParts === 1 ? "parte" : "partes"} registradas
+            {item.parts.length}/{item.totalParts} {item.totalParts === 1 ? "parte" : "partes"} registradas
           </Text>
         </View>
         <View style={{ flexDirection: "row", gap: S.xs }}>
@@ -87,6 +86,86 @@ function InspectionCard({ item }: { item: typeof ALL_INSPECTIONS[number] }) {
           )}
         </View>
       </View>
+    </View>
+  );
+}
+
+function PendingInspectionCard({
+  item,
+  onStart,
+}: {
+  item: typeof ALL_INSPECTIONS[number];
+  onStart: () => void;
+}) {
+  const typeCl  = TYPE_COLORS[item.type] ?? TYPE_COLORS.Rotina;
+  const isOverdue = item.deadline === "Vencida";
+  const accentBg  = isOverdue ? "#FEF2F2" : "#FFFBEB";
+  const accentBorder = isOverdue ? "#FCA5A5" : "#FCD34D";
+  const accentText   = isOverdue ? "#DC2626" : "#B45309";
+  const progress = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
+
+  return (
+    <View style={{
+      backgroundColor: accentBg,
+      borderRadius: R.xxl,
+      padding: S.xl,
+      marginBottom: S.md,
+      borderWidth: 1.5,
+      borderColor: accentBorder,
+    }}>
+      {/* TOP ROW */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+          <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
+          </View>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+          <Feather name="clock" size={I.xs} color={accentText} />
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: accentText }}>{item.deadline}</Text>
+        </View>
+      </View>
+
+      {/* INFO */}
+      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary, marginBottom: 2 }}>
+        Solicitado por {item.requester}
+      </Text>
+      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.lg }}>
+        {item.km} · Solicitada em {item.date}
+      </Text>
+
+      {/* PROGRESS BAR */}
+      {item.parts.length > 0 && (
+        <View style={{ marginBottom: S.md }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xs }}>
+            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>Progresso</Text>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textSecondary }}>
+              {item.parts.length}/{item.totalParts} partes
+            </Text>
+          </View>
+          <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
+            <View style={{ height: 4, width: `${progress * 100}%`, backgroundColor: accentText, borderRadius: R.pill }} />
+          </View>
+        </View>
+      )}
+
+      <View style={{ height: 1, backgroundColor: accentBorder, marginBottom: S.md }} />
+
+      {/* CTA */}
+      <TouchableOpacity
+        onPress={onStart}
+        activeOpacity={0.85}
+        style={{
+          flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
+          backgroundColor: C.textPrimary, borderRadius: R.xl,
+          paddingVertical: S.md,
+        }}
+      >
+        <Feather name="camera" size={I.md} color={C.surface} />
+        <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.surface }}>
+          {item.parts.length > 0 ? "Continuar vistoria" : "Iniciar vistoria"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -221,11 +300,25 @@ export default function AllInspectionsScreen() {
     );
   };
 
-  const filtered = ALL_INSPECTIONS.filter(item => {
-    const matchFilter = filter === "todas" || item.type === filter;
-    const matchQuery  = query === "" || item.date.toLowerCase().includes(query.toLowerCase()) || item.type.toLowerCase().includes(query.toLowerCase()) || item.requester.toLowerCase().includes(query.toLowerCase());
-    return matchFilter && matchQuery;
+  const matchesQuery = (item: typeof ALL_INSPECTIONS[number]) =>
+    query === "" ||
+    item.date.toLowerCase().includes(query.toLowerCase()) ||
+    item.type.toLowerCase().includes(query.toLowerCase()) ||
+    item.requester.toLowerCase().includes(query.toLowerCase());
+
+  const pendingItems = ALL_INSPECTIONS.filter(item => {
+    const isPending = item.status === "Pendente";
+    const matchFilter = filter === "todas" || filter === "pendentes" || item.type === filter;
+    return isPending && matchFilter && matchesQuery(item);
   });
+
+  const historyItems = ALL_INSPECTIONS.filter(item => {
+    const isDone = item.status !== "Pendente";
+    const matchFilter = filter === "todas" || (filter !== "pendentes" && item.type === filter);
+    return isDone && matchFilter && matchesQuery(item);
+  });
+
+  const totalFiltered = pendingItems.length + historyItems.length;
 
   return (
     <>
@@ -295,13 +388,48 @@ export default function AllInspectionsScreen() {
 
         {/* LISTA */}
         <View style={{ paddingHorizontal: S.xl, paddingTop: S.xs }}>
-          {filtered.length === 0 ? (
+          {totalFiltered === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
               <Feather name="search" size={I.xxxl} color={C.textTertiary} />
               <Text style={{ fontSize: F.sm, color: C.textTertiary }}>Nenhuma vistoria encontrada</Text>
             </View>
           ) : (
-            filtered.map(item => <InspectionCard key={item.id} item={item} />)
+            <>
+              {/* PENDENTES */}
+              {pendingItems.length > 0 && (
+                <View style={{ marginBottom: S.xs }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
+                    <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
+                      Pendentes
+                    </Text>
+                    <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 2, paddingHorizontal: S.sm }}>
+                      <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>
+                        {pendingItems.length}
+                      </Text>
+                    </View>
+                  </View>
+                  {pendingItems.map(item => (
+                    <PendingInspectionCard
+                      key={item.id}
+                      item={item}
+                      onStart={() => newInspectionRef.current?.present()}
+                    />
+                  ))}
+                </View>
+              )}
+
+              {/* HISTÓRICO */}
+              {historyItems.length > 0 && filter !== "pendentes" && (
+                <View>
+                  {pendingItems.length > 0 && (
+                    <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm, marginTop: S.sm }}>
+                      Histórico
+                    </Text>
+                  )}
+                  {historyItems.map(item => <InspectionCard key={item.id} item={item} />)}
+                </View>
+              )}
+            </>
           )}
         </View>
       </ScrollView>

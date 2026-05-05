@@ -15,6 +15,11 @@ const RECORD_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
   fuel: "droplet",
   tire: "disc",
   bonds: "user",
+  inspections: "search",
+};
+
+const RECORD_PENDING: Record<string, boolean> = {
+  inspections: true,
 };
 
 function handleRecordSelect(router: ReturnType<typeof useRouter>, id: string) {
@@ -24,6 +29,8 @@ function handleRecordSelect(router: ReturnType<typeof useRouter>, id: string) {
     router.navigate("/all-tire");
   } else if (id === "bonds") {
     router.navigate("/all-bonds");
+  } else if (id === "inspections") {
+    router.navigate("/all-inspections");
   } else {
     router.navigate("/activities");
   }
@@ -140,18 +147,27 @@ export default function VehicleHome() {
       <View style={{ paddingHorizontal: S.xl, paddingTop: S.xxl }}>
         <SectionLabel title="Registros" actionLabel="Ver tudo" onAction={() => router.navigate("/records")} />
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
-          {RECORDS.map(({ id, label, lastDate, lastValue }) => (
-            <TouchableOpacity key={id} activeOpacity={0.8}
-              onPress={() => handleRecordSelect(router, id)}
-              style={{ width: "47.5%", flexGrow: 0, backgroundColor: C.surface, borderRadius: R.xl, padding: S.xl }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-                <IconBox iconType={RECORD_ICONS[id] ?? "activity"} size={I.xl} boxSize={40} radius={R.md} />
-                <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{lastDate}</Text>
-              </View>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{label}</Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{lastValue}</Text>
-            </TouchableOpacity>
-          ))}
+          {RECORDS.map(({ id, label, lastDate, lastValue }) => {
+            const hasPending = RECORD_PENDING[id] ?? false;
+            return (
+              <TouchableOpacity key={id} activeOpacity={0.8}
+                onPress={() => handleRecordSelect(router, id)}
+                style={{ width: "47.5%", flexGrow: 0, backgroundColor: C.surface, borderRadius: R.xl, padding: S.xl }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
+                  <IconBox iconType={RECORD_ICONS[id] ?? "activity"} size={I.xl} boxSize={40} radius={R.md} />
+                  {hasPending ? (
+                    <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 2, paddingHorizontal: S.sm }}>
+                      <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>{lastDate}</Text>
+                    </View>
+                  ) : (
+                    <Text style={{ fontSize: F.xs, color: C.textTertiary }}>{lastDate}</Text>
+                  )}
+                </View>
+                <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{label}</Text>
+                <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: 2 }}>{lastValue}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </ScrollView>
