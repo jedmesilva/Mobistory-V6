@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, TouchableOpacity, ScrollView, Platform, Clipboard,
-  Modal, Image, Share,
+  Modal, Image, Share, Alert,
 } from "react-native";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -173,6 +173,14 @@ export default function IdentityScreen() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExport = () => {
+    Alert.alert("Exportar", "Escolha o formato de exportação", [
+      { text: "CSV", onPress: () => {} },
+      { text: "PDF", onPress: () => {} },
+      { text: "Cancelar", style: "cancel" },
+    ]);
+  };
+
   return (
     <>
       <ScrollView
@@ -183,9 +191,14 @@ export default function IdentityScreen() {
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.xl }}>
           <BackButton onPress={() => router.back()} />
-          <TouchableOpacity onPress={() => setShareOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
-            <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+            <TouchableOpacity onPress={() => setShareOpen(true)} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="download" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* HERO CARD */}

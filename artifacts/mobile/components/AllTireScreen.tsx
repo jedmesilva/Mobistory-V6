@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  View, Text, TouchableOpacity, ScrollView, Platform,
+  View, Text, TouchableOpacity, ScrollView, Platform, Share, Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -64,6 +64,20 @@ export default function AllTireScreen() {
   const [query,  setQuery]  = useState("");
   const [filter, setFilter] = useState("todos");
 
+  const handleShare = async () => {
+    try {
+      await Share.share({ message: `Histórico de calibragens — ${ALL_TIRE.length} registros` });
+    } catch (_) {}
+  };
+
+  const handleExport = () => {
+    Alert.alert("Exportar", "Escolha o formato de exportação", [
+      { text: "CSV", onPress: () => {} },
+      { text: "PDF", onPress: () => {} },
+      { text: "Cancelar", style: "cancel" },
+    ]);
+  };
+
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -93,8 +107,18 @@ export default function AllTireScreen() {
     >
       {/* BACK + TITLE */}
       <View style={{ paddingHorizontal: S.xl }}>
-        <BackButton onPress={() => router.back()} />
-        <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: S.xxl }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <BackButton onPress={() => router.back()} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+            <TouchableOpacity onPress={handleShare} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="share-2" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleExport} activeOpacity={0.7} style={{ padding: S.xs }}>
+              <Feather name="download" size={I.xxl} color={C.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={{ marginBottom: S.xxl }}>
           <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Calibragens</Text>
         </View>
 
