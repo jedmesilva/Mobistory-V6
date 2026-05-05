@@ -19,6 +19,7 @@ export const MODULES = [
   { id: "fuel", label: "Abastecimento", desc: "Histórico de abastecimentos" },
   { id: "tire", label: "Calibragem", desc: "Histórico de calibragens" },
   { id: "bonds", label: "Vínculos", desc: "Histórico de vínculos do veículo" },
+  { id: "inspections", label: "Vistorias", desc: "Histórico de vistorias do veículo" },
 ];
 
 export const REGISTER_MODULES = [

@@ -16,6 +16,7 @@ const MODULE_ICONS: Record<string, React.ComponentProps<typeof Feather>["name"]>
   fuel: "droplet",
   tire: "disc",
   bonds: "users",
+  inspections: "search",
 };
 
 export default function RecordsScreen() {
@@ -42,6 +43,8 @@ export default function RecordsScreen() {
       router.navigate("/all-fuel");
     } else if (id === "tire") {
       router.navigate("/all-tire");
+    } else if (id === "inspections") {
+      router.navigate("/all-inspections");
     } else {
       router.navigate("/activities");
     }
