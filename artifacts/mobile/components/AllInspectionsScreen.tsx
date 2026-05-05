@@ -438,7 +438,7 @@ function NewInspectionSheet({
         >
           <Feather name="camera" size={I.lg} color={canConfirm ? C.surface : C.textTertiary} />
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: canConfirm ? C.surface : C.textTertiary }}>
-            Criar vistoria pendente · {selected.length} {selected.length === 1 ? "parte" : "partes"}
+            Solicitar vistoria · {selected.length} {selected.length === 1 ? "parte" : "partes"}
           </Text>
         </TouchableOpacity>
       </BottomSheetScrollView>
