@@ -14,8 +14,8 @@ const C = colors.light;
 const PART_LABELS: Record<string, string> = {
   frente:    "Frente",
   traseira:  "Traseira",
-  lateral_e: "Lateral esq.",
-  lateral_d: "Lateral dir.",
+  lateral_e: "Lateral esquerda",
+  lateral_d: "Lateral direita",
   painel:    "Painel",
   placa:     "Placa",
   chassi:    "Chassi físico",
@@ -46,64 +46,50 @@ export default function InspectionRunScreen() {
   }
 
   const plannedIds: string[] = (inspection as any).plannedParts ?? INSPECTION_STEPS.map(s => s.id);
-  const steps = INSPECTION_STEPS.filter(s => plannedIds.includes(s.id));
-  const doneSet = new Set(inspection.parts);
+  const steps     = INSPECTION_STEPS.filter(s => plannedIds.includes(s.id));
+  const doneSet   = new Set(inspection.parts);
   const remaining = steps.filter(s => !doneSet.has(s.id));
-  const done = steps.filter(s => doneSet.has(s.id));
+  const done      = steps.filter(s =>  doneSet.has(s.id));
   const totalSteps = steps.length;
   const doneCount  = done.length;
   const progress   = totalSteps > 0 ? doneCount / totalSteps : 0;
+  const allDone    = remaining.length === 0;
+  const canFinish  = remaining.filter(s => s.required).length === 0 && doneCount > 0;
 
   const currentStepObj = cameraStepIndex !== null ? steps[cameraStepIndex] : null;
-  const currentStepIdx = cameraStepIndex !== null ? cameraStepIndex : 0;
 
-  const handleOpenCamera = (idx: number) => {
-    setCameraStepIndex(idx);
-  };
+  const handleOpenCamera = (idx: number) => setCameraStepIndex(idx);
 
-  const handleCapture = useCallback((uri: string) => {
+  const handleCapture = useCallback((_uri: string) => {
     if (cameraStepIndex === null) return;
-    const stepId = steps[cameraStepIndex].id;
-    completeStep(Number(id), stepId);
+    completeStep(Number(id), steps[cameraStepIndex].id);
     setCameraStepIndex(null);
   }, [cameraStepIndex, steps, id, completeStep]);
 
-  const handleCloseCamera = useCallback(() => {
-    setCameraStepIndex(null);
-  }, []);
+  const handleCloseCamera = useCallback(() => setCameraStepIndex(null), []);
 
   const handleFinish = () => {
     Alert.alert(
       "Finalizar vistoria",
-      "Todas as etapas obrigatórias foram fotografadas. Deseja concluir esta vistoria?",
+      "Deseja concluir esta vistoria? As etapas fotografadas serão registradas.",
       [
         { text: "Cancelar", style: "cancel" },
-        {
-          text: "Concluir",
-          onPress: () => {
-            finishInspection(Number(id));
-            router.back();
-          },
-        },
+        { text: "Concluir", onPress: () => { finishInspection(Number(id)); router.back(); } },
       ]
     );
   };
-
-  const allDone = remaining.length === 0;
-  const requiredRemaining = remaining.filter(s => s.required);
-  const canFinish = requiredRemaining.length === 0 && doneCount > 0;
 
   return (
     <>
       <ScrollView
         style={{ flex: 1, backgroundColor: C.background }}
-        contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + S.xxxl }}
+        contentContainerStyle={{ paddingTop: topPad + S.lg, paddingBottom: bottomPad + (canFinish ? 100 : S.xxxl) }}
         showsVerticalScrollIndicator={false}
       >
         {/* HEADER */}
         <View style={{ paddingHorizontal: S.xl }}>
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}
-            style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: S.lg }}>
+            style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: S.xl }}>
             <Feather name="arrow-left" size={I.md} color={C.textSecondary} />
             <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Voltar</Text>
           </TouchableOpacity>
@@ -115,40 +101,33 @@ export default function InspectionRunScreen() {
             {inspection.type}
           </Text>
           <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xl }}>
-            Solicitado por {inspection.requester} · {inspection.km}
+            {inspection.requester} · {inspection.km}
           </Text>
 
-          {/* PROGRESS BAR */}
+          {/* PROGRESSO */}
           <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.xxl }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
-              <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>
-                Progresso
-              </Text>
-              <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>
-                {doneCount}/{totalSteps} etapas
+              <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: C.textPrimary }}>Progresso</Text>
+              <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
+                {doneCount} de {totalSteps} etapas
               </Text>
             </View>
-            <View style={{ height: 6, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-              <View style={{
-                height: 6,
-                width: `${progress * 100}%`,
-                backgroundColor: allDone ? "#16A34A" : C.textPrimary,
-                borderRadius: R.pill,
-              }} />
+            <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
+              <View style={{ height: 4, width: `${progress * 100}%`, backgroundColor: C.textPrimary, borderRadius: R.pill }} />
             </View>
             {allDone && (
-              <Text style={{ fontSize: F.sm, color: "#16A34A", fontWeight: "600" as const, marginTop: S.sm }}>
-                Todas as etapas concluídas!
+              <Text style={{ fontSize: F.sm, color: C.textSecondary, marginTop: S.sm }}>
+                Todas as etapas concluídas
               </Text>
             )}
           </View>
         </View>
 
-        {/* REMAINING STEPS */}
+        {/* ETAPAS PENDENTES */}
         {remaining.length > 0 && (
           <View style={{ paddingHorizontal: S.xl, marginBottom: S.xxl }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
-              Pendentes · {remaining.length}
+              A fotografar · {remaining.length}
             </Text>
             <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, overflow: "hidden" }}>
               {remaining.map((step, idx) => {
@@ -167,11 +146,11 @@ export default function InspectionRunScreen() {
                   >
                     <View style={{
                       width: 36, height: 36, borderRadius: 18,
-                      backgroundColor: C.background,
+                      backgroundColor: C.iconBg,
                       alignItems: "center", justifyContent: "center",
                       marginRight: S.md,
                     }}>
-                      <Feather name="camera" size={I.md} color={C.textTertiary} />
+                      <Feather name="camera" size={I.md} color={C.iconColor} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
@@ -179,8 +158,8 @@ export default function InspectionRunScreen() {
                           {PART_LABELS[step.id] ?? step.label}
                         </Text>
                         {step.required && (
-                          <View style={{ backgroundColor: "#EFF6FF", borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: S.xs }}>
-                            <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: "#2563EB" }}>Obrigatório</Text>
+                          <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: S.xs }}>
+                            <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.iconColor }}>Obrigatório</Text>
                           </View>
                         )}
                       </View>
@@ -194,11 +173,11 @@ export default function InspectionRunScreen() {
           </View>
         )}
 
-        {/* DONE STEPS */}
+        {/* ETAPAS CONCLUÍDAS */}
         {done.length > 0 && (
           <View style={{ paddingHorizontal: S.xl }}>
             <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.sm }}>
-              Concluídas · {done.length}
+              Fotografadas · {done.length}
             </Text>
             <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, overflow: "hidden" }}>
               {done.map((step, idx) => {
@@ -214,11 +193,11 @@ export default function InspectionRunScreen() {
                   >
                     <View style={{
                       width: 36, height: 36, borderRadius: 18,
-                      backgroundColor: "#DCFCE7",
+                      backgroundColor: C.iconBg,
                       alignItems: "center", justifyContent: "center",
                       marginRight: S.md,
                     }}>
-                      <Feather name="check" size={I.md} color="#16A34A" />
+                      <Feather name="check" size={I.md} color={C.textPrimary} />
                     </View>
                     <Text style={{ fontSize: F.base, fontWeight: "500" as const, color: C.textSecondary, flex: 1 }}>
                       {PART_LABELS[step.id] ?? step.label}
@@ -231,7 +210,7 @@ export default function InspectionRunScreen() {
         )}
       </ScrollView>
 
-      {/* BOTTOM CTA */}
+      {/* BOTÃO CONCLUIR */}
       {canFinish && (
         <View style={{
           position: "absolute", bottom: 0, left: 0, right: 0,
@@ -247,7 +226,8 @@ export default function InspectionRunScreen() {
             activeOpacity={0.85}
             style={{
               backgroundColor: C.textPrimary, borderRadius: R.xxl,
-              paddingVertical: S.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
+              paddingVertical: S.lg, flexDirection: "row",
+              alignItems: "center", justifyContent: "center", gap: S.sm,
             }}
           >
             <Feather name="check-circle" size={I.lg} color={C.surface} />
@@ -258,11 +238,11 @@ export default function InspectionRunScreen() {
         </View>
       )}
 
-      {/* CAMERA MODAL */}
+      {/* CÂMERA */}
       {currentStepObj && (
         <InspectionCamera
           step={currentStepObj}
-          stepIndex={currentStepIdx}
+          stepIndex={cameraStepIndex!}
           totalSteps={totalSteps}
           onCapture={handleCapture}
           onClose={handleCloseCamera}
