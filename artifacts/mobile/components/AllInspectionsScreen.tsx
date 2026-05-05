@@ -9,19 +9,19 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
 import { INSPECTION_STEPS, INSPECTION_MOTIVOS, CURRENT_USER } from "@/constants/data";
-import { useInspections } from "@/contexts/InspectionsContext";
+import { useInspections, type Inspection } from "@/contexts/InspectionsContext";
 import { R, S, F, I, ActionButtonSquare, BackButton, SearchBar } from "@/components/shared";
 
 const C = colors.light;
 
 const FILTERS = [
-  { id: "todas",               label: "Todas" },
-  { id: "pendentes",           label: "Pendentes" },
-  { id: "Rotina",              label: "Rotina" },
-  { id: "Transferência",       label: "Transferência" },
-  { id: "Abertura de sinistro",label: "Sinistro" },
-  { id: "Manutenção",          label: "Manutenção" },
-  { id: "Acidente",            label: "Acidente" },
+  { id: "todas",                label: "Todas" },
+  { id: "pendentes",            label: "Pendentes" },
+  { id: "Rotina",               label: "Rotina" },
+  { id: "Transferência",        label: "Transferência" },
+  { id: "Abertura de sinistro", label: "Sinistro" },
+  { id: "Manutenção",           label: "Manutenção" },
+  { id: "Acidente",             label: "Acidente" },
 ];
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
@@ -31,13 +31,13 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  Rotina:                { bg: C.iconBg,   text: C.iconColor },
-  "Transferência":       { bg: "#EFF6FF",  text: "#2563EB"   },
-  "Abertura de sinistro":{ bg: "#FFF7ED",  text: "#C2410C"   },
-  "Manutenção":          { bg: "#F0FDF4",  text: "#16A34A"   },
-  "Acidente":            { bg: "#FEF2F2",  text: "#DC2626"   },
-  "Auditoria":           { bg: "#FDF4FF",  text: "#9333EA"   },
-  "Outro":               { bg: C.iconBg,   text: C.iconColor },
+  Rotina:                 { bg: C.iconBg,   text: C.iconColor },
+  "Transferência":        { bg: "#EFF6FF",  text: "#2563EB"   },
+  "Abertura de sinistro": { bg: "#FFF7ED",  text: "#C2410C"   },
+  "Manutenção":           { bg: "#F0FDF4",  text: "#16A34A"   },
+  "Acidente":             { bg: "#FEF2F2",  text: "#DC2626"   },
+  "Auditoria":            { bg: "#FDF4FF",  text: "#9333EA"   },
+  "Outro":                { bg: C.iconBg,   text: C.iconColor },
 };
 
 const PART_LABELS: Record<string, string> = {
@@ -50,11 +50,15 @@ const PART_LABELS: Record<string, string> = {
   chassi:    "Chassi físico",
 };
 
-function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["inspections"][number] }) {
+function typeColor(type: string) {
+  return TYPE_COLORS[type] ?? { bg: C.iconBg, text: C.iconColor };
+}
+
+function InspectionCard({ item, onPress }: { item: Inspection; onPress: () => void }) {
   const status = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
-  const typeCl = TYPE_COLORS[item.type]     ?? { bg: C.iconBg, text: C.iconColor };
+  const typeCl = typeColor(item.type);
   return (
-    <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
         <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
@@ -65,10 +69,10 @@ function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["ins
       </View>
 
       <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
-        {item.date}
+        {item.completedAt ?? item.requestedAt}
       </Text>
       <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.lg }}>
-        {item.time} · {item.km} · {item.requester}
+        {item.completedTime ? `${item.completedTime} · ` : ""}{item.requester}
       </Text>
 
       <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
@@ -93,23 +97,17 @@ function InspectionCard({ item }: { item: ReturnType<typeof useInspections>["ins
           )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
-function PendingInspectionCard({
-  item,
-  onStart,
-}: {
-  item: ReturnType<typeof useInspections>["inspections"][number];
-  onStart: (id: number) => void;
-}) {
-  const typeCl   = TYPE_COLORS[item.type]     ?? { bg: C.iconBg, text: C.iconColor };
+function PendingInspectionCard({ item, onPress, onStart }: { item: Inspection; onPress: () => void; onStart: (id: number) => void }) {
+  const typeCl   = typeColor(item.type);
   const statusCl = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
   const progress = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
 
   return (
-    <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.md }}>
         <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
@@ -120,10 +118,10 @@ function PendingInspectionCard({
       </View>
 
       <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary, marginBottom: S.xs }}>
-        {item.date}
+        {item.requestedAt}
       </Text>
       <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: item.deadline ? S.xs : S.lg }}>
-        {item.km} · {item.requester}
+        {item.requester}
       </Text>
       {item.deadline ? (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: S.lg }}>
@@ -147,7 +145,7 @@ function PendingInspectionCard({
       <View style={{ height: 1, backgroundColor: C.border, marginBottom: S.md }} />
 
       <TouchableOpacity
-        onPress={() => onStart(item.id)}
+        onPress={(e) => { e.stopPropagation?.(); onStart(item.id); }}
         activeOpacity={0.85}
         style={{
           flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
@@ -159,13 +157,142 @@ function PendingInspectionCard({
           {item.parts.length > 0 ? "Continuar vistoria" : "Iniciar vistoria"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const renderBackdrop = (props: BottomSheetBackdropProps) => (
   <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
 );
+
+function InspectionDetailSheet({
+  sheetRef,
+  item,
+  onStart,
+}: {
+  sheetRef: React.RefObject<BottomSheetModal | null>;
+  item: Inspection | null;
+  onStart: (id: number) => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  if (!item) return null;
+
+  const typeCl   = typeColor(item.type);
+  const statusCl = STATUS_COLORS[item.status] ?? STATUS_COLORS.Pendente;
+  const isPending = item.status === "Pendente";
+
+  const allParts = (item.plannedParts ?? INSPECTION_STEPS.map(s => s.id)).map(id => ({
+    id,
+    label: PART_LABELS[id] ?? id,
+    done: item.parts.includes(id),
+  }));
+
+  function Row({ label, value }: { label: string; value: string }) {
+    return (
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: S.sm }}>
+        <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{label}</Text>
+        <Text style={{ fontSize: F.sm, fontWeight: "500" as const, color: C.textPrimary }}>{value}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <BottomSheetModal ref={sheetRef} enablePanDownToClose backdropComponent={renderBackdrop}>
+      <BottomSheetScrollView contentContainerStyle={{ paddingBottom: bottomPad + S.xl }}>
+        {/* Header */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: S.xl, paddingTop: S.sm, paddingBottom: S.lg }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+            <View style={{ backgroundColor: typeCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCl.text }}>{item.type}</Text>
+            </View>
+            <View style={{ backgroundColor: statusCl.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: statusCl.text }}>{item.status}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => sheetRef.current?.dismiss()} activeOpacity={0.7} style={{ padding: S.xs }}>
+            <Feather name="x" size={I.md} color={C.textTertiary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Descrição */}
+        {item.descricao ? (
+          <View style={{ paddingHorizontal: S.xl, marginBottom: S.lg }}>
+            <Text style={{ fontSize: F.base, color: C.textSecondary, lineHeight: 22 }}>{item.descricao}</Text>
+          </View>
+        ) : null}
+
+        {/* Solicitação */}
+        <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.md }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
+            Solicitação
+          </Text>
+          <Row label="Solicitante" value={item.requester} />
+          <Row label="Data de solicitação" value={item.requestedAt} />
+          {item.deadline ? <Row label="Prazo" value={item.deadline} /> : null}
+        </View>
+
+        {/* Realização */}
+        {!isPending && item.completedAt ? (
+          <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.md }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
+              Realização
+            </Text>
+            <Row label="Data de realização" value={item.completedAt} />
+            {item.completedTime ? <Row label="Horário" value={item.completedTime} /> : null}
+            {item.km && item.km !== "—" ? <Row label="KM no ato" value={item.km} /> : null}
+          </View>
+        ) : null}
+
+        {/* Partes */}
+        <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, marginHorizontal: S.xl, padding: S.lg, marginBottom: S.lg }}>
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: S.xs }}>
+            Partes do veículo
+          </Text>
+          {allParts.map((p, idx) => (
+            <View
+              key={p.id}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: S.sm,
+                paddingVertical: S.sm,
+                borderTopWidth: idx === 0 ? 0 : 1, borderTopColor: C.border,
+              }}
+            >
+              <View style={{
+                width: 22, height: 22, borderRadius: 11,
+                backgroundColor: p.done ? "#DCFCE7" : C.background,
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Feather name={p.done ? "check" : "clock"} size={12} color={p.done ? "#16A34A" : C.textTertiary} />
+              </View>
+              <Text style={{ fontSize: F.sm, color: p.done ? C.textPrimary : C.textTertiary, fontWeight: p.done ? "500" as const : "400" as const }}>
+                {p.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* CTA — só pendentes */}
+        {isPending && (
+          <TouchableOpacity
+            onPress={() => { sheetRef.current?.dismiss(); onStart(item.id); }}
+            activeOpacity={0.85}
+            style={{
+              marginHorizontal: S.xl,
+              backgroundColor: C.textPrimary, borderRadius: R.xxl,
+              paddingVertical: S.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
+            }}
+          >
+            <Feather name="camera" size={I.lg} color={C.surface} />
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.surface }}>
+              {item.parts.length > 0 ? "Continuar vistoria" : "Iniciar vistoria"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </BottomSheetScrollView>
+    </BottomSheetModal>
+  );
+}
 
 type MotivoItem = typeof INSPECTION_MOTIVOS[number];
 
@@ -252,10 +379,7 @@ function NewInspectionSheet({
             backgroundColor: C.background, borderRadius: R.xl,
             paddingVertical: S.md, paddingHorizontal: S.lg,
           }}>
-            <View style={{
-              width: 32, height: 32, borderRadius: 16,
-              backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center",
-            }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center" }}>
               <Feather name="user" size={I.sm} color={C.iconColor} />
             </View>
             <View style={{ flex: 1 }}>
@@ -272,7 +396,6 @@ function NewInspectionSheet({
             Motivo
           </Text>
 
-          {/* Dropdown trigger */}
           <TouchableOpacity
             onPress={() => setShowDropdown(v => !v)}
             activeOpacity={0.7}
@@ -297,12 +420,8 @@ function NewInspectionSheet({
             <Feather name={showDropdown ? "chevron-up" : "chevron-down"} size={I.md} color={C.textTertiary} />
           </TouchableOpacity>
 
-          {/* Dropdown list */}
           {showDropdown && (
-            <View style={{
-              marginTop: S.xs, backgroundColor: C.background,
-              borderRadius: R.xl, overflow: "hidden",
-            }}>
+            <View style={{ marginTop: S.xs, backgroundColor: C.background, borderRadius: R.xl, overflow: "hidden" }}>
               {INSPECTION_MOTIVOS.map((m) => {
                 const isSelected = motivo?.id === m.id;
                 return (
@@ -419,15 +538,13 @@ function NewInspectionSheet({
           );
         })}
 
-        {/* BOTÃO CONFIRMAR */}
         <TouchableOpacity
           onPress={handleStart}
           activeOpacity={canConfirm ? 0.85 : 1}
           style={{
             marginHorizontal: S.xl, marginTop: S.xl,
             backgroundColor: canConfirm ? C.textPrimary : C.border,
-            borderRadius: R.xxl,
-            paddingVertical: S.lg,
+            borderRadius: R.xxl, paddingVertical: S.lg,
             flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
           }}
         >
@@ -446,11 +563,18 @@ export default function AllInspectionsScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todas");
+  const [selectedItem, setSelectedItem] = useState<Inspection | null>(null);
   const newInspectionRef = useRef<BottomSheetModal>(null);
+  const detailSheetRef   = useRef<BottomSheetModal>(null);
   const { inspections, addInspection } = useInspections();
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+
+  const openDetail = (item: Inspection) => {
+    setSelectedItem(item);
+    detailSheetRef.current?.present();
+  };
 
   const handleShare = async () => {
     try {
@@ -478,9 +602,9 @@ export default function AllInspectionsScreen() {
     router.navigate(`/inspection-run?id=${newId}`);
   };
 
-  const matchesQuery = (item: typeof inspections[number]) =>
+  const matchesQuery = (item: Inspection) =>
     query === "" ||
-    item.date.toLowerCase().includes(query.toLowerCase()) ||
+    item.requestedAt.toLowerCase().includes(query.toLowerCase()) ||
     item.type.toLowerCase().includes(query.toLowerCase()) ||
     item.requester.toLowerCase().includes(query.toLowerCase());
 
@@ -506,7 +630,6 @@ export default function AllInspectionsScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* BACK + SHARE/EXPORT */}
         <View style={{ paddingHorizontal: S.xl }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <BackButton onPress={() => router.back()} />
@@ -520,25 +643,21 @@ export default function AllInspectionsScreen() {
             </View>
           </View>
 
-          {/* TITLE */}
           <View style={{ marginBottom: S.xxl }}>
             <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5 }}>Vistorias</Text>
           </View>
 
-          {/* ACTION BUTTONS */}
           <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl, width: "66%" }}>
             <ActionButtonSquare iconName="camera" label="Solicitar vistoria" onPress={() => newInspectionRef.current?.present()} />
             <ActionButtonSquare iconName="bar-chart-2" label="Estatísticas" onPress={handleStats} />
           </View>
 
-          {/* LABEL + BUSCA */}
           <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
             Histórico de vistorias
           </Text>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Buscar por data, motivo, solicitante…" style={{ marginTop: S.md, marginBottom: S.sm }} />
         </View>
 
-        {/* FILTROS */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -564,7 +683,6 @@ export default function AllInspectionsScreen() {
           ))}
         </ScrollView>
 
-        {/* LISTA */}
         <View style={{ paddingHorizontal: S.xl, paddingTop: S.xs }}>
           {totalFiltered === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: S.xxxl, gap: S.sm }}>
@@ -573,7 +691,6 @@ export default function AllInspectionsScreen() {
             </View>
           ) : (
             <>
-              {/* PENDENTES */}
               {pendingItems.length > 0 && (
                 <View style={{ marginBottom: S.xs }}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
@@ -581,22 +698,20 @@ export default function AllInspectionsScreen() {
                       Pendentes
                     </Text>
                     <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 2, paddingHorizontal: S.sm }}>
-                      <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>
-                        {pendingItems.length}
-                      </Text>
+                      <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>{pendingItems.length}</Text>
                     </View>
                   </View>
                   {pendingItems.map(item => (
                     <PendingInspectionCard
                       key={item.id}
                       item={item}
+                      onPress={() => openDetail(item)}
                       onStart={(id) => router.navigate(`/inspection-run?id=${id}`)}
                     />
                   ))}
                 </View>
               )}
 
-              {/* HISTÓRICO */}
               {historyItems.length > 0 && filter !== "pendentes" && (
                 <View>
                   {pendingItems.length > 0 && (
@@ -604,7 +719,9 @@ export default function AllInspectionsScreen() {
                       Histórico
                     </Text>
                   )}
-                  {historyItems.map(item => <InspectionCard key={item.id} item={item} />)}
+                  {historyItems.map(item => (
+                    <InspectionCard key={item.id} item={item} onPress={() => openDetail(item)} />
+                  ))}
                 </View>
               )}
             </>
@@ -613,6 +730,11 @@ export default function AllInspectionsScreen() {
       </ScrollView>
 
       <NewInspectionSheet sheetRef={newInspectionRef} onConfirm={handleConfirmNew} />
+      <InspectionDetailSheet
+        sheetRef={detailSheetRef}
+        item={selectedItem}
+        onStart={(id) => router.navigate(`/inspection-run?id=${id}`)}
+      />
     </>
   );
 }

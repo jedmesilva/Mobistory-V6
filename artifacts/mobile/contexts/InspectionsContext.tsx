@@ -3,7 +3,6 @@ import { ALL_INSPECTIONS, CURRENT_USER } from "@/constants/data";
 
 export type Inspection = typeof ALL_INSPECTIONS[number] & {
   plannedParts?: string[];
-  descricao?: string;
 };
 
 interface InspectionsContextValue {
@@ -32,8 +31,9 @@ export function InspectionsProvider({ children }: { children: React.ReactNode })
     const id = nextId++;
     const newInspection: Inspection = {
       id,
-      date: todayLabel(),
-      time: nowTimeLabel(),
+      requestedAt: todayLabel(),
+      completedAt: null,
+      completedTime: null,
       type: motivo,
       descricao,
       km: "—",
@@ -62,7 +62,7 @@ export function InspectionsProvider({ children }: { children: React.ReactNode })
     setInspections(prev =>
       prev.map(insp =>
         insp.id === id
-          ? { ...insp, status: "Aprovada", deadline: null, time: nowTimeLabel() }
+          ? { ...insp, status: "Aprovada", deadline: null, completedAt: todayLabel(), completedTime: nowTimeLabel() }
           : insp
       )
     );
