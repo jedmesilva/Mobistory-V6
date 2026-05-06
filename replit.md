@@ -43,7 +43,7 @@ lib/
 - **pnpm monorepo**: All packages share a single lockfile; workspace catalog pins shared dep versions
 - **Orval codegen**: API client and Zod schemas are generated from the OpenAPI spec — run codegen after API changes
 - **Replit AI Integrations**: Anthropic is accessed via Replit's proxy (no own key required), configured in `lib/integrations-anthropic-ai/src/client.ts`
-- **Web proxy**: Metro runs on 8081; a Node.js proxy in `artifacts/mobile/scripts/web-proxy.js` forwards port 5000 → 8081 so the Replit webview works
+- **Web proxy**: Metro runs on 8085 (changed from 8081 to avoid conflict with mockup-sandbox Vite server); a Node.js proxy in `artifacts/mobile/scripts/web-proxy.js` forwards port 5000 → 8085 so the Replit webview works
 - **esbuild overrides**: Platform-specific esbuild binaries excluded in `pnpm-workspace.yaml` to keep installs lean on Linux x64
 
 ## Product
