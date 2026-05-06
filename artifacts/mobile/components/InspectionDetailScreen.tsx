@@ -189,11 +189,8 @@ export default function InspectionDetailScreen() {
                 <DataRow
                   label="Data e hora"
                   value={`${inspection.completedAt}${inspection.completedTime ? ` · ${inspection.completedTime}` : ""}`}
-                  last={!inspection.km || inspection.km === "—"}
+                  last
                 />
-                {inspection.km && inspection.km !== "—" ? (
-                  <DataRow label="KM no ato" value={inspection.km} last />
-                ) : null}
               </View>
             </>
           ) : null}
