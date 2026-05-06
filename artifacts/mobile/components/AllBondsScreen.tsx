@@ -108,9 +108,9 @@ export default function AllBondsScreen() {
 
         {/* ACTION BUTTONS */}
         <View style={{ flexDirection: "row", gap: S.sm, marginBottom: S.xxl }}>
-          <ActionButtonSquare iconName="user-plus" label="Solicitar" />
-          <ActionButtonSquare iconName="user-check" label="Conceder" />
-          <ActionButtonSquare iconName="file-text" label="Reivindicar" />
+          <ActionButtonSquare iconName="user-plus" label="Solicitar" onPress={() => router.push({ pathname: "/request-bond", params: { mode: "solicitar" } })} />
+          <ActionButtonSquare iconName="user-check" label="Conceder" onPress={() => router.push("/grant-bond")} />
+          <ActionButtonSquare iconName="file-text" label="Reivindicar" onPress={() => router.push({ pathname: "/request-bond", params: { mode: "reivindicar" } })} />
         </View>
 
         <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>Histórico de vínculos</Text>
