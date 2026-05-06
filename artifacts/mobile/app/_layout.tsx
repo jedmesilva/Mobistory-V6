@@ -33,6 +33,8 @@ function RootLayoutNav() {
       <Stack.Screen name="records" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false, animation: "slide_from_bottom" }} />
       <Stack.Screen name="add-vehicle" options={{ headerShown: false, animation: "slide_from_bottom" }} />
+      <Stack.Screen name="add-bond" options={{ headerShown: false, animation: "slide_from_right" }} />
+      <Stack.Screen name="add-inspection" options={{ headerShown: false, animation: "slide_from_right" }} />
       <Stack.Screen name="inspection-run" options={{ headerShown: false }} />
     </Stack>
   );

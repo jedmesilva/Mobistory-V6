@@ -1,40 +1,24 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View, Text, TouchableOpacity, TextInput, ScrollView,
-  Platform, ActivityIndicator, Alert, Image,
+  Platform, Alert, Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import InspectionCamera from "@/components/InspectionCamera";
 import CaptureCamera from "@/components/CaptureCamera";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import colors from "@/constants/colors";
 import { R, S, F, I } from "@/components/shared";
 import {
   VEHICLE_BRANDS, VEHICLE_MODELS, VEHICLE_VERSIONS, VEHICLE_YEARS,
-  VEHICLE_COLORS, VEHICLE_FUELS, BOND_TYPES, DOCS_BY_BOND, INSPECTION_STEPS,
+  VEHICLE_COLORS, VEHICLE_FUELS,
 } from "@/constants/data";
-import { useInspections } from "@/contexts/InspectionsContext";
-
-const C = colors.light;
-type FeatherName = React.ComponentProps<typeof Feather>["name"];
-
-const AI_ACCENT        = "#6366F1";
-const AI_ACCENT_BG     = "#EEF2FF";
-const AI_ACCENT_BORDER = "#C7D2FE";
-const GREEN            = "#16A34A";
-const GREEN_BG         = "#F0FDF4";
-const GREEN_BORDER     = "#BBF7D0";
-const GREEN_TEXT       = "#15803D";
-const ERROR_BG         = "#FEF2F2";
-const ERROR_BORDER     = "#FECACA";
-const ERROR_TEXT       = "#B91C1C";
-
-const API_BASE =
-  Platform.OS === "web" && typeof window !== "undefined"
-    ? `${window.location.origin}/api`
-    : "http://localhost:80/api";
+import {
+  C, FeatherName,
+  PageHeader, PrimaryButton, Footer, AiError,
+  ListRow, ChipList, ManualStepWrapper, CaptureBtn,
+  useAiCapture,
+} from "@/components/flow-ui";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -42,12 +26,11 @@ type Screen =
   | "add_vehicle" | "doc_upload"
   | "manual_brand" | "manual_model" | "manual_version" | "manual_year"
   | "manual_plate" | "manual_color" | "manual_fuel"
-  | "vehicle_confirm" | "bond_type" | "bond_doc" | "inspection" | "pending";
+  | "vehicle_confirm";
 
 interface NavParams {
   source?: "uvi" | "doc" | "manual";
   vehicleFound?: boolean;
-  bondType?: string;
 }
 
 interface ManualDraft {
@@ -79,272 +62,9 @@ const VEHICLE_NEW = {
   manufacturer: "Toyota do Brasil", origin: "Brasil", factory: "Indaiatuba - SP", group: "Toyota Motor Corporation",
 };
 
-// ─── SHARED UI COMPONENTS ─────────────────────────────────────────────────────
-
-function PageHeader({
-  title, onBack, right,
-}: { title: string; onBack: () => void; right?: React.ReactNode }) {
-  return (
-    <View style={{ marginBottom: S.sm }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.lg }}>
-        <TouchableOpacity onPress={onBack} activeOpacity={0.7} style={{ padding: S.xs }}>
-          <Feather name="arrow-left" size={I.lg} color="#374151" />
-        </TouchableOpacity>
-        {right ?? <View style={{ width: I.lg }} />}
-      </View>
-      <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, lineHeight: F.hero * 1.1 }}>
-        {title}
-      </Text>
-    </View>
-  );
-}
-
-function PrimaryButton({
-  label, onPress, disabled = false,
-}: { label: string; onPress: () => void; disabled?: boolean }) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.85}
-      style={{
-        flexDirection: "row", alignItems: "center", justifyContent: "center",
-        gap: S.sm, backgroundColor: disabled ? C.iconBg : C.primary,
-        borderRadius: R.xxl, paddingVertical: S.lg,
-      }}
-    >
-      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: disabled ? C.textTertiary : C.primaryForeground }}>
-        {label}
-      </Text>
-      {!disabled && <Feather name="chevron-right" size={I.lg} color={C.primaryForeground} />}
-    </TouchableOpacity>
-  );
-}
-
-function Footer({ children }: { children: React.ReactNode }) {
-  const insets = useSafeAreaInsets();
-  return (
-    <View style={{
-      backgroundColor: C.background, borderTopWidth: 1, borderTopColor: C.border,
-      paddingTop: S.md, paddingHorizontal: S.xl,
-      paddingBottom: (Platform.OS === "web" ? 24 : insets.bottom) + S.sm,
-    }}>
-      {children}
-    </View>
-  );
-}
-
-function AiError({ message, onDismiss }: { message: string; onDismiss: () => void }) {
-  return (
-    <View style={{
-      flexDirection: "row", alignItems: "flex-start", gap: S.sm,
-      backgroundColor: ERROR_BG, borderWidth: 1, borderColor: ERROR_BORDER,
-      borderRadius: R.xl, padding: S.md, marginBottom: S.lg,
-    }}>
-      <Text style={{ flex: 1, fontSize: F.sm, color: ERROR_TEXT, lineHeight: F.sm * 1.4 }}>{message}</Text>
-      <TouchableOpacity onPress={onDismiss} activeOpacity={0.7} style={{ padding: 2 }}>
-        <Feather name="x" size={I.sm} color="#EF4444" />
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function ListRow({
-  label, selected, onSelect, isLast = false, iconName,
-}: { label: string; selected?: string | null; onSelect: (v: string) => void; isLast?: boolean; iconName?: FeatherName }) {
-  const isSel = selected === label;
-  return (
-    <TouchableOpacity
-      onPress={() => onSelect(label)}
-      activeOpacity={0.7}
-      style={{
-        flexDirection: "row", alignItems: "center", gap: S.md,
-        paddingVertical: S.md,
-        borderBottomWidth: isLast ? 0 : 1, borderBottomColor: C.border,
-      }}
-    >
-      {iconName && (
-        <View style={{
-          width: 40, height: 40, borderRadius: R.md,
-          backgroundColor: isSel ? C.primary : C.iconBg,
-          alignItems: "center", justifyContent: "center",
-        }}>
-          <Feather name={iconName} size={I.lg} color={isSel ? C.primaryForeground : C.iconColor} />
-        </View>
-      )}
-      <Text style={{ flex: 1, fontSize: F.base, fontWeight: isSel ? "700" : "600" as const, color: C.textPrimary }}>
-        {label}
-      </Text>
-      {isSel && <Feather name="check" size={I.lg} color={C.primary} />}
-    </TouchableOpacity>
-  );
-}
-
-function ChipList({ items, selected, onSelect }: { items: string[]; selected: string | null; onSelect: (v: string) => void }) {
-  return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: S.sm }}>
-      {items.map(item => {
-        const isSel = selected === item;
-        return (
-          <TouchableOpacity
-            key={item}
-            onPress={() => onSelect(item)}
-            activeOpacity={0.75}
-            style={{
-              paddingVertical: S.sm, paddingHorizontal: S.lg,
-              borderRadius: R.pill,
-              borderWidth: 1.5,
-              borderColor: isSel ? C.primary : C.border,
-              backgroundColor: isSel ? C.primary : C.surface,
-            }}
-          >
-            <Text style={{ fontSize: F.base, fontWeight: "600" as const, color: isSel ? C.primaryForeground : C.textSecondary }}>
-              {item}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-const MANUAL_STEPS = ["manual_brand","manual_model","manual_version","manual_year","manual_plate","manual_color","manual_fuel"];
-
-function ProgressDots({ current }: { current: number }) {
-  return (
-    <View style={{ flexDirection: "row", gap: S.xs, paddingHorizontal: S.xl, paddingTop: S.lg, justifyContent: "center" }}>
-      {MANUAL_STEPS.map((_, i) => (
-        <View
-          key={i}
-          style={{ height: 3, flex: 1, borderRadius: R.pill, backgroundColor: i <= current ? C.primary : C.border }}
-        />
-      ))}
-    </View>
-  );
-}
-
-// ─── AI CAPTURE HOOK ──────────────────────────────────────────────────────────
-
-function useAiCapture(onExtracted: (data: Record<string, string>) => void) {
-  const [processing, setProcessing] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-
-  const processImage = useCallback(async (base64: string, mediaType: string, field: string) => {
-    setProcessing(true);
-    setAiError(null);
-    try {
-      const res = await fetch(`${API_BASE}/vehicle/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64, mediaType, field }),
-      });
-      if (!res.ok) throw new Error("API error");
-      const json = await res.json();
-      onExtracted(json.data ?? {});
-    } catch {
-      setAiError("Não consegui extrair o dado. Preencha manualmente.");
-    } finally {
-      setProcessing(false);
-    }
-  }, [onExtracted]);
-
-  return { processing, aiError, setAiError, processImage };
-}
-
-async function pickAndCapture(
-  useCamera: boolean,
-): Promise<{ base64: string; mediaType: string } | null> {
-  const perm = useCamera
-    ? await ImagePicker.requestCameraPermissionsAsync()
-    : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-  if (!perm.granted) {
-    Alert.alert("Permissão necessária", useCamera ? "Acesse as configurações e habilite a câmera." : "Acesse as configurações e habilite o acesso às fotos.");
-    return null;
-  }
-
-  const result = useCamera
-    ? await ImagePicker.launchCameraAsync({ base64: true, quality: 0.8 })
-    : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, base64: true, quality: 0.8 });
-
-  if (result.canceled || !result.assets[0]) return null;
-  const asset = result.assets[0];
-  return { base64: asset.base64 ?? "", mediaType: asset.mimeType ?? "image/jpeg" };
-}
-
-// ─── CAPTURE BUTTON ───────────────────────────────────────────────────────────
-
-function CaptureBtn({
-  field, processing, onCapture,
-}: { field: string; processing: boolean; onCapture: (base64: string, mediaType: string, field: string) => void }) {
-  const [cameraOpen, setCameraOpen] = useState(false);
-
-  const handleCapture = useCallback((uri: string, base64?: string) => {
-    setCameraOpen(false);
-    if (base64) onCapture(base64, "image/jpeg", field);
-  }, [field, onCapture]);
-
-  return (
-    <>
-      <TouchableOpacity
-        onPress={() => setCameraOpen(true)}
-        disabled={processing}
-        activeOpacity={0.75}
-        style={{
-          flexDirection: "row", alignItems: "center", gap: S.xs,
-          backgroundColor: AI_ACCENT_BG,
-          borderWidth: 1.5, borderColor: AI_ACCENT_BORDER,
-          borderRadius: R.pill, paddingVertical: 6, paddingHorizontal: S.md,
-        }}
-      >
-        {processing
-          ? <ActivityIndicator size="small" color={AI_ACCENT} />
-          : <Feather name="camera" size={I.sm} color={AI_ACCENT} />}
-        <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: AI_ACCENT }}>
-          {processing ? "Analisando…" : "Capturar"}
-        </Text>
-      </TouchableOpacity>
-
-      {cameraOpen && (
-        <CaptureCamera
-          title="Capturar veículo"
-          hint="Fotografe o veículo para extrair os dados automaticamente"
-          withBase64
-          onCapture={handleCapture}
-          onClose={() => setCameraOpen(false)}
-        />
-      )}
-    </>
-  );
-}
-
-// ─── MANUAL STEP WRAPPER ─────────────────────────────────────────────────────
-
-function ManualStepWrapper({
-  stepIndex, title, onBack, captureBtn, children, footer,
-}: {
-  stepIndex: number;
-  title: string;
-  onBack: () => void;
-  captureBtn?: React.ReactNode;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-}) {
-  return (
-    <View style={{ flex: 1 }}>
-      <ProgressDots current={stepIndex} />
-      <ScrollView
-        contentContainerStyle={{ padding: S.xl, paddingTop: S.lg, paddingBottom: S.xxxl }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <PageHeader title={title} onBack={onBack} right={captureBtn} />
-        {children}
-      </ScrollView>
-      {footer && <Footer>{footer}</Footer>}
-    </View>
-  );
-}
+const GREEN_BG     = "#F0FDF4";
+const GREEN_BORDER = "#BBF7D0";
+const GREEN_TEXT   = "#15803D";
 
 // ─── SCREEN: ADD VEHICLE ──────────────────────────────────────────────────────
 
@@ -433,8 +153,8 @@ function ScreenAddVehicle({ navigate, onClose }: { navigate: (s: Screen, p?: Nav
 // ─── SCREEN: DOC UPLOAD ───────────────────────────────────────────────────────
 
 function ScreenDocUpload({ navigate }: { navigate: (s: Screen, p?: NavParams) => void }) {
-  const [imageUri,    setImageUri]    = useState<string | null>(null);
-  const [cameraOpen,  setCameraOpen]  = useState(false);
+  const [imageUri,   setImageUri]   = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const pickFromGallery = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -472,8 +192,8 @@ function ScreenDocUpload({ navigate }: { navigate: (s: Screen, p?: NavParams) =>
         ) : (
           <View style={{ gap: S.sm }}>
             {([
-              { icon: "camera" as FeatherName, title: "Tirar foto",         desc: "Use a câmera para fotografar o documento",  cam: true  },
-              { icon: "upload" as FeatherName, title: "Escolher da galeria", desc: "Selecione uma imagem já salva",              cam: false },
+              { icon: "camera" as FeatherName, title: "Tirar foto",          desc: "Use a câmera para fotografar o documento", cam: true  },
+              { icon: "upload" as FeatherName, title: "Escolher da galeria", desc: "Selecione uma imagem já salva",             cam: false },
             ] as const).map((opt, idx) => (
               <TouchableOpacity
                 key={idx}
@@ -534,12 +254,7 @@ function ScreenManualBrand({
   return (
     <ManualStepWrapper
       stepIndex={0} title="Qual a marca?" onBack={() => navigate("add_vehicle")}
-      captureBtn={
-        <CaptureBtn
-          field="brand" processing={processing}
-          onCapture={(b64, mt, f) => processImage(b64, mt, f)}
-        />
-      }
+      captureBtn={<CaptureBtn field="brand" processing={processing} onCapture={(b64, mt, f) => processImage(b64, mt, f)} />}
     >
       {aiError && <AiError message={aiError} onDismiss={() => setAiError(null)} />}
       <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xl, marginTop: S.sm, lineHeight: F.base * 1.5 }}>
@@ -796,8 +511,8 @@ function ScreenManualFuel({
 // ─── SCREEN: VEHICLE CONFIRM ──────────────────────────────────────────────────
 
 function ScreenVehicleConfirm({
-  params, navigate,
-}: { params: NavParams; navigate: (s: Screen, p?: NavParams) => void }) {
+  params, navigate, onContinue,
+}: { params: NavParams; navigate: (s: Screen, p?: NavParams) => void; onContinue: () => void }) {
   const found = params.vehicleFound ?? true;
   const v = found ? VEHICLE_FOUND : VEHICLE_NEW;
   const backScreen: Screen = params.source === "manual" ? "manual_fuel" : params.source === "doc" ? "doc_upload" : "add_vehicle";
@@ -911,330 +626,9 @@ function ScreenVehicleConfirm({
       <Footer>
         <PrimaryButton
           label={found ? "Confirmar veículo" : "Emitir identidade e continuar"}
-          onPress={() => navigate("bond_type")}
+          onPress={onContinue}
         />
       </Footer>
-    </View>
-  );
-}
-
-// ─── SCREEN: BOND TYPE ────────────────────────────────────────────────────────
-
-function ScreenBondType({ navigate }: { navigate: (s: Screen, p?: NavParams) => void }) {
-  const [selected, setSelected] = useState<string | null>(null);
-
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{ padding: S.xl, paddingBottom: S.xxxl + 60 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <PageHeader title="Tipo de vínculo" onBack={() => navigate("vehicle_confirm")} />
-        <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xxl, marginTop: S.sm, lineHeight: F.base * 1.5 }}>
-          Selecione qual é o seu vínculo com este veículo.
-        </Text>
-        <View style={{ gap: S.sm }}>
-          {BOND_TYPES.map(item => {
-            const isSel = selected === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => setSelected(item.id)}
-                activeOpacity={0.8}
-                style={{
-                  flexDirection: "row", alignItems: "center", gap: S.lg,
-                  backgroundColor: C.surface,
-                  borderWidth: 1.5, borderColor: isSel ? C.primary : "transparent",
-                  borderRadius: R.xl, padding: S.lg,
-                }}
-              >
-                <View style={{ width: 44, height: 44, borderRadius: R.md, backgroundColor: isSel ? C.primary : C.iconBg, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Feather name={item.icon as FeatherName} size={I.xl} color={isSel ? C.primaryForeground : C.iconColor} />
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary, marginBottom: 3 }}>{item.label}</Text>
-                  <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.4 }}>{item.description}</Text>
-                </View>
-                <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: isSel ? 0 : 1.5, borderColor: C.border, backgroundColor: isSel ? C.primary : "transparent", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {isSel && <Feather name="check" size={I.xs} color={C.primaryForeground} />}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
-      {selected && (
-        <Footer>
-          <PrimaryButton label="Continuar" onPress={() => navigate("bond_doc", { bondType: selected })} />
-        </Footer>
-      )}
-    </View>
-  );
-}
-
-// ─── SCREEN: BOND DOC ─────────────────────────────────────────────────────────
-
-function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: Screen, p?: NavParams) => void }) {
-  const bondType = params.bondType ?? "proprietario";
-  const [imageUri,   setImageUri]   = useState<string | null>(null);
-  const [cameraOpen, setCameraOpen] = useState(false);
-
-  const pickFromGallery = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) { Alert.alert("Permissão necessária", "Habilite o acesso às fotos nas configurações."); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 });
-    if (!result.canceled && result.assets[0]) setImageUri(result.assets[0].uri);
-  };
-
-  const handlePick = (useCamera: boolean) => {
-    if (useCamera) setCameraOpen(true);
-    else pickFromGallery();
-  };
-
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: S.xl, paddingBottom: S.xxxl + 60 }} showsVerticalScrollIndicator={false}>
-        <PageHeader title="Comprovante de vínculo" onBack={() => navigate("bond_type")} />
-        <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xxl, marginTop: S.sm, lineHeight: F.base * 1.5 }}>
-          Envie um documento que comprove o seu vínculo com este veículo.
-        </Text>
-
-        {imageUri ? (
-          <View style={{ position: "relative", backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: 1.5, borderColor: C.border }}>
-            <Image source={{ uri: imageUri }} style={{ width: "100%", height: 220 }} resizeMode="cover" />
-            <TouchableOpacity
-              onPress={() => setImageUri(null)}
-              style={{ position: "absolute", top: S.sm, right: S.sm, width: 28, height: 28, borderRadius: 14, backgroundColor: "rgba(0,0,0,0.5)", alignItems: "center", justifyContent: "center" }}
-            >
-              <Feather name="x" size={I.sm} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={{ gap: S.sm }}>
-            {([
-              { icon: "camera" as FeatherName, title: "Tirar foto",         desc: "Use a câmera para fotografar o documento",  cam: true  },
-              { icon: "upload" as FeatherName, title: "Escolher da galeria", desc: "Selecione uma imagem ou PDF já salvo",        cam: false },
-            ] as const).map((opt, idx) => (
-              <TouchableOpacity
-                key={idx} onPress={() => handlePick(opt.cam)} activeOpacity={0.8}
-                style={{ flexDirection: "row", alignItems: "center", gap: S.lg, backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg }}
-              >
-                <View style={{ width: 44, height: 44, borderRadius: R.md, backgroundColor: C.iconBg, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Feather name={opt.icon} size={I.xl} color={C.iconColor} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary, marginBottom: 3 }}>{opt.title}</Text>
-                  <Text style={{ fontSize: F.sm, color: C.textSecondary }}>{opt.desc}</Text>
-                </View>
-                <Feather name="chevron-right" size={I.lg} color={C.textTertiary} />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginTop: S.lg, lineHeight: F.xs * 1.5, paddingLeft: S.xs }}>
-          Documentos aceitos: {DOCS_BY_BOND[bondType]}
-        </Text>
-      </ScrollView>
-
-      {imageUri && (
-        <Footer>
-          <PrimaryButton label="Continuar" onPress={() => navigate("inspection", { bondType: params.bondType })} />
-        </Footer>
-      )}
-
-      {cameraOpen && (
-        <CaptureCamera
-          title="Comprovante de vínculo"
-          hint="Fotografe o documento que comprova seu vínculo com o veículo"
-          onCapture={(uri) => { setImageUri(uri); setCameraOpen(false); }}
-          onClose={() => setCameraOpen(false)}
-        />
-      )}
-    </View>
-  );
-}
-
-// ─── SCREEN: INSPECTION ───────────────────────────────────────────────────────
-
-function ScreenInspection({ navigate, bondType }: { navigate: (s: Screen) => void; bondType?: string }) {
-  const { addInspection, completeStep, finishInspection } = useInspections();
-  const inspectionIdRef = useRef<number | null>(null);
-
-  const [photos, setPhotos]             = useState<Record<string, string>>({});
-  const [activeStepId, setActiveStepId] = useState<string | null>(null);
-
-  // Create the pending inspection in the context as soon as the screen mounts.
-  // If the user closes the app mid-flow, this inspection will remain as Pendente.
-  useEffect(() => {
-    const motivo = (bondType === "Proprietário" || bondType === "Co-proprietário")
-      ? "Transferência"
-      : "Rotina";
-    const id = addInspection(
-      INSPECTION_STEPS.map(s => s.id),
-      motivo,
-      "Vistoria iniciada durante o cadastro de vínculo.",
-    );
-    inspectionIdRef.current = id;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const required     = INSPECTION_STEPS.filter(s => s.required);
-  const doneRequired = required.filter(s => photos[s.id]).length;
-  const canFinish    = doneRequired === required.length;
-
-  const activeStep      = INSPECTION_STEPS.find(s => s.id === activeStepId) ?? null;
-  const activeStepIndex = activeStep ? INSPECTION_STEPS.indexOf(activeStep) : 0;
-
-  const openCamera  = useCallback((id: string) => setActiveStepId(id), []);
-  const closeCamera = useCallback(() => setActiveStepId(null), []);
-
-  const handleCapture = useCallback((uri: string) => {
-    if (!activeStepId) return;
-    setPhotos(prev => ({ ...prev, [activeStepId]: uri }));
-    // Persist each completed step into the context immediately
-    if (inspectionIdRef.current !== null) {
-      completeStep(inspectionIdRef.current, activeStepId);
-    }
-    setActiveStepId(null);
-  }, [activeStepId, completeStep]);
-
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: S.xl, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <PageHeader title="Vistoria" onBack={() => navigate("bond_doc")} />
-        <Text style={{ fontSize: F.base, color: C.textSecondary, marginBottom: S.xl, marginTop: S.sm, lineHeight: F.base * 1.5 }}>
-          Fotografe o veículo seguindo as etapas abaixo.
-        </Text>
-
-        {/* Progress bar */}
-        <View style={{ marginBottom: S.xxl }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.sm }}>
-            <Text style={{ fontSize: F.sm, color: C.textSecondary }}>{doneRequired} de {required.length} fotos obrigatórias</Text>
-            <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.textPrimary }}>{Math.round((doneRequired / required.length) * 100)}%</Text>
-          </View>
-          <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-            <View style={{ height: "100%", width: `${(doneRequired / required.length) * 100}%` as any, backgroundColor: C.primary, borderRadius: R.pill }} />
-          </View>
-        </View>
-
-        {/* Step list */}
-        <View style={{ gap: S.sm }}>
-          {INSPECTION_STEPS.map(step => {
-            const isDone = !!photos[step.id];
-            return (
-              <View
-                key={step.id}
-                style={{ backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: 1.5, borderColor: isDone ? GREEN_BORDER : "transparent" }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, padding: S.lg }}>
-                  {/* Thumbnail / placeholder */}
-                  <TouchableOpacity
-                    onPress={() => openCamera(step.id)}
-                    activeOpacity={0.8}
-                    style={{ width: 52, height: 52, borderRadius: R.md, overflow: "hidden", flexShrink: 0, backgroundColor: isDone ? "transparent" : C.iconBg, alignItems: "center", justifyContent: "center" }}
-                  >
-                    {isDone
-                      ? <Image source={{ uri: photos[step.id] }} style={{ width: 52, height: 52 }} resizeMode="cover" />
-                      : <Feather name="camera" size={I.xl} color={C.iconColor} />}
-                  </TouchableOpacity>
-
-                  {/* Labels */}
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
-                      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>{step.label}</Text>
-                      {!step.required && (
-                        <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: 6 }}>
-                          <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.textTertiary }}>OPCIONAL</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.4 }}>{step.instruction}</Text>
-                  </View>
-
-                  {/* Action */}
-                  {isDone ? (
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-                      <TouchableOpacity onPress={() => openCamera(step.id)} activeOpacity={0.7} style={{ padding: S.xs }}>
-                        <Feather name="rotate-ccw" size={I.sm} color={C.textTertiary} />
-                      </TouchableOpacity>
-                      <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: GREEN, alignItems: "center", justifyContent: "center" }}>
-                        <Feather name="check" size={I.xs} color="#fff" />
-                      </View>
-                    </View>
-                  ) : (
-                    <TouchableOpacity
-                      onPress={() => openCamera(step.id)}
-                      activeOpacity={0.8}
-                      style={{ flexDirection: "row", alignItems: "center", gap: S.xs, backgroundColor: C.primary, borderRadius: R.pill, paddingVertical: 6, paddingHorizontal: S.md, flexShrink: 0 }}
-                    >
-                      <Feather name="camera" size={I.xs} color={C.primaryForeground} />
-                      <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.primaryForeground }}>Fotografar</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
-
-      {/* Finish footer */}
-      <Footer>
-        {!canFinish && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.sm }}>
-            <Feather name="alert-circle" size={I.sm} color={C.textTertiary} />
-            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>
-              {required.length - doneRequired} foto{required.length - doneRequired !== 1 ? "s" : ""} obrigatória{required.length - doneRequired !== 1 ? "s" : ""} restante{required.length - doneRequired !== 1 ? "s" : ""}
-            </Text>
-          </View>
-        )}
-        <PrimaryButton
-          label="Finalizar vistoria"
-          onPress={() => {
-            if (inspectionIdRef.current !== null) {
-              finishInspection(inspectionIdRef.current);
-            }
-            navigate("pending");
-          }}
-          disabled={!canFinish}
-        />
-      </Footer>
-
-      {/* Custom camera modal */}
-      {activeStep && (
-        <InspectionCamera
-          step={activeStep}
-          stepIndex={activeStepIndex}
-          totalSteps={INSPECTION_STEPS.length}
-          onCapture={handleCapture}
-          onClose={closeCamera}
-        />
-      )}
-    </View>
-  );
-}
-
-// ─── SCREEN: PENDING ──────────────────────────────────────────────────────────
-
-function ScreenPending({ onClose }: { onClose: () => void }) {
-  const insets = useSafeAreaInsets();
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: S.xl, paddingBottom: (Platform.OS === "web" ? 34 : insets.bottom) + S.xl }}>
-      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: GREEN_BG, borderWidth: 1.5, borderColor: GREEN_BORDER, alignItems: "center", justifyContent: "center", marginBottom: S.xl }}>
-        <Feather name="check" size={32} color={GREEN} />
-      </View>
-      <Text style={{ fontSize: F.xxxl, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: S.sm, textAlign: "center" }}>
-        Solicitação enviada!
-      </Text>
-      <Text style={{ fontSize: F.base, color: C.textSecondary, lineHeight: F.base * 1.6, marginBottom: S.xxxl, maxWidth: 300, textAlign: "center" }}>
-        Seus documentos estão em análise. Você será notificado assim que o vínculo for confirmado.
-      </Text>
-      <TouchableOpacity
-        onPress={onClose}
-        activeOpacity={0.85}
-        style={{ width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: C.primary, borderRadius: R.xxl, paddingVertical: S.lg }}
-      >
-        <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.primaryForeground }}>Concluir</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -1256,13 +650,16 @@ export default function AddVehicleFlow() {
     router.back();
   }, [router]);
 
+  // After confirming vehicle, launch the bond flow as a new independent screen
+  const handleVehicleConfirmed = useCallback(() => {
+    router.push("/add-bond");
+  }, [router]);
+
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 0 : insets.top;
 
-  const sharedProps = { navigate, params, draft, setDraft };
-
   return (
-    <View style={{ flex: 1, backgroundColor: C.background, paddingTop: screen === "add_vehicle" || screen === "pending" ? 0 : topPad }}>
+    <View style={{ flex: 1, backgroundColor: C.background, paddingTop: screen === "add_vehicle" ? 0 : topPad }}>
       {screen === "add_vehicle"     && <ScreenAddVehicle     navigate={navigate} onClose={handleClose} />}
       {screen === "doc_upload"      && <ScreenDocUpload      navigate={navigate} />}
       {screen === "manual_brand"    && <ScreenManualBrand    draft={draft} setDraft={setDraft} navigate={navigate} />}
@@ -1272,11 +669,7 @@ export default function AddVehicleFlow() {
       {screen === "manual_plate"    && <ScreenManualPlate    draft={draft} setDraft={setDraft} navigate={navigate} />}
       {screen === "manual_color"    && <ScreenManualColor    draft={draft} setDraft={setDraft} navigate={navigate} />}
       {screen === "manual_fuel"     && <ScreenManualFuel     draft={draft} setDraft={setDraft} navigate={navigate} />}
-      {screen === "vehicle_confirm" && <ScreenVehicleConfirm params={params} navigate={navigate} />}
-      {screen === "bond_type"       && <ScreenBondType       navigate={navigate} />}
-      {screen === "bond_doc"        && <ScreenBondDoc        params={params} navigate={navigate} />}
-      {screen === "inspection"      && <ScreenInspection     navigate={navigate} bondType={params.bondType} />}
-      {screen === "pending"         && <ScreenPending        onClose={handleClose} />}
+      {screen === "vehicle_confirm" && <ScreenVehicleConfirm params={params} navigate={navigate} onContinue={handleVehicleConfirmed} />}
     </View>
   );
 }
