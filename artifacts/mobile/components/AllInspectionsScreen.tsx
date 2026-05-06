@@ -25,16 +25,16 @@ const FILTERS = [
 ];
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
-  Aprovada:  { bg: "#DCFCE7", text: "#16A34A", icon: "check-circle" },
-  Pendente:  { bg: "#FEF9C3", text: "#CA8A04", icon: "clock" },
-  Reprovada: { bg: "#FEF2F2", text: "#DC2626", icon: "x-circle" },
+  Aprovada:  { bg: "#F0FDF4", text: "#15803D", icon: "check-circle" },
+  Pendente:  { bg: "#FFFBEB", text: "#B45309", icon: "clock" },
+  Reprovada: { bg: "#EFF6FF", text: "#1D4ED8", icon: "refresh-cw" },
 };
 
 const TYPE_CONFIG: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
   "Rotina":               { bg: "#F3F4F6", text: "#6B7280", icon: "refresh-cw" },
-  "Transferência":        { bg: "#EFF6FF", text: "#2563EB", icon: "repeat" },
-  "Abertura de sinistro": { bg: "#FFF7ED", text: "#C2410C", icon: "alert-triangle" },
-  "Manutenção":           { bg: "#F0FDF4", text: "#16A34A", icon: "tool" },
+  "Transferência":        { bg: "#EFF6FF", text: "#1D4ED8", icon: "repeat" },
+  "Abertura de sinistro": { bg: "#FFFBEB", text: "#B45309", icon: "alert-triangle" },
+  "Manutenção":           { bg: "#F0FDF4", text: "#15803D", icon: "tool" },
   "Acidente":             { bg: "#FEF2F2", text: "#DC2626", icon: "alert-octagon" },
   "Auditoria":            { bg: "#FDF4FF", text: "#9333EA", icon: "shield" },
 };
@@ -57,10 +57,11 @@ function typeConfig(type: string) {
    Card de vistoria concluída / reprovada
 ───────────────────────────────────────────── */
 function InspectionCard({ item, onPress }: { item: Inspection; onPress: () => void }) {
-  const status  = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.Aprovada;
-  const typeCfg = typeConfig(item.type);
-  const doneParts = item.parts.length;
+  const status   = STATUS_CONFIG[item.status] ?? STATUS_CONFIG.Aprovada;
+  const typeCfg  = typeConfig(item.type);
+  const doneParts  = item.parts.length;
   const totalParts = item.totalParts;
+  const datetime = `${item.completedAt ?? item.requestedAt}${item.completedTime ? ` · ${item.completedTime}` : ""}`;
 
   return (
     <TouchableOpacity
@@ -70,57 +71,49 @@ function InspectionCard({ item, onPress }: { item: Inspection; onPress: () => vo
         backgroundColor: C.surface,
         borderRadius: R.xxl,
         padding: S.lg,
-        marginBottom: S.md,
+        marginBottom: S.sm,
         flexDirection: "row",
         alignItems: "center",
-        gap: S.lg,
+        gap: S.md,
       }}
     >
       {/* Ícone do tipo */}
       <View style={{
-        width: 46, height: 46, borderRadius: R.lg,
+        width: 52, height: 52, borderRadius: R.lg,
         backgroundColor: typeCfg.bg,
         alignItems: "center", justifyContent: "center", flexShrink: 0,
       }}>
         <Feather name={typeCfg.icon} size={I.xl} color={typeCfg.text} />
       </View>
 
-      {/* Conteúdo principal */}
+      {/* Conteúdo */}
       <View style={{ flex: 1, minWidth: 0 }}>
-        {/* Tipo + Data */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-          <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textPrimary }} numberOfLines={1}>
+        {/* Tipo + badge status */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: S.sm, marginBottom: 4 }}>
+          <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary, flex: 1 }} numberOfLines={1}>
             {item.type}
           </Text>
-          <Text style={{ fontSize: F.xs, color: C.textTertiary, flexShrink: 0, marginLeft: S.sm }}>
-            {item.completedAt ?? item.requestedAt}
-          </Text>
-        </View>
-
-        {/* Solicitante */}
-        <Text style={{ fontSize: F.xs, color: C.textTertiary, marginBottom: S.sm }} numberOfLines={1}>
-          {item.requester}{item.completedTime ? ` · ${item.completedTime}` : ""}
-        </Text>
-
-        {/* Footer: partes + status */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <Feather name="camera" size={11} color={C.textTertiary} />
-            <Text style={{ fontSize: F.xxs, color: C.textTertiary }}>
-              {doneParts}/{totalParts} {totalParts === 1 ? "parte" : "partes"}
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, backgroundColor: status.bg, borderRadius: R.pill, paddingVertical: 4, paddingHorizontal: S.sm, flexShrink: 0 }}>
             <Feather name={status.icon} size={10} color={status.text} />
-            <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: status.text }}>
+            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: status.text }}>
               {item.status}
             </Text>
           </View>
         </View>
-      </View>
 
-      {/* Seta */}
-      <Feather name="chevron-right" size={I.lg} color={C.border} style={{ flexShrink: 0 }} />
+        {/* Data · hora */}
+        <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xs }} numberOfLines={1}>
+          {datetime}
+        </Text>
+
+        {/* Câmera + partes */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs }}>
+          <Feather name="camera" size={I.xs} color={C.textTertiary} />
+          <Text style={{ fontSize: F.sm, color: C.textSecondary }}>
+            {doneParts}/{totalParts} partes
+          </Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -131,20 +124,21 @@ function InspectionCard({ item, onPress }: { item: Inspection; onPress: () => vo
 function PendingInspectionCard({
   item, onPress, onStart,
 }: { item: Inspection; onPress: () => void; onStart: (id: number) => void }) {
-  const typeCfg   = typeConfig(item.type);
-  const progress  = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
+  const typeCfg    = typeConfig(item.type);
+  const progress   = item.totalParts > 0 ? item.parts.length / item.totalParts : 0;
   const hasStarted = item.parts.length > 0;
+  const pendingStatus = STATUS_CONFIG.Pendente;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}
+      style={{ backgroundColor: C.surface, borderRadius: R.xxl, padding: S.lg, marginBottom: S.sm }}
     >
-      {/* Top row: ícone + info + seta */}
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: S.md, marginBottom: S.lg }}>
+      {/* Top row: ícone + info */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, marginBottom: S.md }}>
         <View style={{
-          width: 46, height: 46, borderRadius: R.lg,
+          width: 52, height: 52, borderRadius: R.lg,
           backgroundColor: typeCfg.bg,
           alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}>
@@ -152,16 +146,20 @@ function PendingInspectionCard({
         </View>
 
         <View style={{ flex: 1, minWidth: 0 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }} numberOfLines={1}>
+          {/* Tipo + badge Pendente */}
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: S.sm, marginBottom: 4 }}>
+            <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary, flex: 1 }} numberOfLines={1}>
               {item.type}
             </Text>
-            <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm, flexShrink: 0, marginLeft: S.sm }}>
-              <Text style={{ fontSize: F.xxs, fontWeight: "700" as const, color: "#B45309" }}>Pendente</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, backgroundColor: pendingStatus.bg, borderRadius: R.pill, paddingVertical: 4, paddingHorizontal: S.sm, flexShrink: 0 }}>
+              <Feather name={pendingStatus.icon} size={10} color={pendingStatus.text} />
+              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: pendingStatus.text }}>Pendente</Text>
             </View>
           </View>
-          <Text style={{ fontSize: F.sm, color: C.textTertiary, marginTop: 2 }} numberOfLines={1}>
-            {item.requestedAt} · {item.requester}
+
+          {/* Data */}
+          <Text style={{ fontSize: F.sm, color: C.textSecondary }} numberOfLines={1}>
+            {item.requestedAt}
           </Text>
         </View>
       </View>
@@ -170,26 +168,26 @@ function PendingInspectionCard({
       {item.deadline ? (
         <View style={{
           flexDirection: "row", alignItems: "center", gap: S.xs,
-          backgroundColor: "#FFF7ED", borderRadius: R.lg,
+          backgroundColor: "#FFFBEB", borderRadius: R.lg,
           paddingVertical: S.xs, paddingHorizontal: S.md,
-          alignSelf: "flex-start" as const, marginBottom: S.lg,
+          alignSelf: "flex-start" as const, marginBottom: S.md,
         }}>
-          <Feather name="clock" size={11} color="#C2410C" />
-          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: "#C2410C" }}>{item.deadline}</Text>
+          <Feather name="clock" size={11} color="#B45309" />
+          <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: "#B45309" }}>{item.deadline}</Text>
         </View>
       ) : null}
 
       {/* Barra de progresso */}
       {hasStarted && (
-        <View style={{ marginBottom: S.lg }}>
+        <View style={{ marginBottom: S.md }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: S.xs }}>
-            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>Progresso</Text>
-            <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textSecondary }}>
+            <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Progresso</Text>
+            <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>
               {item.parts.length}/{item.totalParts} partes
             </Text>
           </View>
-          <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-            <View style={{ height: 4, width: `${progress * 100}%` as any, backgroundColor: "#CA8A04", borderRadius: R.pill }} />
+          <View style={{ height: 6, backgroundColor: C.iconBg, borderRadius: R.pill, overflow: "hidden" }}>
+            <View style={{ height: 6, width: `${progress * 100}%` as any, backgroundColor: C.textPrimary, borderRadius: R.pill }} />
           </View>
         </View>
       )}
@@ -203,7 +201,7 @@ function PendingInspectionCard({
         activeOpacity={0.85}
         style={{
           flexDirection: "row", alignItems: "center", justifyContent: "center", gap: S.sm,
-          backgroundColor: C.textPrimary, borderRadius: R.xl, paddingVertical: S.md,
+          backgroundColor: C.textPrimary, borderRadius: R.xxl, paddingVertical: S.md,
         }}
       >
         <Feather name="camera" size={I.md} color={C.surface} />
