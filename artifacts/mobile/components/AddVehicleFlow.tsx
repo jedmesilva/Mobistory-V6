@@ -6,6 +6,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import InspectionCamera from "@/components/InspectionCamera";
+import CaptureCamera from "@/components/CaptureCamera";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import colors from "@/constants/colors";
@@ -276,31 +277,44 @@ async function pickAndCapture(
 function CaptureBtn({
   field, processing, onCapture,
 }: { field: string; processing: boolean; onCapture: (base64: string, mediaType: string, field: string) => void }) {
-  const handlePress = async () => {
-    if (processing) return;
-    const picked = await pickAndCapture(true);
-    if (picked) onCapture(picked.base64, picked.mediaType, field);
-  };
+  const [cameraOpen, setCameraOpen] = useState(false);
+
+  const handleCapture = useCallback((uri: string, base64?: string) => {
+    setCameraOpen(false);
+    if (base64) onCapture(base64, "image/jpeg", field);
+  }, [field, onCapture]);
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      disabled={processing}
-      activeOpacity={0.75}
-      style={{
-        flexDirection: "row", alignItems: "center", gap: S.xs,
-        backgroundColor: AI_ACCENT_BG,
-        borderWidth: 1.5, borderColor: AI_ACCENT_BORDER,
-        borderRadius: R.pill, paddingVertical: 6, paddingHorizontal: S.md,
-      }}
-    >
-      {processing
-        ? <ActivityIndicator size="small" color={AI_ACCENT} />
-        : <Feather name="camera" size={I.sm} color={AI_ACCENT} />}
-      <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: AI_ACCENT }}>
-        {processing ? "Analisando…" : "Capturar"}
-      </Text>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity
+        onPress={() => setCameraOpen(true)}
+        disabled={processing}
+        activeOpacity={0.75}
+        style={{
+          flexDirection: "row", alignItems: "center", gap: S.xs,
+          backgroundColor: AI_ACCENT_BG,
+          borderWidth: 1.5, borderColor: AI_ACCENT_BORDER,
+          borderRadius: R.pill, paddingVertical: 6, paddingHorizontal: S.md,
+        }}
+      >
+        {processing
+          ? <ActivityIndicator size="small" color={AI_ACCENT} />
+          : <Feather name="camera" size={I.sm} color={AI_ACCENT} />}
+        <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: AI_ACCENT }}>
+          {processing ? "Analisando…" : "Capturar"}
+        </Text>
+      </TouchableOpacity>
+
+      {cameraOpen && (
+        <CaptureCamera
+          title="Capturar veículo"
+          hint="Fotografe o veículo para extrair os dados automaticamente"
+          withBase64
+          onCapture={handleCapture}
+          onClose={() => setCameraOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -419,22 +433,19 @@ function ScreenAddVehicle({ navigate, onClose }: { navigate: (s: Screen, p?: Nav
 // ─── SCREEN: DOC UPLOAD ───────────────────────────────────────────────────────
 
 function ScreenDocUpload({ navigate }: { navigate: (s: Screen, p?: NavParams) => void }) {
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUri,    setImageUri]    = useState<string | null>(null);
+  const [cameraOpen,  setCameraOpen]  = useState(false);
 
-  const handlePick = async (useCamera: boolean) => {
-    const perm = useCamera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert("Permissão necessária", "Habilite o acesso nas configurações.");
-      return;
-    }
-    const result = useCamera
-      ? await ImagePicker.launchCameraAsync({ quality: 0.85 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 });
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-    }
+  const pickFromGallery = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permissão necessária", "Habilite o acesso às fotos nas configurações."); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 });
+    if (!result.canceled && result.assets[0]) setImageUri(result.assets[0].uri);
+  };
+
+  const handlePick = (useCamera: boolean) => {
+    if (useCamera) setCameraOpen(true);
+    else pickFromGallery();
   };
 
   return (
@@ -495,6 +506,15 @@ function ScreenDocUpload({ navigate }: { navigate: (s: Screen, p?: NavParams) =>
             onPress={() => navigate("vehicle_confirm", { source: "doc", vehicleFound: true })}
           />
         </Footer>
+      )}
+
+      {cameraOpen && (
+        <CaptureCamera
+          title="Documento do veículo"
+          hint="Fotografe o CRLV, DUT ou outro documento oficial"
+          onCapture={(uri) => { setImageUri(uri); setCameraOpen(false); }}
+          onClose={() => setCameraOpen(false)}
+        />
       )}
     </View>
   );
@@ -956,17 +976,19 @@ function ScreenBondType({ navigate }: { navigate: (s: Screen, p?: NavParams) => 
 
 function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: Screen, p?: NavParams) => void }) {
   const bondType = params.bondType ?? "proprietario";
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUri,   setImageUri]   = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
-  const handlePick = async (useCamera: boolean) => {
-    const perm = useCamera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) { Alert.alert("Permissão necessária", "Habilite o acesso nas configurações."); return; }
-    const result = useCamera
-      ? await ImagePicker.launchCameraAsync({ quality: 0.85 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 });
+  const pickFromGallery = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permissão necessária", "Habilite o acesso às fotos nas configurações."); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 });
     if (!result.canceled && result.assets[0]) setImageUri(result.assets[0].uri);
+  };
+
+  const handlePick = (useCamera: boolean) => {
+    if (useCamera) setCameraOpen(true);
+    else pickFromGallery();
   };
 
   return (
@@ -1018,6 +1040,15 @@ function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: 
         <Footer>
           <PrimaryButton label="Continuar" onPress={() => navigate("inspection", { bondType: params.bondType })} />
         </Footer>
+      )}
+
+      {cameraOpen && (
+        <CaptureCamera
+          title="Comprovante de vínculo"
+          hint="Fotografe o documento que comprova seu vínculo com o veículo"
+          onCapture={(uri) => { setImageUri(uri); setCameraOpen(false); }}
+          onClose={() => setCameraOpen(false)}
+        />
       )}
     </View>
   );
