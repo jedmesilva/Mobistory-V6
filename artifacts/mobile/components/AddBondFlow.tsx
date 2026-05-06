@@ -8,7 +8,8 @@ import CaptureCamera from "@/components/CaptureCamera";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { R, S, F, I } from "@/components/shared";
-import { BOND_TYPES, DOCS_BY_BOND } from "@/constants/data";
+import { BOND_TYPES, DOCS_BY_BOND, INSPECTION_STEPS } from "@/constants/data";
+import { useInspections } from "@/contexts/InspectionsContext";
 import {
   C, FeatherName,
   PageHeader, PrimaryButton, Footer,
@@ -170,6 +171,8 @@ function ScreenBondDoc({
 export default function AddBondFlow() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { addInspection } = useInspections();
+
   const [screen, setScreen] = useState<Screen>("bond_type");
   const [bondType, setBondType] = useState<string>("");
 
@@ -178,10 +181,21 @@ export default function AddBondFlow() {
     setScreen("bond_doc");
   }, []);
 
-  // After bond doc is submitted, launch the inspection flow as a new independent screen
+  // After bond doc is submitted, create the inspection in context and open the
+  // existing InspectionRunScreen (the correct, full-featured inspection UI).
   const handleBondDocDone = useCallback(() => {
-    router.push({ pathname: "/add-inspection", params: { bondType } });
-  }, [router, bondType]);
+    const motivo = (bondType === "Proprietário" || bondType === "Co-proprietário")
+      ? "Transferência"
+      : "Rotina";
+
+    const inspectionId = addInspection(
+      INSPECTION_STEPS.map(s => s.id),
+      motivo,
+      "Vistoria iniciada durante o cadastro de vínculo.",
+    );
+
+    router.push({ pathname: "/inspection-run", params: { id: String(inspectionId) } });
+  }, [router, bondType, addInspection]);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.background, paddingTop: (typeof insets.top === "number" ? insets.top : 0) }}>
