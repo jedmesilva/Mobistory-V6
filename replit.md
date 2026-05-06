@@ -1,58 +1,70 @@
 # Mobistory V6
 
-Aplicativo móvel de histórico e gestão de veículos, construído com Expo (React Native) e um servidor API em Express/Node.js.
+Vehicle history and management mobile app — lets users track vehicles, fuel logs, and inspections with AI-powered data extraction from images.
 
-## Estrutura do Projeto
+## Run & Operate
 
-Este é um monorepo pnpm com a seguinte estrutura:
+```bash
+pnpm install                          # Install all workspace dependencies
+pnpm --filter @workspace/db run push  # Push schema to PostgreSQL
+PORT=8080 pnpm --filter @workspace/api-server run dev  # Start backend
+PORT=5000 pnpm --filter @workspace/mobile run dev      # Start mobile app
+```
+
+Required env vars (all auto-provisioned by Replit):
+- `DATABASE_URL` — PostgreSQL connection string
+- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` — Replit AI Integrations base URL
+- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` — Replit AI Integrations key
+
+## Stack
+
+- **Mobile**: Expo ~54, React Native 0.81, Expo Router, TypeScript, React Query
+- **Backend**: Express 5, Node.js 24, TypeScript, Pino logging
+- **Database**: PostgreSQL + Drizzle ORM
+- **AI**: Anthropic Claude via Replit AI Integrations (no own API key needed)
+- **Build**: pnpm workspaces, esbuild
+
+## Where things live
 
 ```
 artifacts/
-  mobile/        - App Expo (React Native + Web)
-  api-server/    - API REST em Express/TypeScript
+  mobile/        — Expo app (Expo Router, React Native Web for web preview)
+  api-server/    — Express REST API (src/routes/)
 lib/
-  db/            - Schema Drizzle ORM (PostgreSQL)
-  api-zod/       - Schemas de validação Zod
-  api-spec/      - Especificação da API
-  api-client-react/ - Cliente React para a API
-  integrations-anthropic-ai/ - Integração com Anthropic AI
-  integrations/  - Utilitários de integração
+  db/            — Drizzle schema + client (src/schema/)
+  api-spec/      — OpenAPI spec (source of truth for API contract)
+  api-zod/       — Zod schemas generated from API spec
+  api-client-react/ — React Query hooks generated from API spec
+  integrations-anthropic-ai/ — Anthropic client wrapper
 ```
 
-## Tecnologias
+## Architecture decisions
 
-- **Mobile**: Expo ~54, React Native, Expo Router, TypeScript
-- **Backend**: Express 5, Node.js 24, TypeScript, pino (logging)
-- **Banco de dados**: PostgreSQL + Drizzle ORM
-- **AI**: Anthropic Claude (via Replit AI Integrations)
-- **Build**: pnpm workspaces, esbuild
+- **pnpm monorepo**: All packages share a single lockfile; workspace catalog pins shared dep versions
+- **Orval codegen**: API client and Zod schemas are generated from the OpenAPI spec — run codegen after API changes
+- **Replit AI Integrations**: Anthropic is accessed via Replit's proxy (no own key required), configured in `lib/integrations-anthropic-ai/src/client.ts`
+- **Web proxy**: Metro runs on 8081; a Node.js proxy in `artifacts/mobile/scripts/web-proxy.js` forwards port 5000 → 8081 so the Replit webview works
+- **esbuild overrides**: Platform-specific esbuild binaries excluded in `pnpm-workspace.yaml` to keep installs lean on Linux x64
 
-## Workflows
+## Product
 
-- **Start application**: `PORT=5000 pnpm --filter @workspace/mobile run dev` (porta 5000, webview)
-- **Start Backend**: `PORT=8080 pnpm --filter @workspace/api-server run dev` (porta 8080, console)
+- Vehicle CRUD with AI-assisted data extraction (brand, model, year, plate, color from images)
+- Fuel log with AI extraction from pump photos/receipts
+- Inspection tracking
+- Mobile-first UI (iOS/Android native + web via React Native Web)
 
-## Variáveis de Ambiente
+## User preferences
 
-- `DATABASE_URL` — URL do banco PostgreSQL (provisionado automaticamente pelo Replit)
-- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` — URL base da integração Anthropic (auto-configurada)
-- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` — Chave da integração Anthropic (auto-configurada)
+_Populate as you build_
 
-## Comandos Úteis
+## Gotchas
 
-```bash
-# Instalar dependências
-pnpm install
+- Always run `pnpm --filter @workspace/db run push` after schema changes before starting the backend
+- The mobile `dev` script starts both the web proxy (port 5000) AND Metro (port 8081) — don't use `expo start --tunnel` in Replit
+- `minimumReleaseAge: 1440` in `pnpm-workspace.yaml` blocks packages published < 1 day ago (supply-chain protection)
 
-# Push do schema para o banco
-pnpm --filter @workspace/db run push
+## Pointers
 
-# Build do backend
-pnpm --filter @workspace/api-server run build
-
-# Rodar o app mobile em dev
-PORT=5000 pnpm --filter @workspace/mobile run dev
-
-# Rodar o backend em dev
-PORT=8080 pnpm --filter @workspace/api-server run dev
-```
+- DB schema: `lib/db/src/schema/`
+- API contract: `lib/api-spec/`
+- AI routes: `artifacts/api-server/src/routes/vehicle.ts`, `fuel.ts`
