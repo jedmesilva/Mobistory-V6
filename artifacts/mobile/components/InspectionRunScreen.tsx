@@ -10,14 +10,87 @@ import { INSPECTION_STEPS } from "@/constants/data";
 import { useInspections } from "@/contexts/InspectionsContext";
 import InspectionCamera from "@/components/InspectionCamera";
 
-const TYPE_CONFIG: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
-  "Rotina":               { bg: "#F3F4F6", text: "#6B7280", icon: "refresh-cw" },
-  "Transferência":        { bg: "#EFF6FF", text: "#2563EB", icon: "repeat" },
-  "Abertura de sinistro": { bg: "#FFF7ED", text: "#C2410C", icon: "alert-triangle" },
-  "Manutenção":           { bg: "#F0FDF4", text: "#16A34A", icon: "tool" },
-  "Acidente":             { bg: "#FEF2F2", text: "#DC2626", icon: "alert-octagon" },
-  "Auditoria":            { bg: "#FDF4FF", text: "#9333EA", icon: "shield" },
+// ─── STATUS BADGE ────────────────────────────────────────────────────────────
+
+const STATUS_BADGE: Record<string, { bg: string; text: string; icon: React.ComponentProps<typeof Feather>["name"] }> = {
+  "Aprovada":  { bg: "#F0FDF4", text: "#15803D", icon: "check-circle" },
+  "Pendente":  { bg: "#FFFBEB", text: "#B45309", icon: "clock" },
+  "Reprovada": { bg: "#EFF6FF", text: "#1D4ED8", icon: "refresh-cw" },
 };
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_BADGE[status] ?? STATUS_BADGE["Pendente"];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, backgroundColor: cfg.bg, borderRadius: R.pill, paddingVertical: 4, paddingHorizontal: S.sm }}>
+      <Feather name={cfg.icon} size={10} color={cfg.text} />
+      <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: cfg.text }}>{status}</Text>
+    </View>
+  );
+}
+
+// ─── CONTEXT CARD ────────────────────────────────────────────────────────────
+
+function ContextCard({ type, status, datetime, requestedBy, description }: {
+  type: string; status: string; datetime: string; requestedBy: string; description?: string | null;
+}) {
+  return (
+    <View style={{ marginHorizontal: S.xl, marginBottom: S.lg, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl }}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: S.md, marginBottom: S.sm }}>
+        <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, lineHeight: F.hero * 1.1, flex: 1 }}>
+          {type}
+        </Text>
+        <StatusBadge status={status} />
+      </View>
+      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: S.xs }}>{datetime}</Text>
+      <Text style={{ fontSize: F.sm, color: C.textSecondary, marginBottom: description ? S.lg : 0 }}>
+        Solicitado por {requestedBy}
+      </Text>
+      {description ? (
+        <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.5 }}>{description}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+// ─── PROGRESS CARD ───────────────────────────────────────────────────────────
+
+function ProgressCard({ done, total }: { done: number; total: number }) {
+  const pct    = total > 0 ? done / total : 0;
+  const finish = done === total;
+  return (
+    <View style={{ marginHorizontal: S.xl, marginBottom: S.lg, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.sm }}>
+        <Text style={{ fontSize: F.sm, fontWeight: "600" as const, color: C.textSecondary }}>Progresso</Text>
+        <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.textPrimary }}>{done}/{total} partes</Text>
+      </View>
+      <View style={{ height: 6, backgroundColor: C.iconBg, borderRadius: R.pill, overflow: "hidden" }}>
+        <View style={{
+          height: 6,
+          width: `${pct * 100}%` as any,
+          backgroundColor: finish ? C.success : C.textPrimary,
+          borderRadius: R.pill,
+        }} />
+      </View>
+    </View>
+  );
+}
+
+// ─── SECTION LABEL ───────────────────────────────────────────────────────────
+
+function SectionLabel({ title, right }: { title: string; right?: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
+      <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary, letterSpacing: 1, textTransform: "uppercase" as const }}>
+        {title}
+      </Text>
+      {right ? (
+        <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: C.textTertiary }}>{right}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 
 export default function InspectionRunScreen() {
   const router = useRouter();
@@ -50,8 +123,7 @@ export default function InspectionRunScreen() {
 
   const required     = steps.filter(s => s.required);
   const doneRequired = required.filter(s => !!photos[s.id]).length;
-  const totalPhotos  = Object.keys(photos).length;
-  const canFinish    = doneRequired === required.length && totalPhotos > 0;
+  const canFinish    = doneRequired === required.length && doneRequired > 0;
 
   const activeStep      = steps.find(s => s.id === activeStepId) ?? null;
   const activeStepIndex = activeStep ? steps.indexOf(activeStep) : 0;
@@ -66,6 +138,11 @@ export default function InspectionRunScreen() {
     setActiveStepId(null);
   }, [activeStepId, id, completeStep]);
 
+  const handleRetake = useCallback((sid: string) => {
+    setPhotos(prev => { const n = { ...prev }; delete n[sid]; return n; });
+    setTimeout(() => setActiveStepId(sid), 100);
+  }, []);
+
   const handleFinish = () => {
     Alert.alert(
       "Finalizar vistoria",
@@ -77,115 +154,47 @@ export default function InspectionRunScreen() {
     );
   };
 
-  const progress = required.length > 0 ? doneRequired / required.length : 0;
-  const typeCfg  = TYPE_CONFIG[inspection.type] ?? { bg: C.iconBg, text: C.iconColor, icon: "file-text" as const };
+  // Format datetime label
+  const datetime = inspection.requestedAt
+    + (inspection.completedTime ? ` · ${inspection.completedTime}` : "");
 
   return (
     <View style={{ flex: 1, backgroundColor: C.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: topPad + S.sm, paddingBottom: bottomPad + 100 }}
+        contentContainerStyle={{ paddingTop: topPad + S.sm, paddingBottom: bottomPad + 110 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Header nav ── */}
-        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: S.xl, marginBottom: S.xl }}>
+        {/* ── Header ── */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingHorizontal: S.xl, marginBottom: S.xl }}>
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.7}
             style={{ paddingVertical: S.sm, paddingRight: S.md, paddingLeft: 0, marginLeft: -S.xs }}
           >
-            <Feather name="arrow-left" size={I.xl} color={C.textSecondary} />
+            <Feather name="arrow-left" size={I.lg} color={C.textSecondary} />
           </TouchableOpacity>
-          <Text style={{ flex: 1, fontSize: F.lg, fontWeight: "700" as const, color: C.textPrimary }}>
-            Em andamento
-          </Text>
+          <Text style={{ fontSize: F.xl, fontWeight: "700" as const, color: C.textPrimary }}>Vistoria</Text>
         </View>
 
-        {/* ── Hero card ── */}
-        <View style={{ marginHorizontal: S.xl, backgroundColor: C.surface, borderRadius: R.xxl, padding: S.xl, marginBottom: S.md }}>
+        {/* ── Context card ── */}
+        <ContextCard
+          type={inspection.type}
+          status="Pendente"
+          datetime={datetime}
+          requestedBy={inspection.requester}
+          description={inspection.descricao}
+        />
 
-          {/* Badges: tipo + status */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, marginBottom: S.lg }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: typeCfg.bg, borderRadius: R.pill, paddingVertical: 5, paddingHorizontal: S.md }}>
-              <Feather name={typeCfg.icon} size={11} color={typeCfg.text} />
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: typeCfg.text }}>{inspection.type}</Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 5, paddingHorizontal: S.md }}>
-              <Feather name="clock" size={11} color="#CA8A04" />
-              <Text style={{ fontSize: F.xs, fontWeight: "600" as const, color: "#CA8A04" }}>Pendente</Text>
-            </View>
-          </View>
+        {/* ── Progress card ── */}
+        <ProgressCard done={doneRequired} total={required.length} />
 
-          {/* Data */}
-          <Text style={{ fontSize: 28, fontWeight: "800" as const, color: C.textPrimary, letterSpacing: -0.5, marginBottom: 4 }}>
-            {inspection.requestedAt}
-          </Text>
-          <Text style={{ fontSize: F.sm, color: C.textTertiary, marginBottom: inspection.km && inspection.km !== "—" ? S.xs : 0 }}>
-            Solicitado por {inspection.requester}
-          </Text>
-          {inspection.km && inspection.km !== "—" ? (
-            <Text style={{ fontSize: F.sm, color: C.textTertiary }}>{inspection.km}</Text>
-          ) : null}
-
-          {/* Prazo */}
-          {inspection.deadline ? (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: S.sm }}>
-              <Feather name="alert-circle" size={I.sm} color="#C2410C" />
-              <Text style={{ fontSize: F.sm, fontWeight: "500" as const, color: "#C2410C" }}>{inspection.deadline}</Text>
-            </View>
-          ) : null}
-
-          {/* Descrição / motivo */}
-          {inspection.descricao ? (
-            <View style={{ marginTop: S.lg, paddingTop: S.lg, borderTopWidth: 1, borderTopColor: C.border }}>
-              <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textTertiary, letterSpacing: 1.2, textTransform: "uppercase" as const, marginBottom: S.xs }}>
-                Motivo
-              </Text>
-              <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: 20 }}>
-                {inspection.descricao}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* Barra de progresso */}
-          <View style={{ marginTop: S.lg }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: S.xs }}>
-              <Text style={{ fontSize: F.xs, color: C.textTertiary, fontWeight: "500" as const }}>
-                {doneRequired} de {required.length} fotos obrigatórias
-              </Text>
-              <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: progress === 1 ? "#16A34A" : C.textPrimary }}>
-                {Math.round(progress * 100)}%
-              </Text>
-            </View>
-            <View style={{ height: 4, backgroundColor: C.border, borderRadius: R.pill, overflow: "hidden" }}>
-              <View style={{
-                height: 4,
-                width: `${progress * 100}%` as any,
-                backgroundColor: progress === 1 ? "#16A34A" : "#CA8A04",
-                borderRadius: R.pill,
-              }} />
-            </View>
-          </View>
-        </View>
-
-        {/* ── Lista de etapas ── */}
+        {/* ── Steps list ── */}
         <View style={{ paddingHorizontal: S.xl }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: S.sm }}>
-            <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textTertiary, letterSpacing: 1.2, textTransform: "uppercase" as const }}>
-              Partes do veículo · {totalPhotos}/{steps.length}
-            </Text>
-            {doneRequired > 0 && (
-              <Text style={{ fontSize: F.xs, color: "#16A34A", fontWeight: "600" as const }}>
-                {doneRequired} registradas
-              </Text>
-            )}
-          </View>
-
+          <SectionLabel title="Partes do veículo" right={`${doneRequired}/${steps.length}`} />
           <View style={{ backgroundColor: C.surface, borderRadius: R.xxl, overflow: "hidden" }}>
             {steps.map((step, idx) => {
               const isDone = !!photos[step.id];
-              const isLast = idx === steps.length - 1;
-
               return (
                 <View
                   key={step.id}
@@ -196,7 +205,6 @@ export default function InspectionRunScreen() {
                     padding: S.lg,
                     borderTopWidth: idx === 0 ? 0 : 1,
                     borderTopColor: C.border,
-                    backgroundColor: isDone ? "#F0FDF4" : C.surface,
                   }}
                 >
                   {/* Thumbnail / placeholder */}
@@ -208,55 +216,50 @@ export default function InspectionRunScreen() {
                       borderRadius: R.md,
                       overflow: "hidden",
                       flexShrink: 0,
-                      backgroundColor: isDone ? "transparent" : C.background,
+                      backgroundColor: isDone ? "transparent" : C.iconBg,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    {isDone ? (
-                      <Image source={{ uri: photos[step.id] }} style={{ width: 52, height: 52 }} resizeMode="cover" />
-                    ) : (
-                      <Feather name="camera" size={I.xl} color={C.textTertiary} />
-                    )}
+                    {isDone
+                      ? <Image source={{ uri: photos[step.id] }} style={{ width: 52, height: 52 }} resizeMode="cover" />
+                      : <Feather name="camera" size={I.xl} color={C.iconColor} />
+                    }
                   </TouchableOpacity>
 
-                  {/* Label + instrução */}
+                  {/* Label + instruction */}
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: 3 }}>
-                      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: isDone ? "#16A34A" : C.textPrimary }}>
+                      <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: C.textPrimary }}>
                         {step.label}
                       </Text>
                       {!step.required && (
                         <View style={{ backgroundColor: C.iconBg, borderRadius: R.pill, paddingVertical: 1, paddingHorizontal: S.xs }}>
-                          <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.textTertiary }}>Opcional</Text>
+                          <Text style={{ fontSize: F.xxs, fontWeight: "600" as const, color: C.textTertiary }}>OPCIONAL</Text>
                         </View>
                       )}
                     </View>
-                    <Text style={{ fontSize: F.xs, color: isDone ? "#16A34A" : C.textTertiary, lineHeight: F.xs * 1.5 }}>
-                      {isDone ? "Foto registrada" : step.instruction}
+                    <Text style={{ fontSize: F.sm, color: C.textSecondary, lineHeight: F.sm * 1.4 }}>
+                      {step.instruction}
                     </Text>
                   </View>
 
-                  {/* Ação / status */}
+                  {/* Action */}
                   {isDone ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm, flexShrink: 0 }}>
                       <TouchableOpacity
-                        onPress={() => openCamera(step.id)}
+                        onPress={() => handleRetake(step.id)}
                         activeOpacity={0.7}
-                        style={{
-                          width: 30, height: 30, borderRadius: 15,
-                          backgroundColor: C.surface,
-                          alignItems: "center", justifyContent: "center",
-                        }}
+                        style={{ padding: S.xs }}
                       >
-                        <Feather name="rotate-ccw" size={I.sm} color={C.textTertiary} />
+                        <Feather name="rotate-ccw" size={I.md} color={C.textTertiary} />
                       </TouchableOpacity>
                       <View style={{
-                        width: 28, height: 28, borderRadius: 14,
-                        backgroundColor: "#16A34A",
+                        width: 26, height: 26, borderRadius: 13,
+                        backgroundColor: C.success,
                         alignItems: "center", justifyContent: "center",
                       }}>
-                        <Feather name="check" size={I.sm} color="#fff" />
+                        <Feather name="check" size={I.xs} color="#fff" strokeWidth={3 as any} />
                       </View>
                     </View>
                   ) : (
@@ -271,8 +274,8 @@ export default function InspectionRunScreen() {
                         flexShrink: 0,
                       }}
                     >
-                      <Feather name="camera" size={I.xs} color={C.surface} />
-                      <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.surface }}>
+                      <Feather name="camera" size={I.xs} color={C.textInverse} />
+                      <Text style={{ fontSize: F.xs, fontWeight: "700" as const, color: C.textInverse }}>
                         Fotografar
                       </Text>
                     </TouchableOpacity>
@@ -284,42 +287,31 @@ export default function InspectionRunScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Footer fixo ── */}
+      {/* ── Footer ── */}
       <View style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
         backgroundColor: C.background,
-        borderTopWidth: 1, borderTopColor: C.border,
         paddingHorizontal: S.xl,
         paddingBottom: bottomPad + S.lg,
-        paddingTop: S.lg,
+        paddingTop: S.md,
       }}>
-        {!canFinish && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: S.xs, marginBottom: S.sm }}>
-            <Feather name="clock" size={I.sm} color={C.textTertiary} />
-            <Text style={{ fontSize: F.xs, color: C.textTertiary }}>
-              {required.length - doneRequired} foto{required.length - doneRequired !== 1 ? "s" : ""} obrigatória{required.length - doneRequired !== 1 ? "s" : ""} restante{required.length - doneRequired !== 1 ? "s" : ""}
-            </Text>
-          </View>
-        )}
         <TouchableOpacity
           onPress={canFinish ? handleFinish : undefined}
           activeOpacity={canFinish ? 0.85 : 1}
           style={{
             flexDirection: "row", alignItems: "center", justifyContent: "center",
-            gap: S.sm,
-            backgroundColor: canFinish ? "#16A34A" : C.iconBg,
+            backgroundColor: canFinish ? C.success : C.iconBg,
             borderRadius: R.xxl,
             paddingVertical: S.lg,
           }}
         >
-          <Feather name="check-circle" size={I.lg} color={canFinish ? "#fff" : C.textTertiary} />
           <Text style={{ fontSize: F.base, fontWeight: "700" as const, color: canFinish ? "#fff" : C.textTertiary }}>
             {canFinish ? "Finalizar vistoria" : `Aguardando fotos · ${doneRequired}/${required.length}`}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── Câmera ── */}
+      {/* ── Camera modal ── */}
       {activeStep && (
         <InspectionCamera
           step={activeStep}
