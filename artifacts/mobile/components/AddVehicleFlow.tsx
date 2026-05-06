@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View, Text, TouchableOpacity, TextInput, ScrollView,
   Platform, ActivityIndicator, Alert, Image,
@@ -14,6 +14,7 @@ import {
   VEHICLE_BRANDS, VEHICLE_MODELS, VEHICLE_VERSIONS, VEHICLE_YEARS,
   VEHICLE_COLORS, VEHICLE_FUELS, BOND_TYPES, DOCS_BY_BOND, INSPECTION_STEPS,
 } from "@/constants/data";
+import { useInspections } from "@/contexts/InspectionsContext";
 
 const C = colors.light;
 type FeatherName = React.ComponentProps<typeof Feather>["name"];
@@ -953,7 +954,7 @@ function ScreenBondType({ navigate }: { navigate: (s: Screen, p?: NavParams) => 
 
 // ─── SCREEN: BOND DOC ─────────────────────────────────────────────────────────
 
-function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: Screen) => void }) {
+function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: Screen, p?: NavParams) => void }) {
   const bondType = params.bondType ?? "proprietario";
   const [imageUri, setImageUri] = useState<string | null>(null);
 
@@ -1015,7 +1016,7 @@ function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: 
 
       {imageUri && (
         <Footer>
-          <PrimaryButton label="Continuar" onPress={() => navigate("inspection")} />
+          <PrimaryButton label="Continuar" onPress={() => navigate("inspection", { bondType: params.bondType })} />
         </Footer>
       )}
     </View>
@@ -1024,9 +1025,26 @@ function ScreenBondDoc({ params, navigate }: { params: NavParams; navigate: (s: 
 
 // ─── SCREEN: INSPECTION ───────────────────────────────────────────────────────
 
-function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
-  const [photos, setPhotos]         = useState<Record<string, string>>({});
+function ScreenInspection({ navigate, bondType }: { navigate: (s: Screen) => void; bondType?: string }) {
+  const { addInspection, completeStep, finishInspection } = useInspections();
+  const inspectionIdRef = useRef<number | null>(null);
+
+  const [photos, setPhotos]             = useState<Record<string, string>>({});
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
+
+  // Create the pending inspection in the context as soon as the screen mounts.
+  // If the user closes the app mid-flow, this inspection will remain as Pendente.
+  useEffect(() => {
+    const motivo = (bondType === "Proprietário" || bondType === "Co-proprietário")
+      ? "Transferência"
+      : "Rotina";
+    const id = addInspection(
+      INSPECTION_STEPS.map(s => s.id),
+      motivo,
+      "Vistoria iniciada durante o cadastro de vínculo.",
+    );
+    inspectionIdRef.current = id;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const required     = INSPECTION_STEPS.filter(s => s.required);
   const doneRequired = required.filter(s => photos[s.id]).length;
@@ -1035,14 +1053,18 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
   const activeStep      = INSPECTION_STEPS.find(s => s.id === activeStepId) ?? null;
   const activeStepIndex = activeStep ? INSPECTION_STEPS.indexOf(activeStep) : 0;
 
-  const openCamera = useCallback((id: string) => setActiveStepId(id), []);
+  const openCamera  = useCallback((id: string) => setActiveStepId(id), []);
   const closeCamera = useCallback(() => setActiveStepId(null), []);
 
   const handleCapture = useCallback((uri: string) => {
     if (!activeStepId) return;
     setPhotos(prev => ({ ...prev, [activeStepId]: uri }));
+    // Persist each completed step into the context immediately
+    if (inspectionIdRef.current !== null) {
+      completeStep(inspectionIdRef.current, activeStepId);
+    }
     setActiveStepId(null);
-  }, [activeStepId]);
+  }, [activeStepId, completeStep]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -1134,7 +1156,16 @@ function ScreenInspection({ navigate }: { navigate: (s: Screen) => void }) {
             </Text>
           </View>
         )}
-        <PrimaryButton label="Finalizar vistoria" onPress={() => navigate("pending")} disabled={!canFinish} />
+        <PrimaryButton
+          label="Finalizar vistoria"
+          onPress={() => {
+            if (inspectionIdRef.current !== null) {
+              finishInspection(inspectionIdRef.current);
+            }
+            navigate("pending");
+          }}
+          disabled={!canFinish}
+        />
       </Footer>
 
       {/* Custom camera modal */}
@@ -1213,7 +1244,7 @@ export default function AddVehicleFlow() {
       {screen === "vehicle_confirm" && <ScreenVehicleConfirm params={params} navigate={navigate} />}
       {screen === "bond_type"       && <ScreenBondType       navigate={navigate} />}
       {screen === "bond_doc"        && <ScreenBondDoc        params={params} navigate={navigate} />}
-      {screen === "inspection"      && <ScreenInspection     navigate={navigate} />}
+      {screen === "inspection"      && <ScreenInspection     navigate={navigate} bondType={params.bondType} />}
       {screen === "pending"         && <ScreenPending        onClose={handleClose} />}
     </View>
   );
