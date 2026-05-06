@@ -231,7 +231,7 @@ function ScreenBondDoc({
         </Text>
 
         {imageUri ? (
-          <View style={{ position: "relative", backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", borderWidth: 1.5, borderColor: C.border, marginBottom: S.lg }}>
+          <View style={{ position: "relative", backgroundColor: C.surface, borderRadius: R.xl, overflow: "hidden", marginBottom: S.lg }}>
             <Image source={{ uri: imageUri }} style={{ width: "100%", height: 220 }} resizeMode="cover" />
             <TouchableOpacity
               onPress={() => setImageUri(null)}
@@ -302,7 +302,7 @@ function ScreenSuccess({
 
   return (
     <View style={{ flex: 1, padding: S.xl, justifyContent: "center", alignItems: "center" }}>
-      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: GREEN_BG, borderWidth: 1.5, borderColor: GREEN_BORDER, alignItems: "center", justifyContent: "center", marginBottom: S.xl }}>
+      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: GREEN_BG, alignItems: "center", justifyContent: "center", marginBottom: S.xl }}>
         <Feather name="user-check" size={32} color={GREEN} />
       </View>
       <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, textAlign: "center", marginBottom: S.md }}>
@@ -313,7 +313,7 @@ function ScreenSuccess({
       </Text>
 
       {/* Summary card */}
-      <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, width: "100%", marginBottom: S.xxl, borderWidth: 1, borderColor: C.border, gap: S.md }}>
+      <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, width: "100%", marginBottom: S.xxl, gap: S.md }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Destinatário</Text>
           <Text style={{ fontSize: F.sm, fontWeight: "700" as const, color: C.textPrimary }}>{recipientName}</Text>

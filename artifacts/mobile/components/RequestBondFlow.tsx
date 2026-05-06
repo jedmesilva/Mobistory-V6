@@ -194,14 +194,14 @@ function ScreenSuccess({ mode, bondType, onDone }: { mode: BondMode; bondType: s
 
   return (
     <View style={{ flex: 1, padding: S.xl, justifyContent: "center", alignItems: "center" }}>
-      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: GREEN_BG, borderWidth: 1.5, borderColor: GREEN_BORDER, alignItems: "center", justifyContent: "center", marginBottom: S.xl }}>
+      <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: GREEN_BG, alignItems: "center", justifyContent: "center", marginBottom: S.xl }}>
         <Feather name="clock" size={32} color={GREEN} />
       </View>
       <Text style={{ fontSize: F.hero, fontWeight: "700" as const, color: C.textPrimary, letterSpacing: -0.5, textAlign: "center", marginBottom: S.md }}>{title}</Text>
       <Text style={{ fontSize: F.base, color: C.textSecondary, textAlign: "center", lineHeight: F.base * 1.6, marginBottom: S.xxl }}>{desc}</Text>
 
       {/* Bond type pill */}
-      <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, width: "100%", marginBottom: S.xxl, borderWidth: 1, borderColor: C.border }}>
+      <View style={{ backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, width: "100%", marginBottom: S.xxl }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <Text style={{ fontSize: F.sm, color: C.textSecondary }}>Tipo de vínculo</Text>
           <View style={{ backgroundColor: "#FEF9C3", borderRadius: R.pill, paddingVertical: 3, paddingHorizontal: S.sm, flexDirection: "row", alignItems: "center", gap: S.xs }}>
